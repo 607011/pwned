@@ -79,9 +79,9 @@ int main(int argc, const char *argv[])
   ("input,I", po::value<std::string>(&inputFilename), "set user:pass input file")
   ("output,O", po::value<std::string>(&outputFilename), "set user:pass test set file")
   ("num,N", po::value<int>(&N)->default_value(DefaultN), "number of data sets to extract")
-  ("non-existent", po::bool_switch(&onlyNonExistent)->default_value(false), "select only non-existing hashes (or else only hashes contained in the input file will be selected)");
-  // ("warranty", po::bool_switch(), "display warranty information")
-  // ("license", po::bool_switch(), "display license information");
+  ("non-existent", po::bool_switch(&onlyNonExistent)->default_value(false), "select only non-existing hashes (or else only hashes contained in the input file will be selected)")
+  ("warranty", "display warranty information")
+  ("license", "display license information");
   po::variables_map vm;
   try
   {
