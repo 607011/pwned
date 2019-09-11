@@ -43,7 +43,31 @@ struct Hash
   Hash(const Hash &);
   explicit Hash(const std::string &pwd);
   Hash(uint64_t upper, uint64_t lower);
-  void toLittleEndian();
+
+  void toLittleEndian()
+  {
+    // There's no need to optimize the following byte-swapping with calls
+    // to functions like _byteswap_uint64() (MSC), __builtin_bswap64()
+    // (clang, GCC) or bswap_64() (Linux), because modern compilers like
+    // clang or g++ automatically convert the following lines to two bswapq
+    // machine code instructions.
+    upper = (((upper & 0xff00000000000000ull) >> 56) |
+             ((upper & 0x00ff000000000000ull) >> 40) |
+             ((upper & 0x0000ff0000000000ull) >> 24) |
+             ((upper & 0x000000ff00000000ull) >> 8) |
+             ((upper & 0x00000000ff000000ull) << 8) |
+             ((upper & 0x0000000000ff0000ull) << 24) |
+             ((upper & 0x000000000000ff00ull) << 40) |
+             ((upper & 0x00000000000000ffull) << 56));
+    lower = (((lower & 0xff00000000000000ull) >> 56) |
+             ((lower & 0x00ff000000000000ull) >> 40) |
+             ((lower & 0x0000ff0000000000ull) >> 24) |
+             ((lower & 0x000000ff00000000ull) >> 8) |
+             ((lower & 0x00000000ff000000ull) << 8) |
+             ((lower & 0x0000000000ff0000ull) << 24) |
+             ((lower & 0x000000000000ff00ull) << 40) |
+             ((lower & 0x00000000000000ffull) << 56));
+  }
 
   inline bool read(std::ifstream &f)
   {
