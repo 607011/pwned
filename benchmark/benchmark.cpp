@@ -85,9 +85,9 @@ int main(int argc, const char *argv[])
   ("input,I", po::value<std::string>(&inputFilename), "set user:pass input file")
   ("test-set,S", po::value<std::string>(&testsetFilename), "set user:pass test set file")
   ("runs,n", po::value<int>(&nRuns)->default_value(DefaultNumberOfRuns), "number of runs")
-  ("algorithm,A", po::value<std::string>(&algorithm)->default_value(AlgoSmartBinSearch), "lookup algorithm (either 'binsearch' or 'smart')");
-  // ("warranty", po::bool_switch(), "display warranty information")
-  // ("license", po::bool_switch(), "display license information");
+  ("algorithm,A", po::value<std::string>(&algorithm)->default_value(AlgoSmartBinSearch), "lookup algorithm (either 'binsearch' or 'smart')")
+  ("warranty", "display warranty information")
+  ("license", "display license information");
   po::variables_map vm;
   try
   {
@@ -155,17 +155,20 @@ int main(int argc, const char *argv[])
   std::vector<double> runTimes;
   for (int run = 1; run <= nRuns; ++run)
   {
+    int nReads = 0;
     std::cout << "Benchmark run " << run << " of " << nRuns << " in progress ... " << std::flush;
     pwned::PasswordInspector inspector(inputFilename);
-    std::function<pwned::PasswordHashAndCount(const pwned::Hash &)> lookup = std::bind(searchCallable, &inspector, std::placeholders::_1);
+    std::function<pwned::PasswordHashAndCount(const pwned::Hash &, int *)> lookup = std::bind(searchCallable, &inspector, std::placeholders::_1, std::placeholders::_2);
     int found = 0;
     int notFound = 0;
     auto t0 = std::chrono::high_resolution_clock::now();
     for (const auto &phc : phcs)
     {
+      int readCount = 0;
       try
       {
-        const pwned::PHC &result = lookup(phc.hash);
+        const pwned::PHC &result = lookup(phc.hash, &readCount);
+        nReads += readCount;
         if (result.count > 0)
         {
           ++found;
@@ -185,6 +188,7 @@ int main(int argc, const char *argv[])
     auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
     runTimes.push_back(time_span.count());
     std::cout << std::endl
+              << "#reads: " << nReads << std::endl
               << "Found: " << found << std::endl
               << "Not found: " << notFound
               << std::endl
