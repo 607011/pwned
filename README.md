@@ -18,6 +18,8 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 **test-set-extractor**: command-line interface to extract a test set from a MD5:count file containing existent and non-existents hashes
 
+**be2le**: command-line interface to convert a binary MD5:count file from Big-Endian to Little-Endian representation
+
 
 ## Build for release
 
