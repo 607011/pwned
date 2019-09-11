@@ -24,30 +24,33 @@
 
 #include "hash.hpp"
 
-namespace pwned {
+namespace pwned
+{
 
-    enum UserPasswordReaderOptions {
-        forceEvaluateMD5Hashes,
-        forceEvaluateHexEncodedPasswords,
-        autoEvaluateMD5Hashes,
-        autoEvaluateHexEncodedPasswords
-    };
+enum UserPasswordReaderOptions
+{
+  forceEvaluateMD5Hashes,
+  forceEvaluateHexEncodedPasswords,
+  autoEvaluateMD5Hashes,
+  autoEvaluateHexEncodedPasswords
+};
 
-    class UserPasswordReaderPrivate;
+class UserPasswordReaderPrivate;
 
-    class UserPasswordReader {
-        std::unique_ptr<UserPasswordReaderPrivate> d;
+class UserPasswordReader
+{
+  std::unique_ptr<UserPasswordReaderPrivate> d;
 
-    public:
-        bool eof() const;
-        bool bad() const;
+public:
+  bool eof() const;
+  bool bad() const;
 
-        UserPasswordReader(const std::string &inputFilePath, const std::vector<UserPasswordReaderOptions> &options);
-        ~UserPasswordReader();
-        void evaluateContents();
-        Hash nextPasswordHash();
-    };
+  UserPasswordReader(const std::string &inputFilePath, const std::vector<UserPasswordReaderOptions> &options);
+  ~UserPasswordReader();
+  void evaluateContents();
+  Hash nextPasswordHash();
+};
 
-}
+} // namespace pwned
 
-#endif /* __userpasswordreader_hpp__ */
+#endif // __userpasswordreader_hpp__

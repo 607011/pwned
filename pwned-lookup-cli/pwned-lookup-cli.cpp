@@ -33,55 +33,64 @@
 void setStdinEcho(bool enable)
 {
 #ifdef WIN32
-    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
-    DWORD mode;
-    GetConsoleMode(hStdin, &mode);
-    if (!enable) {
-        mode &= ~ENABLE_ECHO_INPUT;
-    }
-    else {
-        mode |= ENABLE_ECHO_INPUT;
-    }
-    SetConsoleMode(hStdin, mode );
+  HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+  DWORD mode;
+  GetConsoleMode(hStdin, &mode);
+  if (!enable)
+  {
+    mode &= ~ENABLE_ECHO_INPUT;
+  }
+  else
+  {
+    mode |= ENABLE_ECHO_INPUT;
+  }
+  SetConsoleMode(hStdin, mode);
 #else
-    struct termios tty;
-    tcgetattr(STDIN_FILENO, &tty);
-    if (!enable) {
-        tty.c_lflag &= ~ECHO;
-    }
-    else {
-        tty.c_lflag |= ECHO;
-    }
-    (void) tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+  struct termios tty;
+  tcgetattr(STDIN_FILENO, &tty);
+  if (!enable)
+  {
+    tty.c_lflag &= ~ECHO;
+  }
+  else
+  {
+    tty.c_lflag |= ECHO;
+  }
+  (void)tcsetattr(STDIN_FILENO, TCSANOW, &tty);
 #endif
 }
 
-
-int main(int argc, const char *argv[]) {
-    if (argc < 2) {
-        std::cerr << "Usage: pwned-cli <md5_count_file>" << std::endl;
-        return 1;
+int main(int argc, const char *argv[])
+{
+  if (argc < 2)
+  {
+    std::cerr << "Usage: pwned-cli <md5_count_file>" << std::endl;
+    return EXIT_FAILURE;
+  }
+  pwned::PasswordInspector inspector(argv[1]);
+  for (;;)
+  {
+    std::cout << "Password? ";
+    std::string pwd;
+    setStdinEcho(false);
+    std::cin >> pwd;
+    setStdinEcho(true);
+    const pwned::Hash soughtHash(pwd);
+    std::cout << "MD5 hash " << soughtHash << std::endl;
+    const auto &t0 = std::chrono::high_resolution_clock::now();
+    pwned::PasswordHashAndCount phc = inspector.smart_binsearch(soughtHash);
+    const auto &t1 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    if (phc.count > 0)
+    {
+      std::cout << "Found " << std::dec << phc.count << " times." << std::endl;
     }
-    pwned::PasswordInspector inspector(argv[1]);
-    for (;;) {
-        std::cout << "Password? ";
-        std::string pwd;
-        setStdinEcho(false);
-        std::cin >> pwd;
-        setStdinEcho(true);
-        const pwned::Hash soughtHash(pwd);
-        std::cout << "MD5 hash " << soughtHash << std::endl;
-        const auto &t0 = std::chrono::high_resolution_clock::now();
-        pwned::PasswordHashAndCount phc = inspector.smart_binsearch(soughtHash);
-        const auto &t1 = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-        if (phc.count > 0) {
-            std::cout << "Found " << std::dec << phc.count << " times." << std::endl;
-        }
-        else {
-            std::cout << "Not found." << std::endl;
-        }
-        std::cout << "Lookup time: " << time_span.count() * 1000 << " ms" << std::endl << std::endl;
+    else
+    {
+      std::cout << "Not found." << std::endl;
     }
-    return 0;
+    std::cout << "Lookup time: " << time_span.count() * 1000 << " ms" << std::endl
+              << std::endl;
+  }
+  return EXIT_SUCCESS;
 }

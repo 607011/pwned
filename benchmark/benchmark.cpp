@@ -35,141 +35,163 @@ namespace po = boost::program_options;
 
 po::options_description desc("Allowed options");
 
-void hello() {
-    std::cout << "#pwned lookup benchmark 1.0-RC - Copyright (c) 2019 Oliver Lau" << std::endl << std::endl;
+void hello()
+{
+  std::cout << "#pwned lookup benchmark 1.0-RC - Copyright (c) 2019 Oliver Lau" << std::endl
+            << std::endl;
 }
 
-void license() {
-    std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type\n"
-    "`benchmark --warranty'.\n"
-    "This is free software, and you are welcome to redistribute it\n"
-    "under certain conditions; see https://www.gnu.org/licenses/gpl-3.0.en.html\n"
-    "for details.\n" << std::endl;
+void license()
+{
+  std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type\n"
+               "`benchmark --warranty'.\n"
+               "This is free software, and you are welcome to redistribute it\n"
+               "under certain conditions; see https://www.gnu.org/licenses/gpl-3.0.en.html\n"
+               "for details.\n"
+            << std::endl;
 }
 
-void warranty() {
-    std::cout << "Warranty info:"
-        << std::endl << std::endl
-        << "THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION."
-        << std::endl << std::endl
-        << "IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES."
-        << std::endl << std::endl;
+void warranty()
+{
+  std::cout << "Warranty info:"
+            << std::endl
+            << std::endl
+            << "THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION."
+            << std::endl
+            << std::endl
+            << "IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES."
+            << std::endl
+            << std::endl;
 }
 
-void usage() {
-    std::cout << desc << std::endl;
+void usage()
+{
+  std::cout << desc << std::endl;
 }
 
 static const std::string AlgoBinSearch = "binsearch";
 static const std::string AlgoSmartBinSearch = "smart";
 
-int main(int argc, const char *argv[]) {
-    hello();
-    std::string inputFilename;
-    std::string testsetFilename;
-    std::string algorithm;
-    auto searchCallable = std::mem_fn(&pwned::PasswordInspector::smart_binsearch);
-    static constexpr int DefaultNumberOfRuns = 5;
-    int nRuns = DefaultNumberOfRuns;
-    desc.add_options()
-    ("help", "produce help message")
-    ("input,I", po::value<std::string>(&inputFilename), "set user:pass input file")
-    ("test-set,S", po::value<std::string>(&testsetFilename), "set user:pass test set file")
-    ("runs,n", po::value<int>(&nRuns)->default_value(DefaultNumberOfRuns), "number of runs")
-    ("algorithm,A", po::value<std::string>(&algorithm)->default_value(AlgoSmartBinSearch), "lookup algorithm (either 'binsearch' or 'smart')")
-    ("warranty", po::bool_switch(), "display warranty information")
-    ("license", po::bool_switch(), "display license information")
-    ;
-    po::variables_map vm;
-    try {
-        po::store(po::parse_command_line(argc, argv, desc), vm);
-    }
-    catch (po::error &e) {
-        std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
-        usage();
-    }
-    po::notify(vm);
-    if (vm.count("help")) {
-        usage();
-        return EXIT_SUCCESS;
-    }
-    if (vm.count("warranty")) {
-        warranty();
-        return EXIT_SUCCESS;
-    }
-    if (vm.count("license")) {
-        license();
-        return EXIT_SUCCESS;
-    }
-    if (vm.count("algorithm")) {
-        if (algorithm == AlgoBinSearch) {
-            searchCallable = std::mem_fn(&pwned::PasswordInspector::binsearch);
-        }
-        else if (algorithm == AlgoSmartBinSearch) {
-            searchCallable = std::mem_fn(&pwned::PasswordInspector::smart_binsearch);
-        }
-        else {
-            std::cerr << "Invalid algorithm '" << algorithm << "'." << std::endl;
-            return EXIT_FAILURE;
-        }
-    }
-    if (inputFilename.size() == 0 || testsetFilename.size() == 0) {
-        usage();
-        return EXIT_FAILURE;
-    }
-    if (nRuns < 1) {
-        std::cout << "Invalid number of runs given. Defaulting to " << DefaultNumberOfRuns << std::endl;
-        nRuns = DefaultNumberOfRuns;
-    }
-    std::ifstream testset(testsetFilename, std::ios::binary);
-    std::cout << "Reading test set ... " << std::flush;
-    std::vector<pwned::PasswordHashAndCount> phcs;
-    pwned::PasswordHashAndCount phc;
-    while (phc.read(testset)) {
-        phcs.push_back(phc);
-    }
-    std::cout << phcs.size() << " hashes." << std::endl;
-    std::cout << "Using *" << algorithm << "* algorithm." << std::endl;
-    std::vector<double> runTimes;
-    for (int run = 1; run <= nRuns; ++run) {
-        std::cout << "Benchmark run " << run << " of " << nRuns << " in progress ... " << std::flush;
-        pwned::PasswordInspector inspector(inputFilename);
-        std::function<pwned::PasswordHashAndCount(const pwned::Hash&)> lookup = std::bind(searchCallable, &inspector, std::placeholders::_1);
-        int found = 0;
-        int notFound = 0;
-        auto t0 = std::chrono::high_resolution_clock::now();
-        for (const auto &phc : phcs) {
-            try {
-                const pwned::PHC &result = lookup(phc.hash);
-                if (result.count > 0) {
-                    ++found;
-                }
-                else {
-                    ++notFound;
-                }
-            }
-            catch (std::exception e) {
-                std::cerr << "ERROR: " << e.what() << std::endl;
-                return EXIT_FAILURE;
-            }
-        }
-        auto t1 = std::chrono::high_resolution_clock::now();
-        auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-        runTimes.push_back(time_span.count());
-        std::cout << std::endl
-            << "Found: " << found << std::endl
-            << "Not found: " << notFound
-            << std::endl
-            << "Lookup time: " << pwned::readableTime(time_span.count())
-            << std::endl << std::endl;
-    }
-//    std::cout << std::accumulate(std::next(runTimes.begin()), runTimes.end(), std::to_string(runTimes.front()), [](std::string a, double b) { return std::move(a) + "\n" + std::to_string(b); }) << std::endl;
-    std::sort(runTimes.begin(), runTimes.end());
-    std::cout << std::endl
-        << "Lookup time (best/median/avg): " << pwned::readableTime(runTimes.front())
-        << " / " << pwned::readableTime(runTimes.at(runTimes.size()/2))
-        << " / " << pwned::readableTime(std::accumulate(runTimes.begin(), runTimes.end(), 0.0) / double(runTimes.size()))
-        << std::endl
-        << std::endl;
+int main(int argc, const char *argv[])
+{
+  hello();
+  std::string inputFilename;
+  std::string testsetFilename;
+  std::string algorithm;
+  static constexpr int DefaultNumberOfRuns = 5;
+  int nRuns = DefaultNumberOfRuns;
+  desc.add_options()("help", "produce help message")("input,I", po::value<std::string>(&inputFilename), "set user:pass input file")("test-set,S", po::value<std::string>(&testsetFilename), "set user:pass test set file")("runs,n", po::value<int>(&nRuns)->default_value(DefaultNumberOfRuns), "number of runs")("algorithm,A", po::value<std::string>(&algorithm)->default_value(AlgoSmartBinSearch), "lookup algorithm (either 'binsearch' or 'smart')")("warranty", po::bool_switch(), "display warranty information")("license", po::bool_switch(), "display license information");
+  po::variables_map vm;
+  try
+  {
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+  }
+  catch (po::error &e)
+  {
+    std::cerr << "ERROR: " << e.what() << std::endl
+              << std::endl;
+    usage();
+  }
+  po::notify(vm);
+  if (vm.count("help"))
+  {
+    usage();
     return EXIT_SUCCESS;
+  }
+  if (vm.count("warranty"))
+  {
+    warranty();
+    return EXIT_SUCCESS;
+  }
+  if (vm.count("license"))
+  {
+    license();
+    return EXIT_SUCCESS;
+  }
+  auto searchCallable = std::mem_fn(&pwned::PasswordInspector::smart_binsearch);
+  if (vm.count("algorithm"))
+  {
+    if (algorithm == AlgoBinSearch)
+    {
+      searchCallable = std::mem_fn(&pwned::PasswordInspector::binsearch);
+    }
+    else if (algorithm == AlgoSmartBinSearch)
+    {
+      searchCallable = std::mem_fn(&pwned::PasswordInspector::smart_binsearch);
+    }
+    else
+    {
+      std::cerr << "Invalid algorithm '" << algorithm << "'." << std::endl;
+      return EXIT_FAILURE;
+    }
+  }
+  if (inputFilename.size() == 0 || testsetFilename.size() == 0)
+  {
+    usage();
+    return EXIT_FAILURE;
+  }
+  if (nRuns < 1)
+  {
+    std::cout << "Invalid number of runs given. Defaulting to " << DefaultNumberOfRuns << std::endl;
+    nRuns = DefaultNumberOfRuns;
+  }
+  std::ifstream testset(testsetFilename, std::ios::binary);
+  std::cout << "Reading test set ... " << std::flush;
+  std::vector<pwned::PasswordHashAndCount> phcs;
+  pwned::PasswordHashAndCount phc;
+  while (phc.read(testset))
+  {
+    phcs.push_back(phc);
+  }
+  std::cout << phcs.size() << " hashes." << std::endl;
+  std::cout << "Using *" << algorithm << "* algorithm." << std::endl;
+  std::vector<double> runTimes;
+  for (int run = 1; run <= nRuns; ++run)
+  {
+    std::cout << "Benchmark run " << run << " of " << nRuns << " in progress ... " << std::flush;
+    pwned::PasswordInspector inspector(inputFilename);
+    std::function<pwned::PasswordHashAndCount(const pwned::Hash &)> lookup = std::bind(searchCallable, &inspector, std::placeholders::_1);
+    int found = 0;
+    int notFound = 0;
+    auto t0 = std::chrono::high_resolution_clock::now();
+    for (const auto &phc : phcs)
+    {
+      try
+      {
+        const pwned::PHC &result = lookup(phc.hash);
+        if (result.count > 0)
+        {
+          ++found;
+        }
+        else
+        {
+          ++notFound;
+        }
+      }
+      catch (std::exception e)
+      {
+        std::cerr << "ERROR: " << e.what() << std::endl;
+        return EXIT_FAILURE;
+      }
+    }
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    runTimes.push_back(time_span.count());
+    std::cout << std::endl
+              << "Found: " << found << std::endl
+              << "Not found: " << notFound
+              << std::endl
+              << "Lookup time: " << pwned::readableTime(time_span.count())
+              << std::endl
+              << std::endl;
+  }
+  //    std::cout << std::accumulate(std::next(runTimes.begin()), runTimes.end(), std::to_string(runTimes.front()), [](std::string a, double b) { return std::move(a) + "\n" + std::to_string(b); }) << std::endl;
+  std::sort(runTimes.begin(), runTimes.end());
+  std::cout << std::endl
+            << "Lookup time (best/median/avg): " << pwned::readableTime(runTimes.front())
+            << " / " << pwned::readableTime(runTimes.at(runTimes.size() / 2))
+            << " / " << pwned::readableTime(std::accumulate(runTimes.begin(), runTimes.end(), 0.0) / double(runTimes.size()))
+            << std::endl
+            << std::endl;
+  return EXIT_SUCCESS;
 }

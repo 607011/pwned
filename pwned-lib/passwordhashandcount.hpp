@@ -19,57 +19,66 @@
 #define __passwordhashandcount_hpp__
 
 #include <fstream>
+
 #include "hash.hpp"
 
-namespace pwned {
+namespace pwned
+{
 
-    class PasswordHashAndCount {
-    public:
-        static constexpr uint64_t size = uint64_t(HashSize) + sizeof(uint32_t);
-        Hash hash;
-        uint32_t count;
+class PasswordHashAndCount
+{
+public:
+  static constexpr uint64_t size = uint64_t(HashSize) + sizeof(uint32_t);
+  Hash hash;
+  uint32_t count;
 
-        PasswordHashAndCount()
-        : count(0)
-        { /* ... */ }
-        
-        PasswordHashAndCount(Hash hash, uint32_t count)
-        : hash(hash)
-        , count(count)
-        { /* ... */ }
-        
-        PasswordHashAndCount(const PasswordHashAndCount &o)
-        : hash(o.hash)
-        , count(o.count)
-        { /* ... */ }
+  PasswordHashAndCount()
+      : count(0)
+  {
+  }
 
-        inline bool read(std::ifstream &f) {
-            f.read((char*)hash.data, HashSize);
-            if (f.gcount() != HashSize)
-                return false;
-            f.read((char*)&count, sizeof(count));
-            return f.gcount() == sizeof(count);
-        }
+  PasswordHashAndCount(Hash hash, uint32_t count)
+      : hash(hash), count(count)
+  {
+  }
 
-        inline bool read(std::ifstream &f, uint64_t pos) {
-            f.seekg(pos);
-            return read(f);
-        }
-        
-        inline void dump(std::ofstream &f) const {
-            f.write((char*)hash.data, HashSize);
-            f.write((char*)&count, sizeof(count));
-        }
-    };
-    
-    struct PasswordHashAndCountLess {
-        inline bool operator()(const pwned::PasswordHashAndCount &lhs, const pwned::PasswordHashAndCount &rhs) const {
-            return lhs.hash < rhs.hash;
-        }
-    };
+  PasswordHashAndCount(const PasswordHashAndCount &o)
+      : hash(o.hash), count(o.count)
+  {
+  }
 
-    typedef PasswordHashAndCount PHC;
-}
+  inline bool read(std::ifstream &f)
+  {
+    f.read((char *)hash.data, HashSize);
+    if (f.gcount() != HashSize)
+      return false;
+    f.read((char *)&count, sizeof(count));
+    return f.gcount() == sizeof(count);
+  }
 
+  inline bool read(std::ifstream &f, uint64_t pos)
+  {
+    f.seekg(pos);
+    return read(f);
+  }
 
-#endif /* __passwordhashandcount_hpp__ */
+  inline void dump(std::ofstream &f) const
+  {
+    f.write((char *)hash.data, HashSize);
+    f.write((char *)&count, sizeof(count));
+  }
+};
+
+struct PasswordHashAndCountLess
+{
+  inline bool operator()(const pwned::PasswordHashAndCount &lhs, const pwned::PasswordHashAndCount &rhs) const
+  {
+    return lhs.hash < rhs.hash;
+  }
+};
+
+typedef PasswordHashAndCount PHC;
+
+} // namespace pwned
+
+#endif // __passwordhashandcount_hpp__

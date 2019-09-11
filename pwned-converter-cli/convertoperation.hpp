@@ -29,15 +29,16 @@
 
 class ConvertOperationPrivate;
 
-class ConvertOperation: public pwned::Operation {
+class ConvertOperation : public pwned::Operation
+{
 public:
-    std::shared_ptr<ConvertOperationPrivate> d;
-    ConvertOperation(const std::string &srcFilename,
-                     const std::string &dstDirectory,
-                     const std::string &outputExt,
-                     uint64_t maxMem,
-                     const std::vector<pwned::UserPasswordReaderOptions> &options);
-    void execute() noexcept(false) override;
+  std::shared_ptr<ConvertOperationPrivate> d;
+  ConvertOperation(const std::string &srcFilename,
+                   const std::string &dstDirectory,
+                   const std::string &outputExt,
+                   uint64_t maxMem,
+                   const std::vector<pwned::UserPasswordReaderOptions> &options);
+  void execute() noexcept(false) override;
 };
 
 #endif /* __convertoperation_hpp__ */

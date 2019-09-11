@@ -21,28 +21,32 @@
 #include <fstream>
 #include <string>
 #include <cstdint>
+
 #include <sys/types.h>
+
 #include "passwordhashandcount.hpp"
 
-namespace pwned {
-    
-    class PasswordInspector {
-    private:
-        std::ifstream f;
-        int64_t size;
-        pwned::PasswordHashAndCount phc;
+namespace pwned
+{
 
-    public:
-        PasswordInspector();
-        PasswordInspector(const std::string &filename);
-        ~PasswordInspector();
-        bool open(const std::string &filename);
-        PasswordHashAndCount lookup(const std::string &pwd);
-        PasswordHashAndCount binsearch(const pwned::Hash &hash);
-        PasswordHashAndCount smart_fuzzy_binsearch(const pwned::Hash &hash);
-        PasswordHashAndCount smart_binsearch(const pwned::Hash &hash);
-    };
+class PasswordInspector
+{
+private:
+  std::ifstream f;
+  int64_t size;
+  pwned::PasswordHashAndCount phc;
 
-}
+public:
+  PasswordInspector();
+  PasswordInspector(const std::string &filename);
+  ~PasswordInspector();
+  bool open(const std::string &filename);
+  PasswordHashAndCount lookup(const std::string &pwd);
+  PasswordHashAndCount binsearch(const pwned::Hash &hash);
+  PasswordHashAndCount smart_fuzzy_binsearch(const pwned::Hash &hash);
+  PasswordHashAndCount smart_binsearch(const pwned::Hash &hash);
+};
+
+} // namespace pwned
 
 #endif /* __passwordinspector_hpp__ */

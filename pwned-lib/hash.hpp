@@ -24,83 +24,98 @@
 #include <sys/types.h>
 #include <openssl/md5.h>
 
-namespace pwned {
-    static constexpr int HashSize = MD5_DIGEST_LENGTH;
+namespace pwned
+{
+static constexpr int HashSize = MD5_DIGEST_LENGTH;
 
-    struct Hash {
-        union {
-            uint8_t data[HashSize];
-            struct {
-                uint64_t upper;
-                uint64_t lower;
-            };
-        };
-        bool isValid;
-        Hash();
-        Hash(const Hash &);
-        explicit Hash(const std::string &pwd);
-        Hash(uint64_t upper, uint64_t lower);
-        void toLittleEndian();
-        
-        inline bool read(std::ifstream &f) {
-            f.read((char*)data, HashSize);
-            return f.gcount() == HashSize;
-        }
-        
-        inline bool read(std::ifstream &f, uint64_t pos) {
-            f.seekg(pos);
-            return read(f);
-        }
-
-        static Hash fromHex(const std::string &seq);
-        std::string toString() const;
-
-        inline Hash &operator=(const Hash &rhs) {
-            upper = rhs.upper;
-            lower = rhs.lower;
-            return *this;
-        }
+struct Hash
+{
+  union {
+    uint8_t data[HashSize];
+    struct
+    {
+      uint64_t upper;
+      uint64_t lower;
     };
+  };
+  bool isValid;
+  Hash();
+  Hash(const Hash &);
+  explicit Hash(const std::string &pwd);
+  Hash(uint64_t upper, uint64_t lower);
+  void toLittleEndian();
 
-    inline bool operator==(const Hash &lhs, const Hash &rhs) {
-        return lhs.upper == rhs.upper && lhs.lower == rhs.lower;
-    }
+  inline bool read(std::ifstream &f)
+  {
+    f.read((char *)data, HashSize);
+    return f.gcount() == HashSize;
+  }
 
-    inline bool operator!=(const Hash &lhs, const Hash &rhs) {
-        return lhs.upper != rhs.upper || lhs.lower != rhs.lower;
-    }
+  inline bool read(std::ifstream &f, uint64_t pos)
+  {
+    f.seekg(pos);
+    return read(f);
+  }
 
-    inline bool operator<(const Hash &lhs, const Hash &rhs) {
-        if (lhs.upper == rhs.upper) {
-            return lhs.lower < rhs.lower;
-        }
-        return lhs.upper < rhs.upper;
-    }
+  static Hash fromHex(const std::string &seq);
+  std::string toString() const;
 
-    inline bool operator<=(const Hash &lhs, const Hash &rhs) {
-        return lhs == rhs || lhs < rhs;
-    }
+  inline Hash &operator=(const Hash &rhs)
+  {
+    upper = rhs.upper;
+    lower = rhs.lower;
+    return *this;
+  }
+};
 
-    inline bool operator>(const Hash &lhs, const Hash &rhs) {
-        if (lhs.upper == rhs.upper) {
-            return lhs.lower > rhs.lower;
-        }
-        return lhs.upper > rhs.upper;
-    }
-    
-    inline bool operator>=(const Hash &lhs, const Hash &rhs) {
-        return lhs == rhs || lhs > rhs;
-    }
-    
-    std::ostream &operator<<(std::ostream &os, Hash const &h);
-
-    struct HashLess {
-        bool operator() (const Hash &lhs, const Hash &rhs) const {
-            return lhs < rhs;
-        }
-    };
-
+inline bool operator==(const Hash &lhs, const Hash &rhs)
+{
+  return lhs.upper == rhs.upper && lhs.lower == rhs.lower;
 }
 
+inline bool operator!=(const Hash &lhs, const Hash &rhs)
+{
+  return lhs.upper != rhs.upper || lhs.lower != rhs.lower;
+}
+
+inline bool operator<(const Hash &lhs, const Hash &rhs)
+{
+  if (lhs.upper == rhs.upper)
+  {
+    return lhs.lower < rhs.lower;
+  }
+  return lhs.upper < rhs.upper;
+}
+
+inline bool operator<=(const Hash &lhs, const Hash &rhs)
+{
+  return lhs == rhs || lhs < rhs;
+}
+
+inline bool operator>(const Hash &lhs, const Hash &rhs)
+{
+  if (lhs.upper == rhs.upper)
+  {
+    return lhs.lower > rhs.lower;
+  }
+  return lhs.upper > rhs.upper;
+}
+
+inline bool operator>=(const Hash &lhs, const Hash &rhs)
+{
+  return lhs == rhs || lhs > rhs;
+}
+
+std::ostream &operator<<(std::ostream &os, Hash const &h);
+
+struct HashLess
+{
+  bool operator()(const Hash &lhs, const Hash &rhs) const
+  {
+    return lhs < rhs;
+  }
+};
+
+} // namespace pwned
 
 #endif /* __hash_hpp__ */
