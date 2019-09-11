@@ -78,38 +78,6 @@ PasswordHashAndCount PasswordInspector::binsearch(const pwned::Hash &hash)
   return phc;
 }
 
-PasswordHashAndCount PasswordInspector::smart_fuzzy_binsearch(const pwned::Hash &hash)
-{
-  PasswordHashAndCount phc;
-  if (size > 0 && (size % pwned::PasswordHashAndCount::size == 0))
-  {
-    const int64_t potentialHit = int64_t(float(size) * float(hash.upper) / float(std::numeric_limits<uint64_t>::max()));
-    const int64_t offset = int64_t(size >> 9);
-    int64_t lo = std::max<int64_t>(0, potentialHit - offset);
-    int64_t hi = std::min<int64_t>(size, potentialHit + offset);
-    while (lo <= hi)
-    {
-      int64_t pos = (lo + hi) / 2;
-      pos = std::max<int64_t>(0, pos - pos % pwned::PasswordHashAndCount::size);
-      phc.read(f, pos);
-      if (hash > phc.hash)
-      {
-        lo = pos + pwned::PasswordHashAndCount::size;
-      }
-      else if (hash < phc.hash)
-      {
-        hi = pos - pwned::PasswordHashAndCount::size;
-      }
-      else
-      {
-        return phc;
-      }
-    }
-    phc.count = 0;
-  }
-  return phc;
-}
-
 PasswordHashAndCount PasswordInspector::smart_binsearch(const pwned::Hash &hash)
 {
   PasswordHashAndCount phc;

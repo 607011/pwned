@@ -43,10 +43,9 @@ public:
   bool open(const std::string &filename);
   PasswordHashAndCount lookup(const std::string &pwd);
   PasswordHashAndCount binsearch(const pwned::Hash &hash);
-  PasswordHashAndCount smart_fuzzy_binsearch(const pwned::Hash &hash);
   PasswordHashAndCount smart_binsearch(const pwned::Hash &hash);
 };
 
 } // namespace pwned
 
-#endif /* __passwordinspector_hpp__ */
+#endif // __passwordinspector_hpp__
