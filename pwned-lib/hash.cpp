@@ -67,6 +67,11 @@ Hash::Hash(const std::string &pwd)
 
 void Hash::toLittleEndian()
 {
+  // There's no need to optimize the following byte-swapping with calls
+  // to functions like _byteswap_uint64() (MSC), __builtin_bswap64()
+  // (clang, GCC) or bswap_64() (Linux), because modern compilers like
+  // clang or g++ automatically convert the following lines to two bswapq
+  // machine code instructions.
   upper = (((upper & 0xff00000000000000ull) >> 56) |
            ((upper & 0x00ff000000000000ull) >> 40) |
            ((upper & 0x0000ff0000000000ull) >> 24) |
