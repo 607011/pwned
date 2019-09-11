@@ -1,0 +1,202 @@
+/*
+ Copyright © 2019 Oliver Lau <oliver@ersatzworld.net>
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <map>
+#include <vector>
+#include <thread>
+#include <chrono>
+
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/program_options.hpp>
+
+#include <operationqueue.hpp>
+#include <userpasswordreader.hpp>
+#include <util.hpp>
+#include <uuid.hpp>
+
+#include "convertoperation.hpp"
+
+namespace fs = boost::filesystem;
+namespace ba = boost::algorithm;
+namespace po = boost::program_options;
+using namespace std::chrono;
+
+po::options_description desc("Allowed options");
+
+void hello() {
+    std::cout << "#pwned converter 1.0.0 - Copyright (c) 2019 Oliver Lau" << std::endl << std::endl;
+}
+
+void info() {
+    std::cout <<
+    "This program comes with ABSOLUTELY NO WARRANTY; for details\n"
+    "type `pwned-merger --warranty'. This is free software, and\n"
+    "you are welcome to redistribute it under certain conditions;\n"
+    "type `pwned-merger --license' for details.\n" << std::endl;
+}
+
+void usage() {
+    std::cout << desc << std::endl;
+}
+
+static const std::string DefaultOutputExt = ".md5";
+
+int main(int argc, const char *argv[]) {
+    hello();
+    pwned::MemoryStat memStat;
+    pwned::getMemoryStat(memStat);
+    uint64_t memFreeAssumedMBytes = 0;
+    std::cout << "Physical memory (total/app/available): "
+        << pwned::readableSize(memStat.phys.total) << "/"
+        << pwned::readableSize(memStat.phys.app) << "/"
+        << pwned::readableSize(memStat.phys.avail)
+        << std::endl
+        << std::endl;
+    std::vector<std::string> filenames;
+    std::string srcDirectory;
+    std::string dstDirectory;
+    std::string outputExt = DefaultOutputExt;
+    std::vector<pwned::UserPasswordReaderOptions> options;
+    bool forceMD5 = false;
+    bool autoMD5 = false;
+    bool forceHex = false;
+    bool autoHex = false;
+    desc.add_options()
+    ("help", "produce help message")
+    ("input,I", po::value<std::vector<std::string>>(), "set user:pass input file(s)")
+    ("src,S", po::value<std::string>(), "set user:pass input directory")
+    ("dst,D", po::value<std::string>(), "set user:pass output directory")
+    ("ext", po::value<std::string>(&outputExt)->default_value(DefaultOutputExt), "set extension for output files")
+    ("ram", po::value<uint64_t>(&memFreeAssumedMBytes)->default_value(memStat.phys.avail/1024/1024), "program can use as many as the given MB of RAM (overrides automatic free memory detection)")
+    ("force-md5", po::bool_switch(&forceMD5), "convert MD5 encoded passwords")
+    ("auto-md5", po::bool_switch(&autoMD5), "convert MD5 encoded passwords if some are found")
+    ("force-hex", po::bool_switch(&forceHex), "convert hex encoded passwords")
+    ("auto-hex", po::bool_switch(&autoHex), "convert hex encoded passwords if some are found")
+    ;
+    po::variables_map vm;
+    try {
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+    }
+    catch (po::error &e) {
+        std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
+        usage();
+    }
+    po::notify(vm);
+    if (vm.count("help") > 0) {
+        usage();
+        return EXIT_SUCCESS;
+    }
+    if (vm.count("ram") > 0) {
+        memFreeAssumedMBytes = vm["ram"].as<uint64_t>();
+        memStat.phys.avail = memFreeAssumedMBytes * 1024 * 1024;
+    }
+    if (vm.count("input") > 0) {
+        filenames = vm["input"].as<std::vector<std::string>>();
+    }
+    else if (vm.count("src") > 0) {
+        srcDirectory = vm["src"].as<std::string>();
+        std::cout << "Scanning " << srcDirectory << " for files ..." << std::flush;
+        fs::recursive_directory_iterator fileTreeIterator(srcDirectory);
+        for (auto &&f: fileTreeIterator) {
+            const std::string &filePath = f.path().string();
+            if (fs::is_regular_file(f) && ba::ends_with(filePath, ".txt")) {
+                filenames.push_back(filePath);
+            }
+        }
+        std::cout << std::endl;
+    }
+    else {
+        usage();
+        return EXIT_FAILURE;
+    }
+    if (vm.count("dst") > 0) {
+        dstDirectory = vm["dst"].as<std::string>();
+    }
+    else {
+        usage();
+        return EXIT_FAILURE;
+    }
+    if (forceMD5) {
+        options.push_back(pwned::UserPasswordReaderOptions::forceEvaluateMD5Hashes);
+    }
+    else if (autoMD5) {
+        options.push_back(pwned::UserPasswordReaderOptions::autoEvaluateMD5Hashes);
+    }
+    if (forceHex) {
+        options.push_back(pwned::UserPasswordReaderOptions::forceEvaluateHexEncodedPasswords);
+    }
+    else if (autoHex) {
+        options.push_back(pwned::UserPasswordReaderOptions::autoEvaluateHexEncodedPasswords);
+    }
+    info();
+    std::cout << "Converting " << filenames.size() << " files." << std::endl;
+    std::cout << "Destination directory: " << dstDirectory << std::endl << std::endl;
+    high_resolution_clock::time_point t0 = high_resolution_clock::now();
+    std::cout << "Preparing queue ..." << std::endl;
+    pwned::OperationQueue<ConvertOperation> opQueue;
+    for (auto filename: filenames) {
+        ConvertOperation *op = new ConvertOperation(filename,
+                                                    dstDirectory,
+                                                    outputExt,
+                                                    memStat.phys.avail / uint64_t(std::thread::hardware_concurrency()),
+                                                    options);
+        opQueue.add(op);
+    }
+    pwned::TermIO termIO;
+    std::thread keyThread = pwned::runAsync([&opQueue, &termIO] {
+        termIO.disableEcho();
+        char ch;
+        do {
+            ch = getchar();
+            switch (ch) {
+                case ' ':
+                    if (opQueue.isRunning()) {
+                        std::cout << "Pausing ... " << std::flush;
+                        opQueue.pause();
+                    }
+                    else {
+                        std::cout << "Resuming ... " << std::flush;
+                        opQueue.resume();
+                    }
+                    break;
+                case 'q':
+                    std::cout << "Cancelling all operations ..." << std::endl;
+                    opQueue.resume();
+                    opQueue.cancel();
+                    break;
+                default:
+                    break;
+            }
+        }
+        while (ch != 'q');
+    }, 0);
+    keyThread.detach();
+    std::cout << "Executing queue ..." << std::endl;
+    std::cout << "([Space] to pause/resume, Q to quit)" << std::endl;
+    opQueue.execute(true);
+    opQueue.waitForFinished();
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    duration<float> time_span = duration_cast<duration<float>>(t1 - t0);
+    if (!opQueue.isCancelled()) {
+        std::cout << "Total time: " << pwned::readableTime(time_span.count()) << std::endl << std::endl;
+    }
+    return EXIT_SUCCESS;
+}
