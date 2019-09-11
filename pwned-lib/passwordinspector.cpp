@@ -28,6 +28,15 @@ namespace fs = boost::filesystem;
 namespace pwned
 {
 
+template <typename T>
+inline void safe_assign(T *a, T b)
+{
+  if (a != nullptr)
+  {
+    *a = b;
+  }
+}
+
 PasswordInspector::PasswordInspector()
     : size(0)
 {
@@ -46,8 +55,6 @@ bool PasswordInspector::open(const std::string &filename)
   f.open(filename, std::ios::in | std::ios::binary);
   return f.is_open();
 }
-
-#define SET_READ_COUNT(x) if (readCount != nullptr) { *readCount = x; }
 
 PasswordHashAndCount PasswordInspector::binsearch(const pwned::Hash &hash, int *readCount)
 {
@@ -74,13 +81,13 @@ PasswordHashAndCount PasswordInspector::binsearch(const pwned::Hash &hash, int *
       }
       else
       {
-        SET_READ_COUNT(nReads);
+        safe_assign(readCount, nReads);
         return phc;
       }
     }
     phc.count = 0;
   }
-  SET_READ_COUNT(nReads);
+  safe_assign(readCount, nReads);
   return phc;
 }
 
@@ -150,13 +157,13 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const pwned::Hash &hash,
       }
       else
       {
-        SET_READ_COUNT(nReads);
+        safe_assign(readCount, nReads);
         return phc;
       }
     }
     phc.count = 0;
   }
-  SET_READ_COUNT(nReads);
+  safe_assign(readCount, nReads);
   return phc;
 }
 
