@@ -1,6 +1,6 @@
 # #pwned tools
 
-_A collection of tools to convert pwned password files to searchable MD5 files, and lookup passwords in these files_
+_A collection of tools to convert pwned password files to searchable MD5 files, and look up passwords in these files_
 
 ![](https://img.shields.io/github/license/ola-ct/pwned.svg)
 
@@ -19,7 +19,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ../..
 make
 ```
 
-If cmake can't find OpenSSL, set the environment variable `OPENSSL_ROOT_DIR` to 
+If `cmake` can't find OpenSSL, set the environment variable `OPENSSL_ROOT_DIR` to
 an appropriate value, e.g.:
 
 ```
@@ -44,4 +44,3 @@ This program is free software: you can redistribute it and/or modify it under th
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with this program. If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
-
