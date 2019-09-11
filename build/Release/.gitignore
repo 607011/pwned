@@ -1,1 +1,13 @@
-!.gitignore
+CMakeCache.txt
+CMakeFiles/
+Makefile
+be2le/
+benchmark/
+bswap.s
+cmake_install.cmake
+experiments/
+pwned-converter-cli/
+pwned-lib/
+pwned-lookup-cli/
+pwned-merger-cli/
+test-set-extractor/
