@@ -4,7 +4,22 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 ![](https://img.shields.io/github/license/ola-ct/pwned.svg)
 
-## Compilation
+## Brief description
+
+**pwned-lib**: library with basic classes and functions to read and write hashes and their according counts
+
+**pwned-converted-cli**: command-line interface to convert clear-text password files to binary files containing MD5 hashes and their according counts, sorted by hash
+
+**pwned-merger-cli**: command-line interface to merge MD5:count files
+
+**pwned-lookup-cli**: command-line interface to look up passwords in MD5:count files
+
+**benchmark**: command-line interface to run performance tests with different search algorithms
+
+**test-set-extractor**: command-line interface to extract a test set from a MD5:count file containing existent and non-existents hashes
+
+
+## Build for release
 
 Go to the build directory:
 
