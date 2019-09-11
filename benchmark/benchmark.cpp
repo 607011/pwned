@@ -80,7 +80,14 @@ int main(int argc, const char *argv[])
   std::string algorithm;
   static constexpr int DefaultNumberOfRuns = 5;
   int nRuns = DefaultNumberOfRuns;
-  desc.add_options()("help", "produce help message")("input,I", po::value<std::string>(&inputFilename), "set user:pass input file")("test-set,S", po::value<std::string>(&testsetFilename), "set user:pass test set file")("runs,n", po::value<int>(&nRuns)->default_value(DefaultNumberOfRuns), "number of runs")("algorithm,A", po::value<std::string>(&algorithm)->default_value(AlgoSmartBinSearch), "lookup algorithm (either 'binsearch' or 'smart')")("warranty", po::bool_switch(), "display warranty information")("license", po::bool_switch(), "display license information");
+  desc.add_options()
+  ("help", "produce help message")
+  ("input,I", po::value<std::string>(&inputFilename), "set user:pass input file")
+  ("test-set,S", po::value<std::string>(&testsetFilename), "set user:pass test set file")
+  ("runs,n", po::value<int>(&nRuns)->default_value(DefaultNumberOfRuns), "number of runs")
+  ("algorithm,A", po::value<std::string>(&algorithm)->default_value(AlgoSmartBinSearch), "lookup algorithm (either 'binsearch' or 'smart')");
+  // ("warranty", po::bool_switch(), "display warranty information")
+  // ("license", po::bool_switch(), "display license information");
   po::variables_map vm;
   try
   {
