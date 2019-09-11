@@ -60,8 +60,6 @@ Hash::Hash(uint64_t upper, uint64_t lower)
 
 Hash::Hash(const std::string &pwd)
 {
-  // CC_MD5(pwd.c_str(), (CC_LONG)pwd.size(), data);
-  // unsigned char *MD5(const unsigned char *d, size_t n, unsigned char *md);
   MD5((const unsigned char *)pwd.c_str(), pwd.size(), data);
   toLittleEndian();
   isValid = true;
