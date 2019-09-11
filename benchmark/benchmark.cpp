@@ -71,6 +71,8 @@ void usage()
 
 static const std::string AlgoBinSearch = "binsearch";
 static const std::string AlgoSmartBinSearch = "smart";
+static const std::vector<std::string> AlgoList = {AlgoBinSearch, AlgoSmartBinSearch};
+static const std::string AlgoStringList = std::accumulate(std::next(AlgoList.begin()), AlgoList.end(), "'" + AlgoList.front() + "'", [](std::string a, const std::string &b) { return std::move(a) + ", '" + b + "'"; });
 
 int main(int argc, const char *argv[])
 {
@@ -85,7 +87,7 @@ int main(int argc, const char *argv[])
   ("input,I", po::value<std::string>(&inputFilename), "set user:pass input file")
   ("test-set,S", po::value<std::string>(&testsetFilename), "set user:pass test set file")
   ("runs,n", po::value<int>(&nRuns)->default_value(DefaultNumberOfRuns), "number of runs")
-  ("algorithm,A", po::value<std::string>(&algorithm)->default_value(AlgoSmartBinSearch), "lookup algorithm (either 'binsearch' or 'smart')")
+  ("algorithm,A", po::value<std::string>(&algorithm)->default_value(AlgoSmartBinSearch), std::string("lookup algorithm (" + AlgoStringList + ")").c_str())
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -196,7 +198,6 @@ int main(int argc, const char *argv[])
               << std::endl
               << std::endl;
   }
-  //    std::cout << std::accumulate(std::next(runTimes.begin()), runTimes.end(), std::to_string(runTimes.front()), [](std::string a, double b) { return std::move(a) + "\n" + std::to_string(b); }) << std::endl;
   std::sort(runTimes.begin(), runTimes.end());
   std::cout << std::endl
             << "Lookup time (best/median/avg): " << pwned::readableTime(runTimes.front())
