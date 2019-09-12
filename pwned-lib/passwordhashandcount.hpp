@@ -19,6 +19,7 @@
 #define __passwordhashandcount_hpp__
 
 #include <fstream>
+#include <cstdint>
 
 #include "hash.hpp"
 
