@@ -126,9 +126,8 @@ int main(int argc, const char *argv[])
     usage();
     return EXIT_FAILURE;
   }
-  if (vm.count("src") > 0)
+  if (!srcDirectory.empty())
   {
-    srcDirectory = vm["src"].as<std::string>();
     std::cout << "Scanning " << srcDirectory << " for files ... " << std::flush;
     fs::recursive_directory_iterator fileTreeIterator(srcDirectory);
     for (auto &&f : fileTreeIterator)
@@ -143,14 +142,10 @@ int main(int argc, const char *argv[])
   }
   if (vm.count("input") > 0)
   {
-    std::vector<std::string> moreFilenames = vm["input"].as<std::vector<std::string>>();
+    const std::vector<std::string> &moreFilenames = vm["input"].as<std::vector<std::string>>();
     filenames.insert(filenames.end(), std::make_move_iterator(moreFilenames.begin()), std::make_move_iterator(moreFilenames.end()));
   }
-  if (vm.count("output") > 0)
-  {
-    dstFile = vm["output"].as<std::string>();
-  }
-  else
+  if (dstFile.empty())
   {
     usage();
     return EXIT_FAILURE;
