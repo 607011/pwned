@@ -21,7 +21,7 @@
 #include <ostream>
 #include <fstream>
 #include <string>
-#include <sys/types.h>
+#include <cstdint>
 #include <openssl/md5.h>
 
 namespace pwned

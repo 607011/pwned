@@ -21,8 +21,7 @@
 #include <fstream>
 #include <string>
 #include <cstdint>
-
-#include <sys/types.h>
+#include <cstdint>
 
 #include "passwordhashandcount.hpp"
 

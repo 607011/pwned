@@ -20,8 +20,7 @@
 #include <fstream>
 #include <map>
 #include <algorithm>
-
-#include <sys/types.h>
+#include <cstdint>
 
 #include "userpasswordreader.hpp"
 

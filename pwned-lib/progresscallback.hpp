@@ -18,7 +18,7 @@
 #ifndef __progresscallback_hpp__
 #define __progresscallback_hpp__
 
-#include <sys/types.h>
+#include <cstdint>
 
 namespace pwned
 {

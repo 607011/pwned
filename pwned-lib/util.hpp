@@ -20,8 +20,7 @@
 
 #include <string>
 #include <termios.h>
-#include <sys/types.h>
-
+#include <cstdint>
 
 namespace pwned
 {

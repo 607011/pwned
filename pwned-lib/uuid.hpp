@@ -22,8 +22,8 @@
 #include <ostream>
 #include <random>
 #include <chrono>
+#include <cstdint>
 
-#include <sys/types.h>
 
 namespace pwned
 {

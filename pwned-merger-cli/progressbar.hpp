@@ -20,8 +20,7 @@
 
 #include <iostream>
 #include <iomanip>
-
-#include <sys/types.h>
+#include <cstdint>
 
 #include <util.hpp>
 #include <progresscallback.hpp>

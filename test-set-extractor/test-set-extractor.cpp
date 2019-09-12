@@ -18,8 +18,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-
-#include <sys/types.h>
+#include <cstdint>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>

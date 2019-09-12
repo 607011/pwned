@@ -20,8 +20,7 @@
 #include <string>
 #include <algorithm>
 #include <chrono>
-
-#include <sys/types.h>
+#include <cstdint>
 
 #include <boost/filesystem.hpp>
 
