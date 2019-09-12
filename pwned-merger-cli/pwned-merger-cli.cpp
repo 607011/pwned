@@ -106,6 +106,7 @@ int main(int argc, const char *argv[])
     std::cerr << "ERROR: " << e.what() << std::endl
               << std::endl;
     usage();
+    return EXIT_FAILURE;
   }
   po::notify(vm);
 
@@ -113,17 +114,17 @@ int main(int argc, const char *argv[])
   if (vm.count("warranty") > 0)
   {
     warranty();
-    return 0;
+    return EXIT_SUCCESS;
   }
   if (vm.count("help") > 0)
   {
     usage();
-    return 0;
+    return EXIT_SUCCESS;
   }
   if (vm.count("src") == 0 && vm.count("input") == 0)
   {
     usage();
-    return 1;
+    return EXIT_FAILURE;
   }
   if (vm.count("src") > 0)
   {
@@ -152,7 +153,7 @@ int main(int argc, const char *argv[])
   else
   {
     usage();
-    return 1;
+    return EXIT_FAILURE;
   }
   if (!fs::exists(tmpDirectory))
   {
@@ -161,7 +162,7 @@ int main(int argc, const char *argv[])
     if (ec.value() != 0)
     {
       std::cerr << "Cannot create working directory " << tmpDirectory << "." << std::endl;
-      return 1;
+      return EXIT_FAILURE;
     }
   }
   std::cout << "Destination file: " << dstFile << std::endl
@@ -248,5 +249,5 @@ int main(int argc, const char *argv[])
   {
     fs::remove(intermediateFile);
   }
-  return 0;
+  return EXIT_SUCCESS;
 }
