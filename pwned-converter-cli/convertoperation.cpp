@@ -37,7 +37,7 @@ public:
                           uint64_t maxMem,
                           const std::vector<pwned::UserPasswordReaderOptions> &options)
       : srcFilePath(srcFilename), dstPath(dstDirectory), outputExt(outputExt), maxMem(maxMem), options(options)
-  { /* ... */
+  {
   }
   const fs::path srcFilePath;
   const fs::path dstPath;
