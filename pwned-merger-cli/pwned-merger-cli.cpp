@@ -225,7 +225,7 @@ int main(int argc, const char *argv[])
                                                       return sum + file.inputSize.value();
                                                     });
     progressBar.setHi(chunkInputSize / pwned::PasswordHashAndCount::size);
-    MergeOperation *op = new MergeOperation(inputFileSlice, targetFilename, false, &progressBar);
+    MergeOperation *const op = new MergeOperation(inputFileSlice, targetFilename, false, &progressBar);
     opQueue.add(op);
     opQueue.execute(true);
     opQueue.waitForFinished();
