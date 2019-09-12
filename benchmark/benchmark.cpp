@@ -25,9 +25,23 @@
 #include <algorithm>
 #include <numeric>
 #include <cstdlib>
+#include <cstdint>
+#include <unistd.h>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+
+#if defined(__APPLE__)
+extern "C"
+{
+  struct proc;
+  struct vfs_purge_args
+  {
+    int32_t dummy;
+  };
+  int vfs_purge(struct proc *, struct vfs_purge_args *, int *);
+}
+#endif
 
 #include <pwned-lib/passwordhashandcount.hpp>
 #include <pwned-lib/passwordinspector.hpp>
@@ -84,6 +98,9 @@ int main(int argc, const char *argv[])
   std::string testsetFilename;
   std::string algorithm;
   static constexpr int DefaultNumberOfRuns = 5;
+#if defined(__APPLE__)
+  bool purgeFilesystemCache = false;
+#endif
   int nRuns = DefaultNumberOfRuns;
   desc.add_options()
   ("help", "produce help message")
@@ -91,6 +108,9 @@ int main(int argc, const char *argv[])
   ("test-set,S", po::value<std::string>(&testsetFilename), "set user:pass test set file")
   ("runs,n", po::value<int>(&nRuns)->default_value(DefaultNumberOfRuns), "number of runs")
   ("algorithm,A", po::value<std::string>(&algorithm)->default_value(AlgoSmartBinSearch), std::string("lookup algorithm (" + AlgoStringList + ")").c_str())
+#if defined(__APPLE__)
+  ("purge", po::bool_switch(&purgeFilesystemCache), "Purge filesystem cache before running benchmark (needs root privileges)")
+#endif
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -157,6 +177,24 @@ int main(int argc, const char *argv[])
     std::cout << "Invalid number of runs given. Defaulting to " << DefaultNumberOfRuns << std::endl;
     nRuns = DefaultNumberOfRuns;
   }
+#if defined(__APPLE__)
+  if (purgeFilesystemCache)
+  {
+    uid_t euid = geteuid();
+    if (euid == 0)
+    {
+      std::cout << "Purging filesystem cache (this can take some minutes) ... " << std::flush;
+      vfs_purge(nullptr, nullptr, nullptr);
+      std::cout << std::endl << std::endl;
+    }
+    else
+    {
+      std::cout << "** WARNING** You must run this program as root to be able to purge the filesystem." << std::endl
+                << "** WARNING** Running benchmarks without purging." << std::endl
+                << std::endl;
+    }
+  }
+#endif
   std::ifstream testset(testsetFilename, std::ios::binary);
   std::cout << "Reading test set ... " << std::flush;
   std::vector<pwned::PasswordHashAndCount> phcs;
