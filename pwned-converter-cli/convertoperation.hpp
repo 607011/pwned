@@ -25,7 +25,6 @@
 #include <operation.hpp>
 #include <hash.hpp>
 #include <passwordhashandcount.hpp>
-#include <userpasswordreader.hpp>
 
 class ConvertOperationPrivate;
 
@@ -41,4 +40,4 @@ public:
   void execute() noexcept(false) override;
 };
 
-#endif /* __convertoperation_hpp__ */
+#endif // __convertoperation_hpp__

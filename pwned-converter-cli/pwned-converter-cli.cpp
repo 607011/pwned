@@ -22,16 +22,17 @@
 #include <vector>
 #include <thread>
 #include <chrono>
+#include <cstdint>
 
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/program_options.hpp>
 
-#include <operationqueue.hpp>
-#include <userpasswordreader.hpp>
-#include <util.hpp>
-#include <uuid.hpp>
+#include <pwned-lib/operationqueue.hpp>
+#include <pwned-lib/util.hpp>
+#include <pwned-lib/uuid.hpp>
 
+#include "userpasswordreader.hpp"
 #include "convertoperation.hpp"
 
 namespace fs = boost::filesystem;
@@ -49,10 +50,10 @@ void hello()
 
 void info()
 {
-  std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details\n"
-               "type `pwned-merger --warranty'. This is free software, and\n"
-               "you are welcome to redistribute it under certain conditions;\n"
-               "type `pwned-merger --license' for details.\n"
+  std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details" << std::endl
+            << "type `pwned-merger --warranty'. This is free software, and" << std::endl
+            << "you are welcome to redistribute it under certain conditions;" << std::endl
+            << "type `pwned-merger --license' for details." << std::endl
             << std::endl;
 }
 
@@ -84,7 +85,16 @@ int main(int argc, const char *argv[])
   bool autoMD5 = false;
   bool forceHex = false;
   bool autoHex = false;
-  desc.add_options()("help", "produce help message")("input,I", po::value<std::vector<std::string>>(), "set user:pass input file(s)")("src,S", po::value<std::string>(), "set user:pass input directory")("dst,D", po::value<std::string>(), "set user:pass output directory")("ext", po::value<std::string>(&outputExt)->default_value(DefaultOutputExt), "set extension for output files")("ram", po::value<uint64_t>(&memFreeAssumedMBytes)->default_value(memStat.phys.avail / 1024 / 1024), "program can use as many as the given MB of RAM (overrides automatic free memory detection)")("force-md5", po::bool_switch(&forceMD5), "convert MD5 encoded passwords")("auto-md5", po::bool_switch(&autoMD5), "convert MD5 encoded passwords if some are found")("force-hex", po::bool_switch(&forceHex), "convert hex encoded passwords")("auto-hex", po::bool_switch(&autoHex), "convert hex encoded passwords if some are found");
+  desc.add_options()("help", "produce help message")
+  ("input,I", po::value<std::vector<std::string>>(), "set user:pass input file(s)")
+  ("src,S", po::value<std::string>(&srcDirectory), "set user:pass input directory")
+  ("dst,D", po::value<std::string>(&dstDirectory), "set user:pass output directory")
+  ("ext", po::value<std::string>(&outputExt)->default_value(DefaultOutputExt), "set extension for output files")
+  ("ram", po::value<uint64_t>(&memFreeAssumedMBytes)->default_value(memStat.phys.avail / 1024 / 1024), "program can use as many as the given MB of RAM (overrides automatic free memory detection)")
+  ("force-md5", po::bool_switch(&forceMD5), "convert MD5 encoded passwords")
+  ("auto-md5", po::bool_switch(&autoMD5), "convert MD5 encoded passwords if some are found")
+  ("force-hex", po::bool_switch(&forceHex), "convert hex encoded passwords")
+  ("auto-hex", po::bool_switch(&autoHex), "convert hex encoded passwords if some are found");
   po::variables_map vm;
   try
   {
@@ -111,9 +121,8 @@ int main(int argc, const char *argv[])
   {
     filenames = vm["input"].as<std::vector<std::string>>();
   }
-  else if (vm.count("src") > 0)
+  else if (srcDirectory.size() > 0)
   {
-    srcDirectory = vm["src"].as<std::string>();
     std::cout << "Scanning " << srcDirectory << " for files ..." << std::flush;
     fs::recursive_directory_iterator fileTreeIterator(srcDirectory);
     for (auto &&f : fileTreeIterator)
@@ -131,11 +140,7 @@ int main(int argc, const char *argv[])
     usage();
     return EXIT_FAILURE;
   }
-  if (vm.count("dst") > 0)
-  {
-    dstDirectory = vm["dst"].as<std::string>();
-  }
-  else
+  if (dstDirectory.size() == 0)
   {
     usage();
     return EXIT_FAILURE;
