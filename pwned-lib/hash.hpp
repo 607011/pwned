@@ -44,7 +44,7 @@ struct Hash
   explicit Hash(const std::string &pwd);
   Hash(uint64_t upper, uint64_t lower);
 
-  void toLittleEndian()
+  inline void toLittleEndian()
   {
     // There's no need to optimize the following byte-swapping with calls
     // to functions like _byteswap_uint64() (MSC), __builtin_bswap64()
@@ -134,7 +134,7 @@ std::ostream &operator<<(std::ostream &os, Hash const &h);
 
 struct HashLess
 {
-  bool operator()(const Hash &lhs, const Hash &rhs) const
+  inline bool operator()(const Hash &lhs, const Hash &rhs) const
   {
     return lhs < rhs;
   }
