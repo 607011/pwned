@@ -33,7 +33,7 @@ po::options_description desc("Allowed options");
 
 void hello()
 {
-  std::cout << "#pwned lookup benchmark 1.0-RC - Copyright (c) 2019 Oliver Lau" << std::endl
+  std::cout << "#pwned test set extractor 1.0 - Copyright (c) 2019 Oliver Lau" << std::endl
             << std::endl;
 }
 
@@ -113,6 +113,7 @@ int main(int argc, const char *argv[])
     usage();
     return EXIT_SUCCESS;
   }
+
 
   const uint64_t size = boost::filesystem::file_size(inputFilename);
   const uint64_t offset = size / uint64_t(N);
