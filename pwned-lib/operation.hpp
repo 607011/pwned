@@ -99,4 +99,4 @@ public:
 
 } // namespace pwned
 
-#endif /* __operation_hpp__ */
+#endif // __operation_hpp__

@@ -142,4 +142,4 @@ struct HashLess
 
 } // namespace pwned
 
-#endif /* __hash_hpp__ */
+#endif // __hash_hpp__

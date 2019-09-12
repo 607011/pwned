@@ -82,4 +82,4 @@ private:
 
 } // namespace pwned
 
-#endif /* __lazy_hpp__ */
+#endif // __lazy_hpp__
