@@ -164,12 +164,12 @@ int main(int argc, const char *argv[])
   }
   if (!fs::exists(inputFilename))
   {
-    std::cerr << "Input file '" << inputFilename << "' doesn't exist." << std::endl;
+    std::cerr << "ERROR: Input file '" << inputFilename << "' doesn't exist." << std::endl;
     return EXIT_FAILURE;
   }
   if (!fs::exists(testsetFilename))
   {
-    std::cerr << "Test set file '" << testsetFilename << "' doesn't exist." << std::endl;
+    std::cerr << "ERROR: Test set file '" << testsetFilename << "' doesn't exist." << std::endl;
     return EXIT_FAILURE;
   }
   if (nRuns < 1)
@@ -190,7 +190,7 @@ int main(int argc, const char *argv[])
     else
     {
       std::cout << "** WARNING** You must run this program as root to be able to purge the filesystem." << std::endl
-                << "** WARNING** Running benchmarks without purging." << std::endl
+                << "** WARNING** Running benchmarks without purging first." << std::endl
                 << std::endl;
     }
   }
@@ -251,7 +251,7 @@ int main(int argc, const char *argv[])
   }
   std::sort(runTimes.begin(), runTimes.end());
   std::cout << std::endl
-            << "Lookup time (best/median/avg): " << pwned::readableTime(runTimes.front())
+            << "Overall lookup time (best/median/avg): " << pwned::readableTime(runTimes.front())
             << " / " << pwned::readableTime(runTimes.at(runTimes.size() / 2))
             << " / " << pwned::readableTime(std::accumulate(runTimes.begin(), runTimes.end(), 0.0) / double(runTimes.size()))
             << std::endl
