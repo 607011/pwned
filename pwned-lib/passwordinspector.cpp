@@ -56,7 +56,7 @@ bool PasswordInspector::open(const std::string &filename)
   return f.is_open();
 }
 
-PasswordHashAndCount PasswordInspector::binsearch(const pwned::Hash &hash, int *readCount)
+PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCount)
 {
   int nReads = 0;
   PasswordHashAndCount phc;
@@ -65,17 +65,17 @@ PasswordHashAndCount PasswordInspector::binsearch(const pwned::Hash &hash, int *
   while (lo <= hi)
   {
     int64_t pos = (lo + hi) / 2;
-    pos -= pos % pwned::PasswordHashAndCount::size;
+    pos -= pos % PasswordHashAndCount::size;
     pos = std::max<int64_t>(0, pos);
     phc.read(f, pos);
     ++nReads;
     if (hash > phc.hash)
     {
-      lo = pos + pwned::PasswordHashAndCount::size;
+      lo = pos + PasswordHashAndCount::size;
     }
     else if (hash < phc.hash)
     {
-      hi = pos - pwned::PasswordHashAndCount::size;
+      hi = pos - PasswordHashAndCount::size;
     }
     else
     {
@@ -88,17 +88,17 @@ PasswordHashAndCount PasswordInspector::binsearch(const pwned::Hash &hash, int *
   return phc;
 }
 
-PasswordHashAndCount PasswordInspector::smart_binsearch(const pwned::Hash &hash, int *readCount)
+PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *readCount)
 {
   static constexpr float MaxUInt64 = float(std::numeric_limits<uint64_t>::max());
   int nReads = 0;
   static constexpr int64_t OffsetMultiplicator = 2;
   int64_t potentialHitIdx = int64_t(float(size) * float(hash.upper) / MaxUInt64);
-  potentialHitIdx -= potentialHitIdx % pwned::PasswordHashAndCount::size;
-  int64_t offset = std::max<int64_t>(int64_t(size >> 10), pwned::PasswordHashAndCount::size);
-  offset -= offset % pwned::PasswordHashAndCount::size;
+  potentialHitIdx -= potentialHitIdx % PasswordHashAndCount::size;
+  int64_t offset = std::max<int64_t>(int64_t(size >> 12), PasswordHashAndCount::size);
+  offset -= offset % PasswordHashAndCount::size;
   int64_t lo = std::max<int64_t>(0, potentialHitIdx - offset);
-  int64_t hi = std::min<int64_t>(size - pwned::PasswordHashAndCount::size, potentialHitIdx + offset);
+  int64_t hi = std::min<int64_t>(size - PasswordHashAndCount::size, potentialHitIdx + offset);
   bool ok = false;
   Hash h0;
   ok = h0.read(f, lo);
@@ -123,7 +123,7 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const pwned::Hash &hash,
     throw("[PasswordInspector] Cannot read @ hi = " + std::to_string(hi));
   }
   int64_t hiOffset = offset;
-  while (hash > h1 && hi <= size - hiOffset - pwned::PasswordHashAndCount::size)
+  while (hash > h1 && hi <= size - hiOffset - PasswordHashAndCount::size)
   {
     hi += hiOffset;
     h1.read(f, hi);
@@ -136,7 +136,7 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const pwned::Hash &hash,
     throw("[PasswordInspector] Hash out of bounds: !(" + h0.toString() + " < " + hash.toString() + " < " + h1.toString() + ")");
   }
   int nBinSearchReads = 0;
-  const pwned::PasswordHashAndCount &phc = binsearch(hash, &nBinSearchReads);
+  const PasswordHashAndCount &phc = binsearch(hash, &nBinSearchReads);
   safe_assign(readCount, nReads + nBinSearchReads);
   return phc;
 }
