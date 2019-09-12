@@ -24,14 +24,17 @@
 #include <functional>
 #include <algorithm>
 #include <numeric>
+#include <cstdlib>
 
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 #include <pwned-lib/passwordhashandcount.hpp>
 #include <pwned-lib/passwordinspector.hpp>
 #include <pwned-lib/util.hpp>
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 po::options_description desc("Allowed options");
 
@@ -137,6 +140,16 @@ int main(int argc, const char *argv[])
   if (inputFilename.size() == 0 || testsetFilename.size() == 0)
   {
     usage();
+    return EXIT_FAILURE;
+  }
+  if (!fs::exists(inputFilename))
+  {
+    std::cerr << "Input file '" << inputFilename << "' doesn't exist." << std::endl;
+    return EXIT_FAILURE;
+  }
+  if (!fs::exists(testsetFilename))
+  {
+    std::cerr << "Test set file '" << testsetFilename << "' doesn't exist." << std::endl;
     return EXIT_FAILURE;
   }
   if (nRuns < 1)
