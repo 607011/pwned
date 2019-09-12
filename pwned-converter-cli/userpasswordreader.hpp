@@ -22,7 +22,7 @@
 #include <vector>
 #include <memory>
 
-#include "hash.hpp"
+#include <pwned-lib/hash.hpp>
 
 namespace pwned
 {

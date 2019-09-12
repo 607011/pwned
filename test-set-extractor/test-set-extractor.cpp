@@ -24,8 +24,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <passwordhashandcount.hpp>
-#include <passwordinspector.hpp>
+#include <pwned-lib/passwordhashandcount.hpp>
+#include <pwned-lib/passwordinspector.hpp>
 
 namespace po = boost::program_options;
 

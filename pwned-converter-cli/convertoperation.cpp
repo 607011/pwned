@@ -20,8 +20,8 @@
 
 #include <boost/filesystem.hpp>
 
-#include <util.hpp>
-#include <operationqueue.hpp>
+#include <pwned-lib/util.hpp>
+#include <pwned-lib/operationqueue.hpp>
 
 #include "userpasswordreader.hpp"
 #include "convertoperation.hpp"

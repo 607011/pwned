@@ -22,9 +22,9 @@
 #include <vector>
 #include <memory>
 
-#include <operation.hpp>
-#include <hash.hpp>
-#include <passwordhashandcount.hpp>
+#include <pwned-lib/operation.hpp>
+#include <pwned-lib/hash.hpp>
+#include <pwned-lib/passwordhashandcount.hpp>
 
 class ConvertOperationPrivate;
 

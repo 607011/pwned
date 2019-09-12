@@ -22,10 +22,10 @@
 #include <vector>
 #include <memory>
 
-#include <passwordhashandcount.hpp>
-#include <operation.hpp>
-#include <operationqueue.hpp>
-#include <progresscallback.hpp>
+#include <pwned-lib/passwordhashandcount.hpp>
+#include <pwned-lib/operation.hpp>
+#include <pwned-lib/operationqueue.hpp>
+#include <pwned-lib/progresscallback.hpp>
 
 #include "inputfile.hpp"
 #include "mergerinput.hpp"

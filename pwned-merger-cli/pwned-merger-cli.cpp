@@ -30,11 +30,11 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/program_options.hpp>
 
-#include <operation.hpp>
-#include <operationqueue.hpp>
-#include <util.hpp>
-#include <uuid.hpp>
-#include <progresscallback.hpp>
+#include <pwned-lib/operation.hpp>
+#include <pwned-lib/operationqueue.hpp>
+#include <pwned-lib/util.hpp>
+#include <pwned-lib/uuid.hpp>
+#include <pwned-lib/progresscallback.hpp>
 
 #include "mergeoperation.hpp"
 #include "progressbar.hpp"

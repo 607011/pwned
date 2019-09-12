@@ -22,8 +22,8 @@
 #include <iomanip>
 #include <cstdint>
 
-#include <util.hpp>
-#include <progresscallback.hpp>
+#include <pwned-lib/util.hpp>
+#include <pwned-lib/progresscallback.hpp>
 
 class ProgressBar : public pwned::ProgressCallback
 {

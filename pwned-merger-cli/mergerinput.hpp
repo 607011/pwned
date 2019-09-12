@@ -23,7 +23,7 @@
 
 #include <boost/filesystem.hpp>
 
-#include <passwordhashandcount.hpp>
+#include <pwned-lib/passwordhashandcount.hpp>
 
 #include "inputfile.hpp"
 

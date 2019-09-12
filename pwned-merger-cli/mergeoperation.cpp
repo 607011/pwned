@@ -24,9 +24,9 @@
 
 #include <boost/filesystem.hpp>
 
-#include <util.hpp>
-#include <hash.hpp>
-#include <passwordhashandcount.hpp>
+#include <pwned-lib/util.hpp>
+#include <pwned-lib/hash.hpp>
+#include <pwned-lib/passwordhashandcount.hpp>
 
 #include "mergeoperation.hpp"
 #include "inputfile.hpp"

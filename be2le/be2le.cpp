@@ -19,7 +19,7 @@
 #include <fstream>
 #include <string>
 
-#include <passwordhashandcount.hpp>
+#include <pwned-lib/passwordhashandcount.hpp>
 
 int main(int argc, const char *argv[])
 {

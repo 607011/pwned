@@ -19,7 +19,7 @@
 #define __inputfile_hpp__
 
 #include <boost/filesystem.hpp>
-#include <lazy.hpp>
+#include <pwned-lib/lazy.hpp>
 
 namespace fs = boost::filesystem;
 

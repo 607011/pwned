@@ -21,7 +21,7 @@
 #include <string>
 #include <chrono>
 
-#include <passwordinspector.hpp>
+#include <pwned-lib/passwordinspector.hpp>
 
 #ifdef WIN32
 #include <windows.h>

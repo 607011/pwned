@@ -27,9 +27,9 @@
 
 #include <boost/program_options.hpp>
 
-#include <passwordhashandcount.hpp>
-#include <passwordinspector.hpp>
-#include <util.hpp>
+#include <pwned-lib/passwordhashandcount.hpp>
+#include <pwned-lib/passwordinspector.hpp>
+#include <pwned-lib/util.hpp>
 
 namespace po = boost::program_options;
 
