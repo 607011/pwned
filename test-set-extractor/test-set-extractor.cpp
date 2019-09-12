@@ -108,6 +108,11 @@ int main(int argc, const char *argv[])
     license();
     return EXIT_SUCCESS;
   }
+  if (inputFilename.empty() || outputFilename.empty())
+  {
+    usage();
+    return EXIT_SUCCESS;
+  }
 
   const uint64_t size = boost::filesystem::file_size(inputFilename);
   const uint64_t offset = size / uint64_t(N);
