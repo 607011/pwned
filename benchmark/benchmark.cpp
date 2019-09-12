@@ -177,11 +177,11 @@ int main(int argc, const char *argv[])
     std::cout << "Invalid number of runs given. Defaulting to " << DefaultNumberOfRuns << std::endl;
     nRuns = DefaultNumberOfRuns;
   }
-#if defined(__APPLE__)
+
   if (purgeFilesystemCache)
   {
-    uid_t euid = geteuid();
-    if (euid == 0)
+#if defined(__APPLE__)
+    if (geteuid() == 0)
     {
       std::cout << "Purging filesystem cache (this can take some minutes) ... " << std::flush;
       vfs_purge(nullptr, nullptr, nullptr);
@@ -193,8 +193,10 @@ int main(int argc, const char *argv[])
                 << "** WARNING** Running benchmarks without purging first." << std::endl
                 << std::endl;
     }
-  }
+#else
+    sync();
 #endif
+  }
   std::ifstream testset(testsetFilename, std::ios::binary);
   std::cout << "Reading test set ... " << std::flush;
   std::vector<pwned::PasswordHashAndCount> phcs;
