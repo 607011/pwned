@@ -169,7 +169,7 @@ int main(int argc, const char *argv[])
             << std::endl;
   high_resolution_clock::time_point t0 = high_resolution_clock::now();
   std::vector<InputFile> inputFiles;
-  for (auto filename : filenames)
+  for (const auto &filename : filenames)
   {
     inputFiles.push_back(InputFile(filename));
   }
