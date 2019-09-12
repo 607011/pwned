@@ -193,8 +193,14 @@ int main(int argc, const char *argv[])
                 << "** WARNING** Running benchmarks without purging first." << std::endl
                 << std::endl;
     }
-#else
+#elif defined(__linux__)
     sync();
+    std::ofstream ofs("/proc/sys/vm/drop_caches");
+    ofs << "3" << std::endl;
+#elif defined(_WIN32)
+    // TODO
+#else
+    sync(); // XXX
 #endif
   }
   std::ifstream testset(testsetFilename, std::ios::binary);
@@ -248,6 +254,7 @@ int main(int argc, const char *argv[])
               << "Not found: " << notFound
               << std::endl
               << "Lookup time: " << pwned::readableTime(time_span.count())
+              << " (" << (1e3 * time_span.count() / static_cast<double>(phcs.size())) << "ms per lookup)"
               << std::endl
               << std::endl;
   }
