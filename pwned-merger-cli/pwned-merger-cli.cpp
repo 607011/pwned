@@ -56,18 +56,18 @@ void hello()
 
 void info()
 {
-  std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type\n"
-               "`pwned-merger --warranty'.\n"
-               "This is free software, and you are welcome to redistribute it\n"
-               "under certain conditions; see https://www.gnu.org/licenses/gpl-3.0.en.html\n"
-               "for details.\n"
+  std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type" << std::endl
+            << "`pwned-merger --warranty'." << std::endl
+            << "This is free software, and you are welcome to redistribute it" << std::endl
+            << "under certain conditions; see https://www.gnu.org/licenses/gpl-3.0.en.html" << std::endl
+            << "for details." << std::endl
             << std::endl;
 }
 
 void warranty()
 {
-  std::cout << "Warranty info:\n\n"
-               "THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION."
+  std::cout << "Warranty info:" << std::endl << std::endl
+            << "THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION."
             << std::endl
             << std::endl
             << "IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES." << std::endl
@@ -88,7 +88,14 @@ int main(int argc, const char *argv[])
   std::string outputExt = DefaultOutputExt;
   std::string inputExt = DefaultOutputExt;
   int maxFilesAtOnce = 50;
-  desc.add_options()("help,?", "produce help message")("src,S", po::value<std::string>(), "set user:pass input directory")("input,I", po::value<std::vector<std::string>>(), "set MD5:count input file(s)")("output,O", po::value<std::string>(), "set MD5:count output file")("tmp,T", po::value<std::string>(&tmpDirectory)->default_value(tmpDirectory), "set working directory")("max-files-at-once,n", po::value<int>(&maxFilesAtOnce)->default_value(maxFilesAtOnce), "process max files at once")("ext,X", po::value<std::string>(&outputExt)->default_value(DefaultOutputExt), "set extension for output files")("warranty,W", "show warranty info");
+  desc.add_options()("help,?", "produce help message")
+  ("src,S", po::value<std::string>(&srcDirectory), "set user:pass input directory")
+  ("input,I", po::value<std::vector<std::string>>(), "set MD5:count input file(s)")
+  ("output,O", po::value<std::string>(&dstFile), "set MD5:count output file")
+  ("tmp,T", po::value<std::string>(&tmpDirectory)->default_value(tmpDirectory), "set working directory")
+  ("max-files-at-once,n", po::value<int>(&maxFilesAtOnce)->default_value(maxFilesAtOnce), "process max files at once")
+  ("ext,X", po::value<std::string>(&outputExt)->default_value(DefaultOutputExt), "set extension for output files")
+  ("warranty,W", "show warranty info");
   po::variables_map vm;
   try
   {
