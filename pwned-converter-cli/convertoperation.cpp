@@ -57,7 +57,7 @@ ConvertOperation::ConvertOperation(const std::string &srcFilename,
                                                                              maxMem,
                                                                              options)))
 {
-  priority = fs::file_size(srcFilename);
+  priority = static_cast<long long>(fs::file_size(srcFilename));
 }
 
 void ConvertOperation::execute() noexcept(false)
