@@ -98,9 +98,7 @@ int main(int argc, const char *argv[])
   std::string testsetFilename;
   std::string algorithm;
   static constexpr int DefaultNumberOfRuns = 5;
-#if defined(__APPLE__)
   bool purgeFilesystemCache = false;
-#endif
   int nRuns = DefaultNumberOfRuns;
   desc.add_options()
   ("help", "produce help message")
@@ -108,9 +106,7 @@ int main(int argc, const char *argv[])
   ("test-set,S", po::value<std::string>(&testsetFilename), "set user:pass test set file")
   ("runs,n", po::value<int>(&nRuns)->default_value(DefaultNumberOfRuns), "number of runs")
   ("algorithm,A", po::value<std::string>(&algorithm)->default_value(AlgoSmartBinSearch), std::string("lookup algorithm (" + AlgoStringList + ")").c_str())
-#if defined(__APPLE__)
   ("purge", po::bool_switch(&purgeFilesystemCache), "Purge filesystem cache before running benchmark (needs root privileges)")
-#endif
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
