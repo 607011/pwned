@@ -83,6 +83,45 @@ void usage()
   std::cout << desc << std::endl;
 }
 
+int purgeFilesystemCacheOn(const std::string &filename)
+{
+  int rc = 0;
+#if defined(__APPLE__)
+  (void)(filename);
+  if (geteuid() == 0)
+  {
+    std::cout << "Purging filesystem cache (this can take a couple of minutes) ... " << std::flush;
+    vfs_purge(nullptr, nullptr, nullptr);
+    std::cout << std::endl << std::endl;
+  }
+  else
+  {
+    std::cout << "** WARNING** This program needs root privileges to purge the filesystem cache." << std::endl
+              << "** WARNING** Running benchmarks without purging first." << std::endl
+              << std::endl;
+    rc = 1;
+  }
+#elif defined(__linux__)
+  (void)(filename);
+  sync();
+  std::ofstream ofs("/proc/sys/vm/drop_caches");
+  ofs << '3' << std::endl;
+#elif defined(_WIN32)
+  // https://stackoverflow.com/questions/478340/clear-file-cache-to-repeat-performance-testing/7113153#7113153
+  HANDLE hFile = CreateFile(filename.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, nullptr);
+  if (hFile == INVALID_HANDLE_VALUE)
+  {
+    std::cerr << "ERROR: Cannot read '" << inputFilename << "'." << std::endl;
+    rc = 1;
+  }
+  CloseHandle(hFile);
+#else
+  (void)(filename);
+  sync(); // XXX
+#endif
+  return rc;
+}
+
 static const std::string AlgoBinSearch = "binsearch";
 static const std::string AlgoSmartBinSearch = "smart";
 static const std::vector<std::string> AlgoList = {AlgoBinSearch, AlgoSmartBinSearch};
@@ -173,29 +212,8 @@ int main(int argc, const char *argv[])
 
   if (doPurgeFilesystemCache)
   {
-#if defined(__APPLE__)
-    if (geteuid() == 0)
-    {
-      std::cout << "Purging filesystem cache (this can take some minutes) ... " << std::flush;
-      vfs_purge(nullptr, nullptr, nullptr);
-      std::cout << std::endl << std::endl;
+    purgeFilesystemCacheOn(inputFilename);
     }
-    else
-    {
-      std::cout << "** WARNING** You must run this program as root to be able to purge the filesystem." << std::endl
-                << "** WARNING** Running benchmarks without purging first." << std::endl
-                << std::endl;
-    }
-#elif defined(__linux__)
-    sync();
-    std::ofstream ofs("/proc/sys/vm/drop_caches");
-    ofs << "3" << std::endl;
-#elif defined(_WIN32)
-    // TODO
-#else
-    sync(); // XXX
-#endif
-  }
   std::ifstream testset(testsetFilename, std::ios::binary);
   std::cout << "Reading test set ... " << std::flush;
   std::vector<pwned::PasswordHashAndCount> phcs;
