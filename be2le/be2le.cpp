@@ -41,7 +41,7 @@ int main(int argc, const char *argv[])
     while (!in.eof())
     {
       phc.read(in);
-      phc.hash.toLittleEndian();
+      phc.hash.toHostByteOrder();
       phc.dump(out);
     }
   }

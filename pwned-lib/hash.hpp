@@ -44,7 +44,7 @@ struct Hash
   explicit Hash(const std::string &pwd);
   Hash(uint64_t upper, uint64_t lower);
 
-  inline void toLittleEndian()
+  inline void toHostByteOrder()
   {
     upper = ntohll(upper);
     lower = ntohll(lower);

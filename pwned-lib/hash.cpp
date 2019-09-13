@@ -61,7 +61,7 @@ Hash::Hash(uint64_t upper, uint64_t lower)
 Hash::Hash(const std::string &pwd)
 {
   MD5((const unsigned char *)pwd.c_str(), pwd.size(), data);
-  toLittleEndian();
+  toHostByteOrder();
   isValid = true;
 }
 
