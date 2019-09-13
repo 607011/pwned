@@ -24,6 +24,21 @@
 #include <cstdint>
 #include <openssl/md5.h>
 
+#if defined(WIN32)
+#include <WinSock2.h>
+#elif defined(__linux__)
+#include <arpa/inet.h>
+#define ntohll(x) be64toh(x)
+#elif defined(__FreeBSD__) || defined(__NetBSD__)
+#include <sys/endian.h>
+#define ntohll(x) be64toh(x)
+#elif defined(__APPLE__)
+#include <sys/_endian.h>
+#elif defined(__OpenBSD__)
+#include <sys/types.h>
+#define ntohll(x) betoh64(x)
+#endif
+
 namespace pwned
 {
 static constexpr int HashSize = MD5_DIGEST_LENGTH;
