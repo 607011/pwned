@@ -95,7 +95,7 @@ int main(int argc, const char *argv[])
   std::string testsetFilename;
   std::string algorithm;
   static constexpr int DefaultNumberOfRuns = 5;
-  bool purgeFilesystemCache = false;
+  bool doPurgeFilesystemCache = false;
   int nRuns = DefaultNumberOfRuns;
   desc.add_options()
   ("help", "produce help message")
@@ -171,7 +171,7 @@ int main(int argc, const char *argv[])
     nRuns = DefaultNumberOfRuns;
   }
 
-  if (purgeFilesystemCache)
+  if (doPurgeFilesystemCache)
   {
 #if defined(__APPLE__)
     if (geteuid() == 0)
