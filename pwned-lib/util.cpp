@@ -17,7 +17,7 @@
 
 #include "util.hpp"
 
-#if __APPLE__
+#if defined(__APPLE__)
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <mach/mach.h>
@@ -29,7 +29,9 @@
 
 #include <string>
 #include <memory>
+#include <cstring>
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
@@ -41,7 +43,7 @@ namespace pwned
 // see https://gist.github.com/gunkmogo/5d54f9fb4579768d9c7d5c41293cc784
 int getMemoryStat(MemoryStat &memoryStat)
 {
-#if __APPLE__
+#if defined(__APPLE__)
   xsw_usage vmusage = {0};
   size_t size = sizeof(vmusage);
   if (sysctlbyname("vm.swapusage", &vmusage, &size, NULL, 0) != 0)
