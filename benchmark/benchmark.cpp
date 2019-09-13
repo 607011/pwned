@@ -142,7 +142,7 @@ int main(int argc, const char *argv[])
   ("test-set,S", po::value<std::string>(&testsetFilename), "set user:pass test set file")
   ("runs,n", po::value<int>(&nRuns)->default_value(DefaultNumberOfRuns), "number of runs")
   ("algorithm,A", po::value<std::string>(&algorithm)->default_value(AlgoSmartBinSearch), std::string("lookup algorithm (" + AlgoStringList + ")").c_str())
-  ("purge", po::bool_switch(&purgeFilesystemCache), "Purge filesystem cache before running benchmark (needs root privileges)")
+  ("purge", po::bool_switch(&doPurgeFilesystemCache), "Purge filesystem cache before running benchmark (needs root privileges)")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
