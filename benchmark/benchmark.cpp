@@ -38,6 +38,9 @@ extern "C"
   struct vfs_purge_args;
   int vfs_purge(struct proc *, struct vfs_purge_args *, int *);
 }
+#elif defined(_WIN32)
+  #define WIN32_LEAN_AND_MEAN
+  #include <windows.h>
 #endif
 
 #include <pwned-lib/passwordhashandcount.hpp>
