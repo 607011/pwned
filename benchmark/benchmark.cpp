@@ -16,6 +16,7 @@
  */
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -213,7 +214,7 @@ int main(int argc, const char *argv[])
   if (doPurgeFilesystemCache)
   {
     purgeFilesystemCacheOn(inputFilename);
-    }
+  }
   std::ifstream testset(testsetFilename, std::ios::binary);
   std::cout << "Reading test set ... " << std::flush;
   std::vector<pwned::PasswordHashAndCount> phcs;
@@ -265,8 +266,7 @@ int main(int argc, const char *argv[])
               << "Not found: " << notFound
               << std::endl
               << "Lookup time: " << pwned::readableTime(time_span.count())
-              << " (" << (1e3 * time_span.count() / static_cast<double>(phcs.size())) << "ms per lookup)"
-              << std::endl
+              << " (" << std::setprecision(3) << (1e3 * time_span.count() / static_cast<double>(phcs.size())) << "ms per lookup)" << std::endl
               << std::endl;
   }
   std::sort(runTimes.begin(), runTimes.end());
