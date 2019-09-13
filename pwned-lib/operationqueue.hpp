@@ -23,6 +23,7 @@
 #include <mutex>
 #include <list>
 #include <queue>
+#include <cstring>
 
 #include "semaphore.hpp"
 #include "operation.hpp"
