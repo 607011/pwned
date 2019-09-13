@@ -35,10 +35,7 @@
 extern "C"
 {
   struct proc;
-  struct vfs_purge_args
-  {
-    int32_t dummy;
-  };
+  struct vfs_purge_args;
   int vfs_purge(struct proc *, struct vfs_purge_args *, int *);
 }
 #endif
