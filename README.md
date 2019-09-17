@@ -12,7 +12,9 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 **pwned-merger-cli**: command-line interface to merge MD5:count files
 
-**pwned-lookup-cli**: command-line interface to look up passwords in MD5:count files
+**pwned-lookup-cli**: command-line interface to look up passwords in an MD5:count file
+
+**index**: command-line interface to build an index of an MD5:count file
 
 **benchmark**: command-line interface to run performance tests with different search algorithms
 
