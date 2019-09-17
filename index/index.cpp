@@ -22,44 +22,132 @@
 #include <cstdlib>
 #include <cstdint>
 
+#include <boost/program_options.hpp>
+
 #include <pwned-lib/passwordhashandcount.hpp>
 
-constexpr uint64_t MASK = 0xffffff0000000000ULL;
-constexpr int SHIFT = 40;
-constexpr uint64_t MAXIDX = 0xffffffULL + 1ULL;
+namespace po = boost::program_options;
 
-inline uint64_t extractIndex(uint64_t v)
+po::options_description desc("Allowed options");
+
+uint64_t create_hi_bitmask(unsigned int ones)
 {
-  return (v & MASK) >> SHIFT;
+  return static_cast<uint64_t>(-(ones != 0)) & (static_cast<uint64_t>(-1) << ((sizeof(uint64_t) * 8) - ones));
+}
+
+uint64_t create_lo_bitmask(unsigned int ones)
+{
+  return static_cast<uint64_t>(-(ones != 0)) & (static_cast<uint64_t>(-1) >> ((sizeof(uint64_t) * 8) - ones));
+}
+
+inline uint64_t extractIndex(uint64_t v, uint64_t mask, unsigned int shift)
+{
+  return (v & mask) >> shift;
+}
+
+void hello()
+{
+  std::cout << "#pwned indexer 1.0-RC - Copyright (c) 2019 Oliver Lau" << std::endl
+            << std::endl;
+}
+
+void license()
+{
+  std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type" << std::endl
+            << "`index --warranty'." << std::endl
+            << "This is free software, and you are welcome to redistribute it" << std::endl
+            << "under certain conditions; see https://www.gnu.org/licenses/gpl-3.0.en.html" << std::endl
+            << "for details." << std::endl
+            << std::endl;
+}
+
+void warranty()
+{
+  std::cout << "Warranty info:" << std::endl
+            << std::endl
+            << "THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION." << std::endl
+            << std::endl
+            << "IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES." << std::endl
+            << std::endl;
+}
+
+void usage()
+{
+  std::cout << desc << std::endl;
 }
 
 int main(int argc, const char *argv[])
 {
+  constexpr unsigned int DefaultBits = 24;
   std::string inputFilename;
   std::string outputFilename;
-  if (argc == 3)
+  unsigned int bits = DefaultBits;
+  desc.add_options()
+  ("help", "produce help message")
+  ("input,I", po::value<std::string>(&inputFilename), "set user:pass input file")
+  ("output,O", po::value<std::string>(&outputFilename), "set index file")
+  ("bits,B", po::value<unsigned int>(&bits)->default_value(DefaultBits), "set bit count of index key")
+  ("warranty", "display warranty information")
+  ("license", "display license information");
+  po::variables_map vm;
+  try
   {
-    inputFilename = argv[1];
-    outputFilename = argv[2];
+    po::store(po::parse_command_line(argc, argv, desc), vm);
   }
-  else
+  catch (po::error &e)
   {
+    std::cerr << "ERROR: " << e.what() << std::endl
+              << std::endl;
+    usage();
+  }
+  po::notify(vm);
+  if (vm.count("help"))
+  {
+    usage();
+    return EXIT_SUCCESS;
+  }
+  if (vm.count("warranty"))
+  {
+    warranty();
+    return EXIT_SUCCESS;
+  }
+  if (vm.count("license"))
+  {
+    license();
+    return EXIT_SUCCESS;
+  }
+
+  if (inputFilename.empty()) 
+  {
+    std::cerr << "ERROR: input filename not given." << std::endl;
+    usage();
     return EXIT_FAILURE;
   }
+  if (outputFilename.empty()) 
+  {
+    std::cerr << "ERROR: outpput filename not given." << std::endl;
+    usage();
+    return EXIT_FAILURE;
+  }
+
+  const unsigned int shift = sizeof(uint64_t) * 8 - bits;
+  const uint64_t mask = create_hi_bitmask(bits);
+  const uint64_t maxidx = create_lo_lobitmask(bits) + 1ULL;
+
   std::cout << "Scanning ..." << std::endl;
   std::ifstream input(inputFilename);
   pwned::PasswordHashAndCount phc;
-  uint64_t *indexes = new uint64_t[MAXIDX];
-  memset(indexes, 0xff, MAXIDX * sizeof(uint64_t));
+  uint64_t *indexes = new uint64_t[maxidx];
+  memset(indexes, 0xff, maxidx * sizeof(uint64_t));
   phc.read(input);
-  uint64_t lastIdx = extractIndex(phc.hash.upper);
+  uint64_t lastIdx = extractIndex(phc.hash.upper, mask, shift);
   *(indexes + lastIdx) = 0;
   uint64_t idx = 0;
   uint64_t pos = 0;
   while (!input.eof())
   {
     phc.read(input);
-    idx = extractIndex(phc.hash.upper);
+    idx = extractIndex(phc.hash.upper, mask, shift);
     if (idx > lastIdx)
     {
       pos = static_cast<uint64_t>(input.tellg()) - pwned::PasswordHashAndCount::size;
@@ -74,7 +162,7 @@ int main(int argc, const char *argv[])
   std::cout << std::endl
             << "Writing ... " << std::flush;
   std::ofstream output(outputFilename, std::ios::trunc);
-  output.write((const char *)indexes, MAXIDX * sizeof(uint64_t));
+  output.write((const char *)indexes, maxidx * sizeof(uint64_t));
   output.close();
   delete[] indexes;
   std::cout << "Ready." << std::endl
