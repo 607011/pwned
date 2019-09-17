@@ -73,7 +73,7 @@ bool PasswordInspector::open(const std::string &inputFilename, const std::string
   const uint64_t nKeys = fs::file_size(indexFilename) / sizeof(uint64_t);
 #ifndef NO_POPCNT
   // POPCNT hack works because the size of the index file is always divisible by a power of 2
-  shift = sizeof(uint64_t) * 8 - static_cast<unsigned int>(_mm_popcnt_u64(nKeys - 1));
+  shift = sizeof(key_t) * 8 - static_cast<unsigned int>(_mm_popcnt_u64(nKeys - 1));
 #else
   // legacy code to calculate the shift count
   shift = sizeof(uint64_t) * 8;

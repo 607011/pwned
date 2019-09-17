@@ -27,6 +27,8 @@
 
 #include <pwned-lib/passwordhashandcount.hpp>
 #include <pwned-lib/util.hpp>
+#include <pwned-lib/passwordinspector.hpp>
+
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -66,7 +68,6 @@ void usage()
 
 int main(int argc, const char *argv[])
 {
-  typedef uint64_t key_t;
   constexpr unsigned int DefaultBits = 24;
   std::string inputFilename;
   std::string outputFilename;
@@ -119,23 +120,23 @@ int main(int argc, const char *argv[])
     return EXIT_FAILURE;
   }
 
-  const unsigned int shift = sizeof(key_t) * 8 - bits;
-  const key_t maxidx = static_cast<key_t>(1) + (std::numeric_limits<key_t>::max() >> shift);
+  const unsigned int shift = sizeof(pwned::key_t) * 8 - bits;
+  const pwned::key_t maxidx = static_cast<pwned::key_t>(1) + (std::numeric_limits<key_t>::max() >> shift);
 
   std::cout << "Scanning ..." << std::endl;
   std::ifstream input(inputFilename, std::ios::binary);
   pwned::PasswordHashAndCount phc;
-  key_t *indexes = new key_t[maxidx];
-  memset(indexes, 0xff, maxidx * sizeof(key_t));
+  pwned::key_t *indexes = new pwned::key_t[maxidx];
+  memset(indexes, 0xff, maxidx * sizeof(pwned::key_t));
   phc.read(input);
-  key_t lastIdx = static_cast<key_t>(phc.hash.upper) >> shift;
+  pwned::key_t lastIdx = static_cast<pwned::key_t>(phc.hash.upper) >> shift;
   *(indexes + lastIdx) = 0;
-  key_t idx = 0;
+  pwned::key_t idx = 0;
   uint64_t pos = 0;
   while (!input.eof())
   {
     phc.read(input);
-    idx = static_cast<key_t>(phc.hash.upper) >> shift;
+    idx = static_cast<pwned::key_t>(phc.hash.upper) >> shift;
     if (idx > lastIdx)
     {
       pos = static_cast<uint64_t>(input.tellg()) - pwned::PasswordHashAndCount::size;
@@ -150,7 +151,7 @@ int main(int argc, const char *argv[])
   std::cout << std::endl
             << "Writing ... " << std::flush;
   std::ofstream output(outputFilename, std::ios::trunc | std::ios::binary);
-  output.write((const char *)indexes, maxidx * sizeof(key_t));
+  output.write((const char *)indexes, maxidx * sizeof(pwned::key_t));
   output.close();
   delete[] indexes;
   std::cout << "Ready." << std::endl

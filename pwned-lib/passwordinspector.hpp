@@ -27,6 +27,8 @@
 namespace pwned
 {
 
+typedef uint64_t key_t;
+
 class PasswordInspector
 {
 private:
