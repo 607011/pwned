@@ -18,8 +18,11 @@
 #ifndef __inputfile_hpp__
 #define __inputfile_hpp__
 
+#include <cstdint>
+
 #include <boost/filesystem.hpp>
-#include <pwned-lib/lazy.hpp>
+
+#include "lazy.hpp"
 
 namespace fs = boost::filesystem;
 
@@ -38,15 +41,22 @@ struct InputFile
   uint64_t totalSets;
   uint64_t setsWritten;
   State state;
-  pwned::Lazy<uint64_t> inputSize;
+  Lazy<uint64_t> inputSize;
 
   explicit InputFile(const fs::path &path)
-      : path(path), state(State::pending), inputSize([path] { return uint64_t(fs::file_size(path)); })
+      : path(path)
+      , state(State::pending)
+      , inputSize([path] { return uint64_t(fs::file_size(path)); })
   {
   }
 
   InputFile(const InputFile &o)
-      : path(o.path), bytesProcessed(o.bytesProcessed), totalSets(o.totalSets), setsWritten(o.setsWritten), state(o.state), inputSize(o.inputSize)
+      : path(o.path)
+      , bytesProcessed(o.bytesProcessed)
+      , totalSets(o.totalSets)
+      , setsWritten(o.setsWritten)
+      , state(o.state)
+      , inputSize(o.inputSize)
   {
   }
 };

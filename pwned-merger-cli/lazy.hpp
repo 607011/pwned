@@ -12,9 +12,6 @@
 #include <memory>
 #include <mutex>
 
-namespace pwned
-{
-
 template <typename T>
 class Lazy
 {
@@ -79,7 +76,5 @@ private:
   }
   std::shared_ptr<State> state = std::make_shared<State>();
 };
-
-} // namespace pwned
 
 #endif // __lazy_hpp__
