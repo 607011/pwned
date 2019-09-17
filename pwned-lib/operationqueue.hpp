@@ -65,8 +65,12 @@ class OperationQueue
 
 public:
   explicit OperationQueue(int threadPriority = 0)
-      : unscheduledOps(opGreaterPriority), guard(Semaphore(std::thread::hardware_concurrency())), threadPriority(threadPriority), _isRunning(false), _isCancelled(false)
-  { /* ... */
+      : unscheduledOps(opGreaterPriority)
+      , guard(Semaphore(std::thread::hardware_concurrency()))
+      , threadPriority(threadPriority)
+      , _isRunning(false)
+      , _isCancelled(false)
+  {
   }
 
   size_t size() const
