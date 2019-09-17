@@ -63,7 +63,7 @@ void setStdinEcho(bool enable)
 int main(int argc, const char *argv[])
 {
   if (argc < 2)
-  {
+  { // TODO: enable use of optional index file
     std::cerr << "Usage: pwned-cli <md5_count_file>" << std::endl;
     return EXIT_FAILURE;
   }
@@ -75,6 +75,8 @@ int main(int argc, const char *argv[])
     setStdinEcho(false);
     std::cin >> pwd;
     setStdinEcho(true);
+    if (pwd.empty())
+      break;
     const pwned::Hash soughtHash(pwd);
     std::cout << "MD5 hash " << soughtHash << std::endl;
     const auto &t0 = std::chrono::high_resolution_clock::now();
