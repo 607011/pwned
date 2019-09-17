@@ -19,9 +19,8 @@
 #include <algorithm>
 #include <limits>
 
-#ifndef NDEBUG
-#include <iostream>
-#include <iomanip>
+#ifndef NO_POPCNT
+#include <popcntintrin.h>
 #endif
 
 #include <boost/filesystem.hpp>
@@ -71,13 +70,20 @@ bool PasswordInspector::open(const std::string &filename)
 bool PasswordInspector::open(const std::string &inputFilename, const std::string &indexFilename)
 {
   open(inputFilename);
-  uint64_t m = fs::file_size(indexFilename) / sizeof(uint64_t);
+  const uint64_t nKeys = fs::file_size(indexFilename) / sizeof(uint64_t);
+#ifndef NO_POPCNT
+  // POPCNT hack works because the size of the index file is always divisible by a power of 2
+  shift = sizeof(uint64_t) * 8 - static_cast<unsigned int>(_mm_popcnt_u64(nKeys - 1));
+#else
+  // legacy code to calculate the shift count
   shift = sizeof(uint64_t) * 8;
+  uint64_t m = nKeys - 1;
   while ((shift > 0) && (m & 0x1) == 0)
   {
     m >>= 1;
     --shift;
   }
+#endif
   indexFile.open(indexFilename, std::ios::in | std::ios::binary);
   return indexFile.is_open();
 }
