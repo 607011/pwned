@@ -113,7 +113,7 @@ int main(int argc, const char *argv[])
   }
   if (outputFilename.empty())
   {
-    std::cerr << "ERROR: outpput filename not given." << std::endl;
+    std::cerr << "ERROR: output filename not given." << std::endl;
     usage();
     return EXIT_FAILURE;
   }
