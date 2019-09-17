@@ -337,8 +337,15 @@ int main(int argc, const char *argv[])
     benchmarkWithoutIndex(nRuns, runTimes, inputFilename, phcs, searchCallable);
   }
   else {
-    std::cout << "Using *binsearch* algorithm with index." << std::endl;
-    benchmarkWithIndex(nRuns, runTimes, inputFilename, phcs, indexFilename);
+    if (fs::file_size(indexFilename) % sizeof(uint64_t) == 0)
+    {
+      std::cout << "Using *binsearch* algorithm with index." << std::endl;
+      benchmarkWithIndex(nRuns, runTimes, inputFilename, phcs, indexFilename);
+    }
+    else
+    {
+      std::cerr << "ERROR: Invalid index file." << std::endl;
+    }
   }
   std::sort(runTimes.begin(), runTimes.end());
   std::cout << std::endl
