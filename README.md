@@ -6,6 +6,8 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 ## Brief description
 
+### Main components
+
 **pwned-lib**: library with basic classes and functions to read and write hashes and their according counts
 
 **pwned-converted-cli**: command-line interface to convert clear-text password files to binary files containing MD5 hashes and their according counts, sorted by hash
@@ -14,7 +16,10 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 **pwned-lookup-cli**: command-line interface to look up passwords in an MD5:count file
 
-**index**: command-line interface to build an index of an MD5:count file
+**pwned-index**: command-line interface to build an index of an MD5:count file
+
+
+### Auxiliary programs
 
 **benchmark**: command-line interface to run performance tests with different search algorithms
 
