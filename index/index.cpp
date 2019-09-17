@@ -66,6 +66,7 @@ void usage()
 
 int main(int argc, const char *argv[])
 {
+  typedef uint64_t key_t;
   constexpr unsigned int DefaultBits = 24;
   std::string inputFilename;
   std::string outputFilename;
@@ -118,29 +119,28 @@ int main(int argc, const char *argv[])
     return EXIT_FAILURE;
   }
 
-  const unsigned int shift = sizeof(uint64_t) * 8 - bits;
-  // const uint64_t mask = pwned::createHiBitmask(bits);
-  const uint64_t maxidx = pwned::createLoBitmask(bits) + 1ULL;
+  const unsigned int shift = sizeof(key_t) * 8 - bits;
+  const key_t maxidx = static_cast<key_t>(1) + (std::numeric_limits<key_t>::max() >> shift);
 
   std::cout << "Scanning ..." << std::endl;
-  std::ifstream input(inputFilename);
+  std::ifstream input(inputFilename, std::ios::binary);
   pwned::PasswordHashAndCount phc;
-  uint64_t *indexes = new uint64_t[maxidx];
-  memset(indexes, 0xff, maxidx * sizeof(uint64_t));
+  key_t *indexes = new key_t[maxidx];
+  memset(indexes, 0xff, maxidx * sizeof(key_t));
   phc.read(input);
-  uint64_t lastIdx = pwned::extractIndex(phc.hash.upper, shift);
+  key_t lastIdx = static_cast<key_t>(phc.hash.upper) >> shift;
   *(indexes + lastIdx) = 0;
-  uint64_t idx = 0;
+  key_t idx = 0;
   uint64_t pos = 0;
   while (!input.eof())
   {
     phc.read(input);
-    idx = pwned::extractIndex(phc.hash.upper, shift);
+    idx = static_cast<key_t>(phc.hash.upper) >> shift;
     if (idx > lastIdx)
     {
       pos = static_cast<uint64_t>(input.tellg()) - pwned::PasswordHashAndCount::size;
       *(indexes + idx) = pos;
-      std::cout << "\r0x" << std::setfill('0') << std::setw(6) << std::hex << idx << " @ " << std::setw(0) << std::dec << pos << std::flush;
+      std::cout << "\rMSB 0x" << std::hex << idx << " @ " << std::dec << pos << std::flush;
       lastIdx = idx;
     }
   }
@@ -149,8 +149,8 @@ int main(int argc, const char *argv[])
 
   std::cout << std::endl
             << "Writing ... " << std::flush;
-  std::ofstream output(outputFilename, std::ios::trunc);
-  output.write((const char *)indexes, maxidx * sizeof(uint64_t));
+  std::ofstream output(outputFilename, std::ios::trunc | std::ios::binary);
+  output.write((const char *)indexes, maxidx * sizeof(key_t));
   output.close();
   delete[] indexes;
   std::cout << "Ready." << std::endl
