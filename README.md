@@ -38,6 +38,8 @@ cmake -DCMAKE_BUILD_TYPE=Release ../..
 make
 ```
 
+If not compiling for SSE4.2-capable processor prepend `NO_POPCNT` to the `cmake` command.
+
 If `cmake` can't find OpenSSL, set the environment variable `OPENSSL_ROOT_DIR` to
 an appropriate value, e.g.:
 
