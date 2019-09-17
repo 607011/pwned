@@ -21,9 +21,9 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 ### Auxiliary programs
 
-**benchmark**: command-line interface to run performance tests with different search algorithms
+**test-set-extractor**: command-line interface to extract a test set from a MD5:count file containing existent and non-existents hashes (used by benchmark)
 
-**test-set-extractor**: command-line interface to extract a test set from a MD5:count file containing existent and non-existents hashes
+**benchmark**: command-line interface to run performance tests with different search algorithms
 
 **be2le**: command-line interface to convert a binary MD5:count file from Big-Endian to Little-Endian representation
 
