@@ -128,11 +128,116 @@ static const std::string AlgoSmartBinSearch = "smart";
 static const std::vector<std::string> AlgoList = {AlgoBinSearch, AlgoSmartBinSearch};
 static const std::string AlgoStringList = std::accumulate(std::next(AlgoList.begin()), AlgoList.end(), "'" + AlgoList.front() + "'", [](std::string a, const std::string &b) { return std::move(a) + ", '" + b + "'"; });
 
+void benchmarkWithoutIndex(
+  int nRuns,
+  std::vector<double> &runTimes,
+  const std::string &inputFilename,
+  const std::vector<pwned::PasswordHashAndCount> &phcs,
+  std::__1::__mem_fn<pwned::PasswordHashAndCount(pwned::PasswordInspector::*)(const pwned::Hash &, int *)> searchCallable)
+{
+  for (int run = 1; run <= nRuns; ++run)
+  {
+    int nReads = 0;
+    std::cout << "Benchmark run " << run << " of " << nRuns << " in progress ... " << std::flush;
+    pwned::PasswordInspector inspector(inputFilename);
+    std::function<pwned::PasswordHashAndCount(const pwned::Hash &, int *)> lookup = std::bind(searchCallable, &inspector, std::placeholders::_1, std::placeholders::_2);
+    int found = 0;
+    int notFound = 0;
+    auto t0 = std::chrono::high_resolution_clock::now();
+    for (const auto &phc : phcs)
+    {
+      int readCount = 0;
+      try
+      {
+        const pwned::PHC &result = lookup(phc.hash, &readCount);
+        nReads += readCount;
+        if (result.count > 0)
+        {
+          ++found;
+        }
+        else
+        {
+          ++notFound;
+        }
+      }
+      catch (std::exception e)
+      {
+        std::cerr << "ERROR: " << e.what() << std::endl;
+        return;
+      }
+    }
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    runTimes.push_back(time_span.count());
+    std::cout << std::endl
+              << "#reads: " << nReads << std::endl
+              << "Found: " << found << std::endl
+              << "Not found: " << notFound
+              << std::endl
+              << "Lookup time: " << pwned::readableTime(time_span.count())
+              << " (" << std::setprecision(3) << (1e3 * time_span.count() / static_cast<double>(phcs.size())) << "ms per lookup)" << std::endl
+              << std::endl;
+  }
+}
+
+void benchmarkWithIndex(
+  int nRuns,
+  std::vector<double> &runTimes,
+  const std::string &inputFilename,
+  const std::vector<pwned::PasswordHashAndCount> &phcs,
+  const std::string &indexFilename)
+{
+  for (int run = 1; run <= nRuns; ++run)
+  {
+    int nReads = 0;
+    std::cout << "Benchmark run " << run << " of " << nRuns << " in progress ... " << std::flush;
+    pwned::PasswordInspector inspector(inputFilename, indexFilename);
+    int found = 0;
+    int notFound = 0;
+    auto t0 = std::chrono::high_resolution_clock::now();
+    for (const auto &phc : phcs)
+    {
+      ++nReads;
+      int readCount = 0;
+      try
+      {
+        const pwned::PasswordHashAndCount &result = inspector.binsearch(phc.hash, &readCount);
+        nReads += readCount;
+        if (result.count > 0)
+        {
+          ++found;
+        }
+        else
+        {
+          ++notFound;
+        }
+      }
+      catch (std::exception e)
+      {
+        std::cerr << "ERROR: " << e.what() << std::endl;
+        return;
+      }
+    }
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    runTimes.push_back(time_span.count());
+    std::cout << std::endl
+              << "#reads: " << nReads << std::endl
+              << "Found: " << found << std::endl
+              << "Not found: " << notFound
+              << std::endl
+              << "Lookup time: " << pwned::readableTime(time_span.count())
+              << " (" << std::setprecision(3) << (1e3 * time_span.count() / static_cast<double>(phcs.size())) << "ms per lookup)" << std::endl
+              << std::endl;
+  }
+}
+
 int main(int argc, const char *argv[])
 {
   hello();
   std::string inputFilename;
   std::string testsetFilename;
+  std::string indexFilename;
   std::string algorithm;
   static constexpr int DefaultNumberOfRuns = 5;
   bool doPurgeFilesystemCache = false;
@@ -143,6 +248,7 @@ int main(int argc, const char *argv[])
   ("test-set,S", po::value<std::string>(&testsetFilename), "set user:pass test set file")
   ("runs,n", po::value<int>(&nRuns)->default_value(DefaultNumberOfRuns), "number of runs")
   ("algorithm,A", po::value<std::string>(&algorithm)->default_value(AlgoSmartBinSearch), std::string("lookup algorithm (" + AlgoStringList + ")").c_str())
+  ("index,X", po::value<std::string>(&indexFilename), "set index file")
   ("purge", po::bool_switch(&doPurgeFilesystemCache), "Purge filesystem cache before running benchmark (needs root privileges)")
   ("warranty", "display warranty information")
   ("license", "display license information");
@@ -224,50 +330,15 @@ int main(int argc, const char *argv[])
     phcs.push_back(phc);
   }
   std::cout << phcs.size() << " hashes." << std::endl;
-  std::cout << "Using *" << algorithm << "* algorithm." << std::endl;
   std::vector<double> runTimes;
-  for (int run = 1; run <= nRuns; ++run)
+  if (indexFilename.empty())
   {
-    int nReads = 0;
-    std::cout << "Benchmark run " << run << " of " << nRuns << " in progress ... " << std::flush;
-    pwned::PasswordInspector inspector(inputFilename);
-    std::function<pwned::PasswordHashAndCount(const pwned::Hash &, int *)> lookup = std::bind(searchCallable, &inspector, std::placeholders::_1, std::placeholders::_2);
-    int found = 0;
-    int notFound = 0;
-    auto t0 = std::chrono::high_resolution_clock::now();
-    for (const auto &phc : phcs)
-    {
-      int readCount = 0;
-      try
-      {
-        const pwned::PHC &result = lookup(phc.hash, &readCount);
-        nReads += readCount;
-        if (result.count > 0)
-        {
-          ++found;
-        }
-        else
-        {
-          ++notFound;
-        }
-      }
-      catch (std::exception e)
-      {
-        std::cerr << "ERROR: " << e.what() << std::endl;
-        return EXIT_FAILURE;
-      }
-    }
-    auto t1 = std::chrono::high_resolution_clock::now();
-    auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    runTimes.push_back(time_span.count());
-    std::cout << std::endl
-              << "#reads: " << nReads << std::endl
-              << "Found: " << found << std::endl
-              << "Not found: " << notFound
-              << std::endl
-              << "Lookup time: " << pwned::readableTime(time_span.count())
-              << " (" << std::setprecision(3) << (1e3 * time_span.count() / static_cast<double>(phcs.size())) << "ms per lookup)" << std::endl
-              << std::endl;
+    std::cout << "Using *" << algorithm << "* algorithm." << std::endl;
+    benchmarkWithoutIndex(nRuns, runTimes, inputFilename, phcs, searchCallable);
+  }
+  else {
+    std::cout << "Using *binsearch* algorithm with index." << std::endl;
+    benchmarkWithIndex(nRuns, runTimes, inputFilename, phcs, indexFilename);
   }
   std::sort(runTimes.begin(), runTimes.end());
   std::cout << std::endl

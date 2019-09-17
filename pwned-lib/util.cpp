@@ -209,4 +209,19 @@ void TermIO::enableBreak()
   tcsetattr(STDIN_FILENO, TCSANOW, &t);
 }
 
+uint64_t createHiBitmask(unsigned int ones)
+{
+  return static_cast<uint64_t>(-(ones != 0)) & (static_cast<uint64_t>(-1) << ((sizeof(uint64_t) * 8) - ones));
+}
+
+uint64_t createLoBitmask(unsigned int ones)
+{
+  return static_cast<uint64_t>(-(ones != 0)) & (static_cast<uint64_t>(-1) >> ((sizeof(uint64_t) * 8) - ones));
+}
+
+uint64_t extractIndex(uint64_t v, unsigned int shift)
+{
+  return v >> shift;
+}
+
 } // namespace pwned

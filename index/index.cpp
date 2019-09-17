@@ -23,27 +23,15 @@
 #include <cstdint>
 
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 #include <pwned-lib/passwordhashandcount.hpp>
+#include <pwned-lib/util.hpp>
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 po::options_description desc("Allowed options");
-
-uint64_t create_hi_bitmask(unsigned int ones)
-{
-  return static_cast<uint64_t>(-(ones != 0)) & (static_cast<uint64_t>(-1) << ((sizeof(uint64_t) * 8) - ones));
-}
-
-uint64_t create_lo_bitmask(unsigned int ones)
-{
-  return static_cast<uint64_t>(-(ones != 0)) & (static_cast<uint64_t>(-1) >> ((sizeof(uint64_t) * 8) - ones));
-}
-
-inline uint64_t extractIndex(uint64_t v, uint64_t mask, unsigned int shift)
-{
-  return (v & mask) >> shift;
-}
 
 void hello()
 {
@@ -117,13 +105,13 @@ int main(int argc, const char *argv[])
     return EXIT_SUCCESS;
   }
 
-  if (inputFilename.empty()) 
+  if (inputFilename.empty())
   {
     std::cerr << "ERROR: input filename not given." << std::endl;
     usage();
     return EXIT_FAILURE;
   }
-  if (outputFilename.empty()) 
+  if (outputFilename.empty())
   {
     std::cerr << "ERROR: outpput filename not given." << std::endl;
     usage();
@@ -131,8 +119,8 @@ int main(int argc, const char *argv[])
   }
 
   const unsigned int shift = sizeof(uint64_t) * 8 - bits;
-  const uint64_t mask = create_hi_bitmask(bits);
-  const uint64_t maxidx = create_lo_lobitmask(bits) + 1ULL;
+  // const uint64_t mask = pwned::createHiBitmask(bits);
+  const uint64_t maxidx = pwned::createLoBitmask(bits) + 1ULL;
 
   std::cout << "Scanning ..." << std::endl;
   std::ifstream input(inputFilename);
@@ -140,14 +128,14 @@ int main(int argc, const char *argv[])
   uint64_t *indexes = new uint64_t[maxidx];
   memset(indexes, 0xff, maxidx * sizeof(uint64_t));
   phc.read(input);
-  uint64_t lastIdx = extractIndex(phc.hash.upper, mask, shift);
+  uint64_t lastIdx = pwned::extractIndex(phc.hash.upper, shift);
   *(indexes + lastIdx) = 0;
   uint64_t idx = 0;
   uint64_t pos = 0;
   while (!input.eof())
   {
     phc.read(input);
-    idx = extractIndex(phc.hash.upper, mask, shift);
+    idx = pwned::extractIndex(phc.hash.upper, shift);
     if (idx > lastIdx)
     {
       pos = static_cast<uint64_t>(input.tellg()) - pwned::PasswordHashAndCount::size;

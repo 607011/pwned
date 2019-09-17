@@ -19,9 +19,15 @@
 #include <algorithm>
 #include <limits>
 
+#ifndef NDEBUG
+#include <iostream>
+#include <iomanip>
+#endif
+
 #include <boost/filesystem.hpp>
 
 #include "passwordinspector.hpp"
+#include "util.hpp"
 
 namespace fs = boost::filesystem;
 
@@ -39,12 +45,18 @@ inline void safe_assign(T *a, T b)
 
 PasswordInspector::PasswordInspector()
     : size(0)
+    , shift(0)
 {
 }
 
-PasswordInspector::PasswordInspector(const std::string &filename)
+PasswordInspector::PasswordInspector(const std::string &inputFilename)
 {
-  open(filename);
+  open(inputFilename);
+}
+
+PasswordInspector::PasswordInspector(const std::string &inputFilename, const std::string &indexFilename)
+{
+  open(inputFilename, indexFilename);
 }
 
 PasswordInspector::~PasswordInspector() = default;
@@ -52,22 +64,56 @@ PasswordInspector::~PasswordInspector() = default;
 bool PasswordInspector::open(const std::string &filename)
 {
   size = int64_t(fs::file_size(filename));
-  f.open(filename, std::ios::in | std::ios::binary);
-  return f.is_open();
+  inputFile.open(filename, std::ios::in | std::ios::binary);
+  return inputFile.is_open();
+}
+
+bool PasswordInspector::open(const std::string &inputFilename, const std::string &indexFilename)
+{
+  open(inputFilename);
+  uint64_t m = fs::file_size(indexFilename) / sizeof(uint64_t);
+  shift = sizeof(uint64_t) * 8;
+  while ((shift > 0) && (m & 0x1) == 0)
+  {
+    m >>= 1;
+    --shift;
+  }
+  indexFile.open(indexFilename, std::ios::in | std::ios::binary);
+  return indexFile.is_open();
 }
 
 PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCount)
 {
   int nReads = 0;
-  PasswordHashAndCount phc;
   int64_t lo = 0;
   int64_t hi = size;
+  if (indexFile.is_open())
+  {
+    const uint64_t hashMSB = pwned::extractIndex(hash.upper, shift);
+    const uint64_t idx = hashMSB * sizeof(uint64_t);
+    indexFile.seekg(idx);
+    indexFile.read(reinterpret_cast<char*>(&lo), sizeof(uint64_t));
+    indexFile.read(reinterpret_cast<char*>(&hi), sizeof(uint64_t));
+    nReads += 2;
+#ifndef NDEBUG
+    std::cout << hash << " MSB = 0x" << std::hex << hashMSB << " idx = " << std::dec << idx << " lo/hi = " << std::dec << lo << " ... " << hi << std::endl;
+#endif
+    if (lo > hi)
+    {
+      throw "lo > hi";
+    }
+    if (lo > size || hi > size)
+    {
+      throw "out of bounds";
+    }
+  }
+  PasswordHashAndCount phc;
   while (lo <= hi)
   {
     int64_t pos = (lo + hi) / 2;
     pos -= pos % PasswordHashAndCount::size;
     pos = std::max<int64_t>(0, pos);
-    phc.read(f, pos);
+    phc.read(inputFile, pos);
     ++nReads;
     if (hash > phc.hash)
     {
@@ -101,7 +147,7 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *r
   int64_t hi = std::min<int64_t>(size - PasswordHashAndCount::size, potentialHitIdx + offset);
   bool ok = false;
   Hash h0;
-  ok = h0.read(f, lo);
+  ok = h0.read(inputFile, lo);
   ++nReads;
   if (!ok)
   {
@@ -111,12 +157,12 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *r
   while (hash < h0 && lo >= loOffset)
   {
     lo -= loOffset;
-    h0.read(f, lo);
+    h0.read(inputFile, lo);
     ++nReads;
     loOffset *= OffsetMultiplicator;
   }
   Hash h1;
-  ok = h1.read(f, hi);
+  ok = h1.read(inputFile, hi);
   ++nReads;
   if (!ok)
   {
@@ -126,7 +172,7 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *r
   while (hash > h1 && hi <= size - hiOffset - PasswordHashAndCount::size)
   {
     hi += hiOffset;
-    h1.read(f, hi);
+    h1.read(inputFile, hi);
     ++nReads;
     hiOffset *= OffsetMultiplicator;
   }

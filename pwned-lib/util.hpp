@@ -19,8 +19,8 @@
 #define __util_hpp__
 
 #include <string>
-#include <termios.h>
 #include <cstdint>
+#include <termios.h>
 
 namespace pwned
 {
@@ -47,6 +47,9 @@ extern int getMemoryStat(MemoryStat &memoryStat);
 extern std::string string_format(const std::string fmt_str, ...);
 extern std::string readableSize(long long size);
 extern std::string readableTime(double t);
+extern uint64_t createLoBitmask(unsigned int ones);
+extern uint64_t createHiBitmask(unsigned int ones);
+extern uint64_t extractIndex(uint64_t v, unsigned int shift);
 
 class TermIO
 {

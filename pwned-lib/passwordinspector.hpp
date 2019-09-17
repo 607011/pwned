@@ -30,15 +30,19 @@ namespace pwned
 class PasswordInspector
 {
 private:
-  std::ifstream f;
+  std::ifstream inputFile;
+  std::ifstream indexFile;
   int64_t size;
+  unsigned int shift;
   pwned::PasswordHashAndCount phc;
 
 public:
   PasswordInspector();
-  PasswordInspector(const std::string &filename);
+  PasswordInspector(const std::string &inputFilename);
+  PasswordInspector(const std::string &inputFilename, const std::string &indexFilename);
   ~PasswordInspector();
-  bool open(const std::string &filename);
+  bool open(const std::string &inputFilename);
+  bool open(const std::string &inputFilename, const std::string &indexFilename);
   PasswordHashAndCount lookup(const std::string &pwd);
   PasswordHashAndCount binsearch(const pwned::Hash &hash, int *readCount = nullptr);
   PasswordHashAndCount smart_binsearch(const pwned::Hash &hash, int *readCount = nullptr);
