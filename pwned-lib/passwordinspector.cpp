@@ -95,23 +95,14 @@ PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCou
   int64_t hi = size;
   if (indexFile.is_open())
   {
-    const uint64_t hashMSB = pwned::extractIndex(hash.upper, shift);
+    const uint64_t hashMSB = hash.upper >> shift;
     const uint64_t idx = hashMSB * sizeof(uint64_t);
     indexFile.seekg(idx);
+    // TODO: In very rare cases lo or hi can contain 0xffffffffffffffff after reading.
+    // Then a lower lo or higher hi must be selected.
     indexFile.read(reinterpret_cast<char*>(&lo), sizeof(uint64_t));
     indexFile.read(reinterpret_cast<char*>(&hi), sizeof(uint64_t));
     nReads += 2;
-#ifndef NDEBUG
-    std::cout << hash << " MSB = 0x" << std::hex << hashMSB << " idx = " << std::dec << idx << " lo/hi = " << std::dec << lo << " ... " << hi << std::endl;
-#endif
-    if (lo > hi)
-    {
-      throw "lo > hi";
-    }
-    if (lo > size || hi > size)
-    {
-      throw "out of bounds";
-    }
   }
   PasswordHashAndCount phc;
   while (lo <= hi)
