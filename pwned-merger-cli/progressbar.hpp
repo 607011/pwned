@@ -23,9 +23,10 @@
 #include <cstdint>
 
 #include <pwned-lib/util.hpp>
-#include <pwned-lib/progresscallback.hpp>
 
-class ProgressBar : public pwned::ProgressCallback
+#include "progresscallback.hpp"
+
+class ProgressBar : public ProgressCallback
 {
   uint64_t hi;
   int width;

@@ -34,8 +34,8 @@
 #include <pwned-lib/operationqueue.hpp>
 #include <pwned-lib/util.hpp>
 #include <pwned-lib/uuid.hpp>
-#include <pwned-lib/progresscallback.hpp>
 
+#include "progresscallback.hpp"
 #include "mergeoperation.hpp"
 #include "progressbar.hpp"
 

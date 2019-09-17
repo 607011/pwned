@@ -20,9 +20,6 @@
 
 #include <cstdint>
 
-namespace pwned
-{
-
 class ProgressCallback
 {
 public:
@@ -33,7 +30,5 @@ public:
   }
   virtual void update(uint64_t) = 0;
 };
-
-} // namespace pwned
 
 #endif // __progresscallback_hpp__

@@ -58,13 +58,13 @@ public:
   std::ofstream dstFile;
   uint64_t entriesProcessed;
   bool removeInputFilesAfterMerge;
-  pwned::ProgressCallback *progressed;
+  ProgressCallback *progressed;
   uint64_t totalEntries;
 
   MergeOperationPrivate(const std::vector<InputFile> &srcFiles,
                         const std::string &dstFilename,
                         bool removeInputFilesAfterMerge,
-                        pwned::ProgressCallback *progressCallback)
+                        ProgressCallback *progressCallback)
       : dstFilePath(dstFilename), entriesProcessed(0), removeInputFilesAfterMerge(false), progressed(progressCallback)
   {
     uint64_t sum = 0;
@@ -92,7 +92,7 @@ public:
 MergeOperation::MergeOperation(const std::vector<InputFile> &srcFiles,
                                const std::string &dstFile,
                                bool removeInputFilesAfterMerge,
-                               pwned::ProgressCallback *progressCallback)
+                               ProgressCallback *progressCallback)
     : d(std::shared_ptr<MergeOperationPrivate>(new MergeOperationPrivate(srcFiles,
                                                                          dstFile,
                                                                          removeInputFilesAfterMerge,

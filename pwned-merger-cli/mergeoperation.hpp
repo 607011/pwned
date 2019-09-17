@@ -25,8 +25,8 @@
 #include <pwned-lib/passwordhashandcount.hpp>
 #include <pwned-lib/operation.hpp>
 #include <pwned-lib/operationqueue.hpp>
-#include <pwned-lib/progresscallback.hpp>
 
+#include "progresscallback.hpp"
 #include "inputfile.hpp"
 #include "mergerinput.hpp"
 
@@ -39,7 +39,7 @@ public:
   MergeOperation(const std::vector<InputFile> &srcFiles,
                  const std::string &dstFile,
                  bool removeInputFilesAfterMerge,
-                 pwned::ProgressCallback * = nullptr);
+                 ProgressCallback * = nullptr);
   void execute() noexcept(false) override;
   pwned::PasswordHashAndCount next();
 };
