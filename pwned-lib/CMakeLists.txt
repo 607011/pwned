@@ -9,10 +9,10 @@ add_library(pnwed STATIC
 	util.cpp
 	uuid.cpp)
 
-if($ENV{USE_POPCNT})
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -mpopcnt -DUSE_POPCNT")
-else()
+if($ENV{NO_POPCNT})
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNO_POPCNT")
+else()
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -mpopcnt -DUSE_POPCNT")
 endif()
 
 target_include_directories(pnwed PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})

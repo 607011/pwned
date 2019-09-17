@@ -27,8 +27,6 @@
 namespace pwned
 {
 
-typedef uint64_t key_t;
-
 class PasswordInspector
 {
 private:
@@ -39,6 +37,7 @@ private:
   pwned::PasswordHashAndCount phc;
 
 public:
+  typedef uint64_t key_t;
   PasswordInspector();
   PasswordInspector(const std::string &inputFilename);
   PasswordInspector(const std::string &inputFilename, const std::string &indexFilename);
@@ -49,6 +48,8 @@ public:
   PasswordHashAndCount binsearch(const pwned::Hash &hash, int *readCount = nullptr);
   PasswordHashAndCount smart_binsearch(const pwned::Hash &hash, int *readCount = nullptr);
 };
+
+typedef PasswordInspector::key_t key_t;
 
 } // namespace pwned
 

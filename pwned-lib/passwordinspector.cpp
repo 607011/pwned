@@ -70,15 +70,15 @@ bool PasswordInspector::open(const std::string &filename)
 bool PasswordInspector::open(const std::string &inputFilename, const std::string &indexFilename)
 {
   open(inputFilename);
-  const uint64_t nKeys = fs::file_size(indexFilename) / sizeof(uint64_t);
+  const uint64_t nKeys = static_cast<uint64_t>(fs::file_size(indexFilename)) / sizeof(key_t);
 #ifndef NO_POPCNT
   // POPCNT hack works because the size of the index file is always divisible by a power of 2
   shift = sizeof(key_t) * 8 - static_cast<unsigned int>(_mm_popcnt_u64(nKeys - 1));
 #else
   // legacy code to calculate the shift count
-  shift = sizeof(uint64_t) * 8;
+  shift = sizeof(key_t) * 8;
   uint64_t m = nKeys - 1;
-  while ((shift > 0) && (m & 0x1) == 0)
+  while ((shift > 0) && (m & 1) == 1)
   {
     m >>= 1;
     --shift;
@@ -96,13 +96,23 @@ PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCou
   if (indexFile.is_open())
   {
     const uint64_t hashMSB = hash.upper >> shift;
-    const uint64_t idx = hashMSB * sizeof(uint64_t);
-    indexFile.seekg(idx);
-    // TODO: In very rare cases lo or hi can contain 0xffffffffffffffff after reading.
-    // Then a lower lo or higher hi must be selected.
-    indexFile.read(reinterpret_cast<char*>(&lo), sizeof(uint64_t));
-    indexFile.read(reinterpret_cast<char*>(&hi), sizeof(uint64_t));
-    nReads += 2;
+    const uint64_t idx = hashMSB * sizeof(key_t);
+    uint64_t loIdx = idx;
+    do {
+      indexFile.seekg(loIdx);
+      indexFile.read(reinterpret_cast<char*>(&lo), sizeof(key_t));
+      ++nReads;
+      loIdx -= sizeof(key_t);
+    }
+    while (lo == std::numeric_limits<key_t>::max());
+    uint64_t hiIdx = idx + sizeof(key_t);
+    do {
+      indexFile.seekg(hiIdx);
+      indexFile.read(reinterpret_cast<char*>(&hi), sizeof(key_t));
+      ++nReads;
+      hiIdx += sizeof(key_t);
+    }
+    while (hi == std::numeric_limits<key_t>::max());
   }
   PasswordHashAndCount phc;
   while (lo <= hi)
