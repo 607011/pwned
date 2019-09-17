@@ -25,7 +25,7 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 **benchmark**: command-line interface to run performance tests with different search algorithms
 
-**be2le**: command-line interface to convert a binary MD5:count file from Big-Endian to Little-Endian representation
+**be2le**: command-line interface to convert a binary MD5:count file from Big-Endian to Little-Endian representation (no longer needed because the current release of pwned-converter-cli and pwneder-merger-cli already produces Little-Endian data)
 
 
 ## Build for release
