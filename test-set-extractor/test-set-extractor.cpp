@@ -18,11 +18,11 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <random>
 #include <cstdint>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/random/mersenne_twister.hpp>
 
 #include <pwned-lib/passwordhashandcount.hpp>
 #include <pwned-lib/passwordinspector.hpp>
@@ -136,7 +136,7 @@ int main(int argc, const char *argv[])
   if (onlyNonExistent)
   {
     std::cout << "Selecting " << N << " non-existent hashes ... " << std::endl;
-    boost::random::mt19937_64 gen;
+    std::mt19937_64 gen;
     gen.seed(31337);
     pwned::PasswordInspector inspector(inputFilename);
     for (auto i = 0; i < N; ++i)
