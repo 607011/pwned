@@ -39,7 +39,7 @@ extern "C"
   struct vfs_purge_args;
   int vfs_purge(struct proc *, struct vfs_purge_args *, int *);
 }
-#elif defined(_WIN32)
+#elif defined(WIN32)
   #define WIN32_LEAN_AND_MEAN
   #include <windows.h>
 #endif
@@ -107,7 +107,7 @@ int purgeFilesystemCacheOn(const std::string &filename)
   sync();
   std::ofstream ofs("/proc/sys/vm/drop_caches");
   ofs << '3' << std::endl;
-#elif defined(_WIN32)
+#elif defined(WIN32)
   // https://stackoverflow.com/questions/478340/clear-file-cache-to-repeat-performance-testing/7113153#7113153
   HANDLE hFile = CreateFile(filename.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, nullptr);
   if (hFile == INVALID_HANDLE_VALUE)
