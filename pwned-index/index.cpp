@@ -120,23 +120,23 @@ int main(int argc, const char *argv[])
     return EXIT_FAILURE;
   }
 
-  const unsigned int shift = sizeof(pwned::key_t) * 8 - bits;
-  const pwned::key_t maxidx = static_cast<pwned::key_t>(1) + (std::numeric_limits<key_t>::max() >> shift);
+  const unsigned int shift = sizeof(pwned::index_key_t) * 8 - bits;
+  const pwned::index_key_t maxidx = static_cast<pwned::index_key_t>(1) + (std::numeric_limits<pwned::index_key_t>::max() >> shift);
 
   std::cout << "Scanning ..." << std::endl;
   std::ifstream input(inputFilename, std::ios::binary);
   pwned::PasswordHashAndCount phc;
-  pwned::key_t *indexes = new pwned::key_t[maxidx];
-  memset(indexes, 0xff, maxidx * sizeof(pwned::key_t));
+  pwned::index_key_t *indexes = new pwned::index_key_t[maxidx];
+  memset(indexes, 0xff, maxidx * sizeof(pwned::index_key_t));
   phc.read(input);
-  pwned::key_t lastIdx = static_cast<pwned::key_t>(phc.hash.upper) >> shift;
+  pwned::index_key_t lastIdx = static_cast<pwned::index_key_t>(phc.hash.upper >> shift);
   *(indexes + lastIdx) = 0;
-  pwned::key_t idx = 0;
+  pwned::index_key_t idx = 0;
   uint64_t pos = 0;
   while (!input.eof())
   {
     phc.read(input);
-    idx = static_cast<pwned::key_t>(phc.hash.upper) >> shift;
+    idx = static_cast<pwned::index_key_t>(phc.hash.upper >> shift);
     if (idx > lastIdx)
     {
       pos = static_cast<uint64_t>(input.tellg()) - pwned::PasswordHashAndCount::size;
@@ -151,7 +151,7 @@ int main(int argc, const char *argv[])
   std::cout << std::endl
             << "Writing ... " << std::flush;
   std::ofstream output(outputFilename, std::ios::trunc | std::ios::binary);
-  output.write((const char *)indexes, maxidx * sizeof(pwned::key_t));
+  output.write((const char *)indexes, maxidx * sizeof(pwned::index_key_t));
   output.close();
   delete[] indexes;
   std::cout << "Ready." << std::endl

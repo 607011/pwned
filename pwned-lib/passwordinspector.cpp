@@ -72,12 +72,12 @@ bool PasswordInspector::open(const std::string &inputFilename, const std::string
   bool ok = open(inputFilename);
   if (!indexFilename.empty())
   {
-    const uint64_t nKeys = static_cast<uint64_t>(fs::file_size(indexFilename)) / sizeof(key_t);
+    const uint64_t nKeys = static_cast<uint64_t>(fs::file_size(indexFilename)) / sizeof(index_key_t);
 #ifndef NO_POPCNT
-    shift = sizeof(key_t) * 8 - static_cast<unsigned int>(_mm_popcnt_u64(nKeys - 1));
+    shift = sizeof(index_key_t) * 8 - static_cast<unsigned int>(_mm_popcnt_u64(nKeys - 1));
 #else
     // legacy code to calculate the shift count
-    shift = sizeof(key_t) * 8;
+    shift = sizeof(index_key_t) * 8;
     uint64_t m = nKeys - 1;
     while ((shift > 0) && (m & 1) == 1)
     {
@@ -99,23 +99,23 @@ PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCou
   if (indexFile.is_open())
   {
     const uint64_t hashMSB = hash.upper >> shift;
-    const uint64_t idx = hashMSB * sizeof(key_t);
+    const uint64_t idx = hashMSB * sizeof(index_key_t);
     uint64_t loIdx = idx;
     do {
       indexFile.seekg(loIdx);
-      indexFile.read(reinterpret_cast<char*>(&lo), sizeof(key_t));
+      indexFile.read(reinterpret_cast<char*>(&lo), sizeof(index_key_t));
       ++nReads;
-      loIdx -= sizeof(key_t);
+      loIdx -= sizeof(index_key_t);
     }
-    while (lo == std::numeric_limits<key_t>::max());
-    uint64_t hiIdx = idx + sizeof(key_t);
+    while (lo == std::numeric_limits<index_key_t>::max());
+    uint64_t hiIdx = idx + sizeof(index_key_t);
     do {
       indexFile.seekg(hiIdx);
-      indexFile.read(reinterpret_cast<char*>(&hi), sizeof(key_t));
+      indexFile.read(reinterpret_cast<char*>(&hi), sizeof(index_key_t));
       ++nReads;
-      hiIdx += sizeof(key_t);
+      hiIdx += sizeof(index_key_t);
     }
-    while (hi == std::numeric_limits<key_t>::max());
+    while (hi == std::numeric_limits<index_key_t>::max());
   }
   PasswordHashAndCount phc;
   while (lo <= hi)
