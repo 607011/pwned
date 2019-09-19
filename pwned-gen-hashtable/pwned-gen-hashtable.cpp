@@ -17,8 +17,9 @@
 
 #include <iostream>
 #include <fstream>
+#include <iterator>
 #include <string>
-#include <random>
+#include <chrono>
 #include <cstdint>
 
 #include <boost/program_options.hpp>
@@ -26,21 +27,33 @@
 
 #include <pwned-lib/passwordhashandcount.hpp>
 #include <pwned-lib/passwordinspector.hpp>
+#include <pwned-lib/util.hpp>
+
+#include <BBHash/BooPHF.h>
+
+#include "phcfileiterator.hpp"
+#include "phchasher.hpp"
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
+
+typedef boomphf::mphf<pwned::PasswordHashAndCount, PHCHasher> PHC_MPHF;
+
+static constexpr unsigned int DefaultGamma = 3;
+static constexpr unsigned int DefaultThreadCount = 4;
 
 po::options_description desc("Allowed options");
 
 void hello()
 {
-  std::cout << "#pwned test set extractor 1.0 - Copyright (c) 2019 Oliver Lau" << std::endl
+  std::cout << "#pwned MPHF table generator 0.1 - Copyright (c) 2019 Oliver Lau" << std::endl
             << std::endl;
 }
 
 void license()
 {
   std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type" << std::endl
-            << "`test-set-extractor --warranty'." << std::endl
+            << "`pwned-gen-hashtable --warranty'." << std::endl
             << "This is free software, and you are welcome to redistribute it" << std::endl
             << "under certain conditions; see https://www.gnu.org/licenses/gpl-3.0.en.html" << std::endl
             << "for details." << std::endl
@@ -70,15 +83,14 @@ int main(int argc, const char *argv[])
   hello();
   std::string inputFilename;
   std::string outputFilename;
-  static constexpr int DefaultN = 20000;
-  int N = DefaultN;
-  bool onlyNonExistent = false;
+  unsigned int gamma = DefaultGamma;
+  unsigned int threadCount = DefaultThreadCount;
   desc.add_options()
   ("help", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set user:pass input file")
-  ("output,O", po::value<std::string>(&outputFilename), "set user:pass test set file")
-  ("num,N", po::value<int>(&N)->default_value(DefaultN), "number of data sets to extract")
-  ("non-existent", po::bool_switch(&onlyNonExistent)->default_value(false), "select only non-existing hashes (or else only hashes contained in the input file will be selected)")
+  ("output,O", po::value<std::string>(&outputFilename), "set hashtable file")
+  ("gamma,G", po::value<unsigned int>(&gamma)->default_value(DefaultGamma), "gamma")
+  ("threads,T", po::value<unsigned int>(&threadCount)->default_value(DefaultThreadCount), "use so many threads")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -114,61 +126,35 @@ int main(int argc, const char *argv[])
     return EXIT_SUCCESS;
   }
 
+  const uint64_t inputSize = fs::file_size(inputFilename);
+  const uint64_t phcCount = inputSize / pwned::PasswordHashAndCount::size;
+  std::cout << "Input file:  " << inputFilename << " with " << phcCount << " hashes" << std::endl
+            << "Output file: " << outputFilename << std::endl
+            << std::endl;
 
-  const uint64_t size = boost::filesystem::file_size(inputFilename);
-  const uint64_t offset = size / uint64_t(N);
-  std::ifstream in(inputFilename, std::ios::binary);
-  if (!in.is_open())
+  std::cout << "Generating MPHF table ... " << std::endl;
+  auto t0 = std::chrono::high_resolution_clock::now();
+  PHCFile phcs(inputFilename);
+  if (!phcs.is_open())
   {
-    std::cerr << "Cannot open " << inputFilename << std::endl;
+    std::cerr << "ERROR: Cannot open input file '" << inputFilename << "'." << std::endl;
     return EXIT_FAILURE;
   }
-  std::ofstream out(outputFilename, std::ios::binary | std::ios::trunc);
-  if (!out.is_open())
+  PHC_MPHF *phf = new PHC_MPHF(phcCount, phcs, threadCount, gamma);
+  auto t1 = std::chrono::high_resolution_clock::now();
+  auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+  std::cout << "Ready. (total time: " << pwned::readableTime(time_span.count()) << ")" << std::endl;
+
+  std::ofstream outputFile(outputFilename, std::ios::trunc | std::ios::binary);
+  if (!outputFile.is_open())
   {
-    std::cerr << "Cannot open " << outputFilename << std::endl;
+    std::cerr << "ERROR: Cannot open output file '" << outputFilename << "'." << std::endl;
     return EXIT_FAILURE;
   }
-
-  std::cout << "Input file:  " << inputFilename << " (" << size << " bytes, offset = " << offset << ")" << std::endl
-            << "Output file: " << outputFilename << std::endl;
-
-  if (onlyNonExistent)
-  {
-    std::cout << "Selecting " << N << " non-existent hashes ... " << std::endl;
-    std::mt19937_64 gen;
-    gen.seed(31337);
-    pwned::PasswordInspector inspector(inputFilename);
-    for (auto i = 0; i < N; ++i)
-    {
-      pwned::Hash hash(gen(), gen());
-      pwned::PHC p = inspector.binsearch(hash);
-      if (p.count == 0)
-      {
-        p.hash = hash;
-        p.dump(out);
-        std::cout << hash << " #" << i << std::endl;
-      }
-    }
-  }
-  else
-  {
-    std::cout << "Selecting " << N << " existent hashes ... " << std::endl;
-    pwned::PHC phc;
-    int i = 0;
-    for (uint64_t pos = 0; pos < size && i < N; pos += offset)
-    {
-      const uint64_t idx = pos - pos % pwned::PHC::size;
-      if (phc.read(in, idx))
-      {
-        std::cout << phc.hash << " @ " << idx << std::endl;
-        phc.dump(out);
-        ++i;
-      }
-    }
-  }
-
-  std::cout << std::endl
-            << "Ready." << std::endl;
+  std::cout << "Writing MPHF table ... " << std::flush;
+  phf->save(outputFile);
+  std::cout << "Finished." << std::endl
+            << std::endl;
+  delete phf;
   return EXIT_SUCCESS;
 }

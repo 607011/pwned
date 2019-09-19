@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 2.8)
 
-project(test-set-extractor)
+project(pwned-gen-hashtable)
 
-add_executable(test-set-extractor test-set-extractor.cpp)
-set_target_properties(test-set-extractor PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
+add_executable(pwned-gen-hashtable pwned-gen-hashtable.cpp)
+set_target_properties(pwned-gen-hashtable PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
 
-target_include_directories(test-set-extractor
+target_include_directories(pwned-gen-hashtable
 	PRIVATE ${PROJECT_INCLUDE_DIRS}
 	PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
-target_link_libraries(test-set-extractor pnwed ${OPENSSL_CRYPTO_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(pwned-gen-hashtable pnwed ${OPENSSL_CRYPTO_LIBRARY} ${Boost_LIBRARIES})
