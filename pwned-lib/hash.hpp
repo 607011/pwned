@@ -41,12 +41,12 @@
 
 namespace pwned
 {
-static constexpr int HashSize = MD5_DIGEST_LENGTH;
 
 struct Hash
 {
+  static constexpr int size = MD5_DIGEST_LENGTH;
   union {
-    uint8_t data[HashSize];
+    uint8_t data[size];
     struct
     {
       uint64_t upper;
@@ -67,8 +67,8 @@ struct Hash
 
   inline bool read(std::ifstream &f)
   {
-    f.read((char *)data, HashSize);
-    return f.gcount() == HashSize;
+    f.read((char *)data, Hash::size);
+    return f.gcount() == Hash::size;
   }
 
   inline bool read(std::ifstream &f, uint64_t pos)

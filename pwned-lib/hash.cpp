@@ -75,7 +75,7 @@ std::string Hash::toString() const
 Hash Hash::fromHex(const std::string &seq)
 {
   Hash hash;
-  if (seq.size() == 2 * HashSize)
+  if (seq.size() == 2 * Hash::size)
   {
     size_t j = 0;
     for (size_t i = 0; i < seq.size(); i += 2)
@@ -93,7 +93,7 @@ Hash Hash::fromHex(const std::string &seq)
         break;
       }
     }
-    hash.isValid = j == HashSize;
+    hash.isValid = j == Hash::size;
   }
   return hash;
 }
