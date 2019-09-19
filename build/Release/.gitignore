@@ -8,6 +8,8 @@ cmake_install.cmake
 experiments/
 pwned-converter-cli/
 pwned-lib/
+pwned-index/
 pwned-lookup-cli/
 pwned-merger-cli/
+pwned-gen-hashtable/
 test-set-extractor/
