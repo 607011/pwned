@@ -29,7 +29,7 @@ namespace pwned
 class PasswordHashAndCount
 {
 public:
-  static constexpr uint64_t size = uint64_t(HashSize) + sizeof(uint32_t);
+  static constexpr uint64_t size = uint64_t(Hash::size) + sizeof(uint32_t);
   Hash hash;
   uint32_t count;
 
@@ -50,8 +50,8 @@ public:
 
   inline bool read(std::ifstream &f)
   {
-    f.read((char *)hash.data, HashSize);
-    if (f.gcount() != HashSize)
+    f.read((char *)hash.data, Hash::size);
+    if (f.gcount() != Hash::size)
       return false;
     f.read((char *)&count, sizeof(count));
     return f.gcount() == sizeof(count);
@@ -65,10 +65,15 @@ public:
 
   inline void dump(std::ofstream &f) const
   {
-    f.write((char *)hash.data, HashSize);
+    f.write((char *)hash.data, Hash::size);
     f.write((char *)&count, sizeof(count));
   }
 };
+
+inline bool operator==(const PasswordHashAndCount &lhs, const PasswordHashAndCount &rhs)
+{
+  return lhs.hash == rhs.hash;
+}
 
 struct PasswordHashAndCountLess
 {
