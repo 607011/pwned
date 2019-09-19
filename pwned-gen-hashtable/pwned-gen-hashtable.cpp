@@ -27,17 +27,15 @@
 
 #include <pwned-lib/passwordhashandcount.hpp>
 #include <pwned-lib/passwordinspector.hpp>
+#include <pwned-lib/phchasher.hpp>
 #include <pwned-lib/util.hpp>
 
 #include <BBHash/BooPHF.h>
 
 #include "phcfileiterator.hpp"
-#include "phchasher.hpp"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
-
-typedef boomphf::mphf<pwned::PasswordHashAndCount, PHCHasher> PHC_MPHF;
 
 static constexpr unsigned int DefaultGamma = 3;
 static constexpr unsigned int DefaultThreadCount = 4;
@@ -140,7 +138,7 @@ int main(int argc, const char *argv[])
     std::cerr << "ERROR: Cannot open input file '" << inputFilename << "'." << std::endl;
     return EXIT_FAILURE;
   }
-  PHC_MPHF *phf = new PHC_MPHF(phcCount, phcs, threadCount, gamma);
+  pwned::MPHF *phf = new pwned::MPHF(phcCount, phcs, threadCount, gamma);
   auto t1 = std::chrono::high_resolution_clock::now();
   auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
   std::cout << "Ready. (total time: " << pwned::readableTime(time_span.count()) << ")" << std::endl;

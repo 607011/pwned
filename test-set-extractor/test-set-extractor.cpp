@@ -142,7 +142,7 @@ int main(int argc, const char *argv[])
     for (auto i = 0; i < N; ++i)
     {
       pwned::Hash hash(gen(), gen());
-      pwned::PHC p = inspector.binsearch(hash);
+      pwned::PHC p = inspector.binSearch(hash);
       if (p.count == 0)
       {
         p.hash = hash;

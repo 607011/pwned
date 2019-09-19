@@ -100,10 +100,12 @@ int main(int argc, const char *argv[])
 {
   std::string inputFilename;
   std::string indexFilename;
+  std::string mphfFilename;
   desc.add_options()
   ("help", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set MD5:count input file")
   ("index,X", po::value<std::string>(&indexFilename), "set index file")
+  ("hash,H", po::value<std::string>(&mphfFilename), "set MPHF hashtable file")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -124,7 +126,18 @@ int main(int argc, const char *argv[])
     usage();
     return EXIT_FAILURE;
   }
-  pwned::PasswordInspector inspector(inputFilename, indexFilename);
+
+  pwned::PasswordInspector inspector;
+
+  if (!indexFilename.empty())
+  {
+    inspector.open(inputFilename, indexFilename);
+  }
+  else if (!mphfFilename.empty())
+  {
+    std::cout << "Loading MPHF hash table ..." << std::endl;
+    inspector.openWithMPHF(inputFilename, mphfFilename);
+  }
   for (;;)
   {
     std::cout << "Password? ";
@@ -133,9 +146,20 @@ int main(int argc, const char *argv[])
     std::cin >> pwd;
     setStdinEcho(true);
     const pwned::Hash soughtHash(pwd);
-    std::cout << "MD5 hash " << soughtHash << std::endl;
+    std::cout << std::endl
+              << "MD5 hash " << soughtHash << std::endl;
     const auto &t0 = std::chrono::high_resolution_clock::now();
-    const pwned::PasswordHashAndCount &phc = inspector.binsearch(soughtHash);
+    pwned::PasswordHashAndCount phc;
+    if (mphfFilename.empty())
+    {
+      phc = inspector.binSearch(soughtHash);
+    }
+    else
+    {
+      phc = inspector.mphfSearch(soughtHash);
+    }
+    std::cout << std::endl
+              << "Found hash " << phc.hash << std::endl;
     const auto &t1 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
     if (phc.count > 0)

@@ -67,6 +67,21 @@ bool PasswordInspector::open(const std::string &filename)
   return inputFile.is_open();
 }
 
+static unsigned int popcount64(uint64_t x)
+{
+  constexpr uint64_t m1 = 0x5555555555555555ULL;
+  constexpr uint64_t m2 = 0x3333333333333333ULL;
+  constexpr uint64_t m4 = 0x0f0f0f0f0f0f0f0fULL;
+  constexpr uint64_t m8 = 0x00ff00ff00ff00ffULL;
+  constexpr uint64_t m16 = 0x0000ffff0000ffffULL;
+  constexpr uint64_t m32 = 0x00000000ffffffffULL;
+  constexpr uint64_t h01 = 0x0101010101010101ULL;
+  x -= (x >> 1) & m1;
+  x = (x & m2) + ((x >> 2) & m2);
+  x = (x + (x >> 4)) & m4;
+  return (x * h01) >> 56;
+}
+
 bool PasswordInspector::open(const std::string &inputFilename, const std::string &indexFilename)
 {
   bool ok = open(inputFilename);
@@ -76,14 +91,15 @@ bool PasswordInspector::open(const std::string &inputFilename, const std::string
 #ifndef NO_POPCNT
     shift = sizeof(index_key_t) * 8 - static_cast<unsigned int>(_mm_popcnt_u64(nKeys - 1));
 #else
-    // legacy code to calculate the shift count
-    shift = sizeof(index_key_t) * 8;
-    uint64_t m = nKeys - 1;
-    while ((shift > 0) && (m & 1) == 1)
-    {
-      m >>= 1;
-      --shift;
-    }
+    shift = sizeof(index_key_t) * 8 - popcount64(nKeys - 1);
+    // // legacy code to calculate the shift count
+    // shift = sizeof(index_key_t) * 8;
+    // uint64_t m = nKeys - 1;
+    // while ((shift > 0) && (m & 1) == 1)
+    // {
+    //   m >>= 1;
+    //   --shift;
+    // }
 #endif
     indexFile.open(indexFilename, std::ios::in | std::ios::binary);
     ok = ok && indexFile.is_open();
@@ -91,7 +107,43 @@ bool PasswordInspector::open(const std::string &inputFilename, const std::string
   return ok;
 }
 
-PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCount)
+bool PasswordInspector::openWithMPHF(const std::string &inputFilename, const std::string &mphfFilename)
+{
+  bool ok = open(inputFilename);
+  if (!mphfFilename.empty())
+  {
+    mphfFile.open(mphfFilename, std::ios::binary);
+    if (mphfFile.is_open())
+    {
+      mphf.load(mphfFile);
+    }
+    else
+    {
+      ok = false;
+    }
+  }
+  return ok;
+}
+
+PasswordHashAndCount PasswordInspector::mphfSearch(const Hash &hash, int *readCount)
+{
+  int nReads = 0;
+  PasswordHashAndCount soughtPHC(hash, 0);
+  PasswordHashAndCount phc;
+  if (mphfFile.is_open())
+  {
+    const uint64_t idx = mphf.lookup(soughtPHC);
+    if (idx != ULLONG_MAX)
+    {
+      phc.read(inputFile, idx);
+      ++nReads;
+    }
+  }
+  safe_assign(readCount, nReads);
+  return phc;
+}
+
+PasswordHashAndCount PasswordInspector::binSearch(const Hash &hash, int *readCount)
 {
   int nReads = 0;
   int64_t lo = 0;
@@ -144,7 +196,7 @@ PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCou
   return phc;
 }
 
-PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *readCount)
+PasswordHashAndCount PasswordInspector::smartBinSearch(const Hash &hash, int *readCount)
 {
   static constexpr float MaxUInt64 = float(std::numeric_limits<uint64_t>::max());
   int nReads = 0;
@@ -192,13 +244,13 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *r
     throw("[PasswordInspector] Hash out of bounds: !(" + h0.toString() + " < " + hash.toString() + " < " + h1.toString() + ")");
   }
   int nBinSearchReads = 0;
-  const PasswordHashAndCount &phc = binsearch(hash, &nBinSearchReads);
+  const PasswordHashAndCount &phc = binSearch(hash, &nBinSearchReads);
   safe_assign(readCount, nReads + nBinSearchReads);
   return phc;
 }
 
 PasswordHashAndCount PasswordInspector::lookup(const std::string &pwd)
 {
-  return binsearch(pwned::Hash(pwd));
+  return binSearch(pwned::Hash(pwd));
 }
 } // namespace pwned

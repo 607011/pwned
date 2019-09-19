@@ -23,6 +23,7 @@
 #include <cstdint>
 
 #include "passwordhashandcount.hpp"
+#include "phchasher.hpp"
 
 namespace pwned
 {
@@ -32,9 +33,11 @@ class PasswordInspector
 private:
   std::ifstream inputFile;
   std::ifstream indexFile;
+  std::ifstream mphfFile;
   int64_t size;
   unsigned int shift;
   pwned::PasswordHashAndCount phc;
+  MPHF mphf;
 
 public:
   typedef uint64_t index_key_t;
@@ -44,9 +47,11 @@ public:
   ~PasswordInspector();
   bool open(const std::string &inputFilename);
   bool open(const std::string &inputFilename, const std::string &indexFilename);
+  bool openWithMPHF(const std::string &inputFilename, const std::string &mphfFilename);
   PasswordHashAndCount lookup(const std::string &pwd);
-  PasswordHashAndCount binsearch(const pwned::Hash &hash, int *readCount = nullptr);
-  PasswordHashAndCount smart_binsearch(const pwned::Hash &hash, int *readCount = nullptr);
+  PasswordHashAndCount mphfSearch(const pwned::Hash &hash, int *readCount = nullptr);
+  PasswordHashAndCount binSearch(const pwned::Hash &hash, int *readCount = nullptr);
+  PasswordHashAndCount smartBinSearch(const pwned::Hash &hash, int *readCount = nullptr);
 };
 
 typedef PasswordInspector::index_key_t index_key_t;

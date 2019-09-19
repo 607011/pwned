@@ -20,13 +20,19 @@
 
 #include <cstdint>
 
-#include <pwned-lib/passwordhashandcount.hpp>
+#include <BBHash/BooPHF.h>
+
+#include "passwordhashandcount.hpp"
+
+namespace pwned {
 
 class PHCHasher
 {
 public:
   static constexpr uint64_t FNV_offset_basis = 0xcbf29ce484222325ULL;
   static constexpr uint64_t FNV_prime = 0x100000001b3ULL;
+
+  // TODO: select one of MurmurHash64A and FNV1a
 
   // optimized for 16 byte long inputs
   static inline uint64_t MurmurHash64A(const uint8_t *const key, const uint64_t seed)
@@ -74,5 +80,9 @@ public:
     return MurmurHash64A(key.hash.data, seed);
   }
 };
+
+typedef boomphf::mphf<PasswordHashAndCount, PHCHasher> MPHF;
+
+} // namespace pwned
 
 #endif // __phchasher_hpp__

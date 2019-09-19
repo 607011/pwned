@@ -15,6 +15,8 @@ else()
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -mpopcnt -DUSE_POPCNT")
 endif()
 
-target_include_directories(pnwed PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
+target_include_directories(pnwed
+  PRIVATE ${PROJECT_INCLUDE_DIRS}
+  PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 
 set_target_properties(pnwed PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")

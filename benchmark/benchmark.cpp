@@ -125,7 +125,8 @@ int purgeFilesystemCacheOn(const std::string &filename)
 
 static const std::string AlgoBinSearch = "binsearch";
 static const std::string AlgoSmartBinSearch = "smart";
-static const std::vector<std::string> AlgoList = {AlgoBinSearch, AlgoSmartBinSearch};
+static const std::string AlgoMPHFSearch = "mphf";
+static const std::vector<std::string> AlgoList = {AlgoBinSearch, AlgoSmartBinSearch, AlgoMPHFSearch};
 static const std::string AlgoStringList = std::accumulate(std::next(AlgoList.begin()), AlgoList.end(), "'" + AlgoList.front() + "'", [](std::string a, const std::string &b) { return std::move(a) + ", '" + b + "'"; });
 
 void benchmarkWithoutIndex(
@@ -201,7 +202,7 @@ void benchmarkWithIndex(
       int readCount = 0;
       try
       {
-        const pwned::PasswordHashAndCount &result = inspector.binsearch(phc.hash, &readCount);
+        const pwned::PasswordHashAndCount &result = inspector.binSearch(phc.hash, &readCount);
         nReads += readCount;
         if (result.count > 0)
         {
@@ -279,16 +280,20 @@ int main(int argc, const char *argv[])
     license();
     return EXIT_SUCCESS;
   }
-  auto searchCallable = std::mem_fn(&pwned::PasswordInspector::smart_binsearch);
+  auto searchCallable = std::mem_fn(&pwned::PasswordInspector::smartBinSearch);
   if (vm.count("algorithm"))
   {
     if (algorithm == AlgoBinSearch)
     {
-      searchCallable = std::mem_fn(&pwned::PasswordInspector::binsearch);
+      searchCallable = std::mem_fn(&pwned::PasswordInspector::binSearch);
     }
     else if (algorithm == AlgoSmartBinSearch)
     {
-      searchCallable = std::mem_fn(&pwned::PasswordInspector::smart_binsearch);
+      searchCallable = std::mem_fn(&pwned::PasswordInspector::smartBinSearch);
+    }
+    else if (algorithm == AlgoMPHFSearch)
+    {
+      searchCallable = std::mem_fn(&pwned::PasswordInspector::mphfSearch);
     }
     else
     {
