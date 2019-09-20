@@ -29,42 +29,53 @@ namespace pwned {
 class PHCHasher
 {
 public:
-  static constexpr uint64_t FNV_offset_basis = 0xcbf29ce484222325ULL;
-  static constexpr uint64_t FNV_prime = 0x100000001b3ULL;
-
   // TODO: select one of MurmurHash64A and FNV1a
 
+  // static inline uint64_t BooHash(const uint64_t a, const uint64_t b, const uint64_t seed)
+  // {
+  //   key ^= key >> 33;
+  //   key *= 0xff51afd7ed558ccd;
+  //   key ^= key >> 33;
+  //   key *= 0xc4ceb9fe1a85ec53;
+  //   key ^= key >> 33;
+
+  //   key ^= seed;
+  // }
+
   // optimized for 16 byte long inputs
-  static inline uint64_t MurmurHash64A(const uint8_t *const key, const uint64_t seed)
+  static inline uint64_t MurmurHash64A(const uint64_t a, const uint64_t b, const uint64_t seed)
   {
-    static constexpr uint64_t m = 0xc6a4a7935bd1e995ULL;
-    static constexpr int r = 47;
-    uint64_t h = seed ^ (pwned::Hash::size * m);
-    const uint64_t *data = reinterpret_cast<const uint64_t *>(key);
+    static constexpr uint64_t M = 0xc6a4a7935bd1e995ULL;
+    static constexpr int R = 47;
+    uint64_t h = seed ^ (pwned::Hash::size * M);
     uint64_t k;
+
     // 1st uint64
-    k = data[0];
-    k *= m;
-    k ^= k >> r;
-    k *= m;
+    k = a;
+    k *= M;
+    k ^= k >> R;
+    k *= M;
     h ^= k;
-    h *= m;
+    h *= M;
+
     // 2nd uint64
-    k = data[1];
-    k *= m;
-    k ^= k >> r;
-    k *= m;
+    k = b;
+    k *= M;
+    k ^= k >> R;
+    k *= M;
     h ^= k;
-    h *= m;
-    //
-    h ^= h >> r;
-    h *= m;
-    h ^= h >> r;
+    h *= M;
+
+    h ^= h >> R;
+    h *= M;
+    h ^= h >> R;
     return h;
   }
 
   static inline uint64_t FNV1a(const uint8_t *const data, const uint64_t seed)
   {
+    static constexpr uint64_t FNV_offset_basis = 0xcbf29ce484222325ULL;
+    static constexpr uint64_t FNV_prime = 0x100000001b3ULL;
     uint64_t hash = FNV_offset_basis;
     for (int i = 0; i < pwned::Hash::size; ++i)
     {
@@ -77,7 +88,8 @@ public:
 
   uint64_t operator()(pwned::PasswordHashAndCount key, uint64_t seed = 0) const
   {
-    return MurmurHash64A(key.hash.data, seed);
+    // return MurmurHash64A(key.hash.upper, key.hash.lower, seed);
+    return FNV1a(key.hash.data, seed);
   }
 };
 
