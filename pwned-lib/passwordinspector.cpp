@@ -135,7 +135,7 @@ PasswordHashAndCount PasswordInspector::mphfSearch(const Hash &hash, int *readCo
     const uint64_t idx = mphf.lookup(soughtPHC);
     if (idx != ULLONG_MAX)
     {
-      phc.read(inputFile, idx);
+      phc.read(inputFile, idx * PasswordHashAndCount::size);
       ++nReads;
     }
   }
