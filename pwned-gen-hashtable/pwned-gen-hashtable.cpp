@@ -20,6 +20,7 @@
 #include <iterator>
 #include <string>
 #include <chrono>
+#include <thread>
 #include <cstdint>
 
 #include <boost/program_options.hpp>
@@ -37,7 +38,7 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-static constexpr unsigned int DefaultGamma = 3;
+static constexpr double DefaultGamma = 2;
 static constexpr unsigned int DefaultThreadCount = 4;
 
 po::options_description desc("Allowed options");
@@ -81,14 +82,14 @@ int main(int argc, const char *argv[])
   hello();
   std::string inputFilename;
   std::string outputFilename;
-  unsigned int gamma = DefaultGamma;
-  unsigned int threadCount = DefaultThreadCount;
+  double gamma = DefaultGamma;
+  unsigned int threadCount = std::thread::hardware_concurrency();
   desc.add_options()
   ("help", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set user:pass input file")
   ("output,O", po::value<std::string>(&outputFilename), "set hashtable file")
-  ("gamma,G", po::value<unsigned int>(&gamma)->default_value(DefaultGamma), "gamma")
-  ("threads,T", po::value<unsigned int>(&threadCount)->default_value(DefaultThreadCount), "use so many threads")
+  ("gamma,G", po::value<double>(&gamma)->default_value(DefaultGamma), "gamma (typically 1...5)")
+  ("threads,T", po::value<unsigned int>(&threadCount)->default_value(threadCount), "use so many threads")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -123,6 +124,14 @@ int main(int argc, const char *argv[])
     usage();
     return EXIT_SUCCESS;
   }
+  if (threadCount == 0)
+  {
+    threadCount = DefaultThreadCount;
+  }
+  if (gamma < 1)
+  {
+    gamma = DefaultGamma;
+  }
 
   const uint64_t inputSize = fs::file_size(inputFilename);
   const uint64_t phcCount = inputSize / pwned::PasswordHashAndCount::size;
@@ -130,7 +139,7 @@ int main(int argc, const char *argv[])
             << "Output file: " << outputFilename << std::endl
             << std::endl;
 
-  std::cout << "Generating MPHF table ... " << std::endl;
+  std::cout << "Generating MPHF table in " << threadCount << " threads (gamma = " << gamma << ")... " << std::endl;
   auto t0 = std::chrono::high_resolution_clock::now();
   PHCFile phcs(inputFilename);
   if (!phcs.is_open())
