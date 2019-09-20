@@ -129,14 +129,18 @@ int main(int argc, const char *argv[])
 
   pwned::PasswordInspector inspector;
 
-  if (!indexFilename.empty())
-  {
-    inspector.open(inputFilename, indexFilename);
-  }
-  else if (!mphfFilename.empty())
+  if (!mphfFilename.empty())
   {
     std::cout << "Loading MPHF hash table ..." << std::endl;
     inspector.openWithMPHF(inputFilename, mphfFilename);
+  }
+  else if (!indexFilename.empty())
+  {
+    inspector.openWithIndex(inputFilename, indexFilename);
+  }
+  else
+  {
+    inspector.open(inputFilename);
   }
   for (;;)
   {
@@ -158,17 +162,15 @@ int main(int argc, const char *argv[])
     {
       phc = inspector.mphfSearch(soughtHash);
     }
-    std::cout << std::endl
-              << "Found hash " << phc.hash << std::endl;
     const auto &t1 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    if (phc.count > 0)
+    if (phc.hash == soughtHash && phc.count > 0)
     {
       std::cout << "Found " << phc.count << " times." << std::endl;
     }
     else
     {
-      std::cout << "Not found." << std::endl;
+      std::cout << "Not found. (Returned hash: " << phc.hash << ")" << std::endl;
     }
     std::cout << "Lookup time: " << time_span.count() * 1000 << " ms" << std::endl
               << std::endl;

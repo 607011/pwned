@@ -46,7 +46,7 @@ public:
   PasswordInspector(const std::string &inputFilename, const std::string &indexFilename);
   ~PasswordInspector();
   bool open(const std::string &inputFilename);
-  bool open(const std::string &inputFilename, const std::string &indexFilename);
+  bool openWithIndex(const std::string &inputFilename, const std::string &indexFilename);
   bool openWithMPHF(const std::string &inputFilename, const std::string &mphfFilename);
   PasswordHashAndCount lookup(const std::string &pwd);
   PasswordHashAndCount mphfSearch(const pwned::Hash &hash, int *readCount = nullptr);

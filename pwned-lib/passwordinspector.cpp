@@ -55,7 +55,7 @@ PasswordInspector::PasswordInspector(const std::string &inputFilename)
 
 PasswordInspector::PasswordInspector(const std::string &inputFilename, const std::string &indexFilename)
 {
-  open(inputFilename, indexFilename);
+  openWithIndex(inputFilename, indexFilename);
 }
 
 PasswordInspector::~PasswordInspector() = default;
@@ -67,6 +67,7 @@ bool PasswordInspector::open(const std::string &filename)
   return inputFile.is_open();
 }
 
+#ifdef NO_POPCNT
 static unsigned int popcount64(uint64_t x)
 {
   constexpr uint64_t m1 = 0x5555555555555555ULL;
@@ -81,8 +82,9 @@ static unsigned int popcount64(uint64_t x)
   x = (x + (x >> 4)) & m4;
   return (x * h01) >> 56;
 }
+#endif // NO_POPCNT
 
-bool PasswordInspector::open(const std::string &inputFilename, const std::string &indexFilename)
+bool PasswordInspector::openWithIndex(const std::string &inputFilename, const std::string &indexFilename)
 {
   bool ok = open(inputFilename);
   if (!indexFilename.empty())
