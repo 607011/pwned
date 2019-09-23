@@ -31,17 +31,6 @@ class PHCHasher
 public:
   // TODO: select one of MurmurHash64A and FNV1a
 
-  // static inline uint64_t BooHash(const uint64_t a, const uint64_t b, const uint64_t seed)
-  // {
-  //   key ^= key >> 33;
-  //   key *= 0xff51afd7ed558ccd;
-  //   key ^= key >> 33;
-  //   key *= 0xc4ceb9fe1a85ec53;
-  //   key ^= key >> 33;
-
-  //   key ^= seed;
-  // }
-
   // optimized for 16 byte long inputs
   static inline uint64_t MurmurHash64A(const uint64_t a, const uint64_t b, const uint64_t seed)
   {
@@ -88,8 +77,8 @@ public:
 
   uint64_t operator()(pwned::PasswordHashAndCount key, uint64_t seed = 0) const
   {
-    // return MurmurHash64A(key.hash.upper, key.hash.lower, seed);
-    return FNV1a(key.hash.data, seed);
+    return MurmurHash64A(key.hash.upper, key.hash.lower, seed);
+    // return FNV1a(key.hash.data, seed);
   }
 };
 

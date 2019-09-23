@@ -94,14 +94,6 @@ bool PasswordInspector::openWithIndex(const std::string &inputFilename, const st
     shift = sizeof(index_key_t) * 8 - static_cast<unsigned int>(_mm_popcnt_u64(nKeys - 1));
 #else
     shift = sizeof(index_key_t) * 8 - popcount64(nKeys - 1);
-    // // legacy code to calculate the shift count
-    // shift = sizeof(index_key_t) * 8;
-    // uint64_t m = nKeys - 1;
-    // while ((shift > 0) && (m & 1) == 1)
-    // {
-    //   m >>= 1;
-    //   --shift;
-    // }
 #endif
     indexFile.open(indexFilename, std::ios::in | std::ios::binary);
     ok = ok && indexFile.is_open();
@@ -118,6 +110,8 @@ bool PasswordInspector::openWithMPHF(const std::string &inputFilename, const std
     if (mphfFile.is_open())
     {
       mphf.load(mphfFile);
+      std::cout << "mphf.nbKeys() = " << mphf.nbKeys() << std::endl;
+      std::cout << "mphf.totalBitSize() = " << mphf.totalBitSize() << std::endl;
     }
     else
     {
@@ -137,7 +131,8 @@ PasswordHashAndCount PasswordInspector::mphfSearch(const Hash &hash, int *readCo
     const uint64_t idx = mphf.lookup(soughtPHC);
     if (idx != ULLONG_MAX)
     {
-      phc.read(inputFile, idx * PasswordHashAndCount::size);
+      const uint64_t idxInFile = idx * PasswordHashAndCount::size;
+      phc.read(inputFile, idxInFile);
       ++nReads;
     }
   }
@@ -200,10 +195,12 @@ PasswordHashAndCount PasswordInspector::binSearch(const Hash &hash, int *readCou
 
 PasswordHashAndCount PasswordInspector::smartBinSearch(const Hash &hash, int *readCount)
 {
-  static constexpr float MaxUInt64 = float(std::numeric_limits<uint64_t>::max());
+  static constexpr double MaxUInt64 = double(std::numeric_limits<uint64_t>::max());
+  static constexpr double MaxUInt64r = 1.0 / MaxUInt64;
   int nReads = 0;
   static constexpr int64_t OffsetMultiplicator = 2;
-  int64_t potentialHitIdx = int64_t(float(size) * float(hash.upper) / MaxUInt64);
+  const double h128 = double(hash.upper) * MaxUInt64 + double(hash.lower);
+  int64_t potentialHitIdx = int64_t(double(size) * h128 * MaxUInt64r * MaxUInt64r);
   potentialHitIdx -= potentialHitIdx % PasswordHashAndCount::size;
   int64_t offset = std::max<int64_t>(int64_t(size >> 12), PasswordHashAndCount::size);
   offset -= offset % PasswordHashAndCount::size;
