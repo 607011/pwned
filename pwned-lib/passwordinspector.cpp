@@ -129,11 +129,10 @@ PasswordHashAndCount PasswordInspector::mphfSearch(const Hash &hash, int *readCo
   if (mphfFile.is_open())
   {
     const uint64_t idx = mphf.lookup(soughtPHC);
+    // the index returned by lookup() is NOT the index into the original data
     if (idx != ULLONG_MAX)
     {
-      const uint64_t idxInFile = idx * PasswordHashAndCount::size;
-      phc.read(inputFile, idxInFile);
-      ++nReads;
+      phc.count = 1;
     }
   }
   safe_assign(readCount, nReads);
