@@ -44,7 +44,7 @@ static inline int decodeHex(const char c)
 }
 
 Hash::Hash()
-    : isValid(false)
+    : upper(0), lower(0), isValid(false)
 {
 }
 
