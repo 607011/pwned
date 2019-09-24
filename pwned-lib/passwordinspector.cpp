@@ -68,7 +68,7 @@ bool PasswordInspector::open(const std::string &filename)
 }
 
 #ifdef NO_POPCNT
-static unsigned int popcount64(uint64_t x)
+inline unsigned int popcount64(uint64_t x)
 {
   constexpr uint64_t m1 = 0x5555555555555555ULL;
   constexpr uint64_t m2 = 0x3333333333333333ULL;
