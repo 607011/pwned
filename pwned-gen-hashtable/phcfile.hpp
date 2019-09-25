@@ -15,8 +15,8 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef __phcfileiterator_hpp__
-#define __phcfileiterator_hpp__
+#ifndef __phcfile_hpp__
+#define __phcfile_hpp__
 
 #include <istream>
 #include <cstdint>
@@ -181,4 +181,4 @@ private:
   Lazy<uint64_t> fileSize;
 };
 
-#endif // __phcfileiterator_hpp__
+#endif // __phcfile_hpp__

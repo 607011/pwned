@@ -33,7 +33,7 @@
 
 #include <BBHash/BooPHF.h>
 
-#include "phcfileiterator.hpp"
+#include "phcfile.hpp"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
