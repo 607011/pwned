@@ -166,8 +166,18 @@ int main(int argc, const char *argv[])
     std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
     if (phc.count > 0)
     {
-      
-      std::cout << "Found " << phc.count << " times." << std::endl;
+      if (!mphfFilename.empty())
+      {
+        std::cout << "Found." << std::endl;
+      }
+      else if (phc.count == 1)
+      {
+        std::cout << "Found once." << std::endl;
+      }
+      else
+      {
+        std::cout << "Found " << phc.count << " times." << std::endl;
+      }
     }
     else
     {
