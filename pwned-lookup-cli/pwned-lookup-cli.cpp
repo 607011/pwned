@@ -23,6 +23,7 @@
 #include <boost/program_options.hpp>
 
 #include <pwned-lib/passwordinspector.hpp>
+#include <pwned-lib/algorithms.hpp>
 
 namespace po = boost::program_options;
 
@@ -101,11 +102,13 @@ int main(int argc, const char *argv[])
   std::string inputFilename;
   std::string indexFilename;
   std::string mphfFilename;
+  std::string algorithm;
   desc.add_options()
   ("help", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set MD5:count input file")
   ("index,X", po::value<std::string>(&indexFilename), "set index file")
   ("hash,H", po::value<std::string>(&mphfFilename), "set MPHF hashtable file")
+  ("algorithm,A", po::value<std::string>(&algorithm)->default_value(pwned::AlgoSmartBinSearch), std::string("lookup algorithm (" + pwned::AlgoStringList + ")").c_str())
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -128,20 +131,47 @@ int main(int argc, const char *argv[])
   }
 
   pwned::PasswordInspector inspector;
+  auto searchCallable = std::mem_fn(&pwned::PasswordInspector::smartBinSearch);
 
   if (!mphfFilename.empty())
   {
     std::cout << "Loading MPHF hash table ..." << std::endl;
     inspector.openWithMPHF(inputFilename, mphfFilename);
+    algorithm = pwned::AlgoMPHFSearch;
+    searchCallable = std::mem_fn(&pwned::PasswordInspector::mphfSearch);
   }
   else if (!indexFilename.empty())
   {
+    std::cout << "Using index ..." << std::endl;
+    algorithm = pwned::AlgoBinSearch;
+    searchCallable = std::mem_fn(&pwned::PasswordInspector::binSearch);
     inspector.openWithIndex(inputFilename, indexFilename);
   }
   else
   {
     inspector.open(inputFilename);
   }
+
+  if (vm.count("algorithm") > 0 && mphfFilename.empty() && indexFilename.empty())
+  {
+    if (algorithm == pwned::AlgoBinSearch)
+    {
+      searchCallable = std::mem_fn(&pwned::PasswordInspector::binSearch);
+    }
+    else if (algorithm == pwned::AlgoSmartBinSearch)
+    {
+      searchCallable = std::mem_fn(&pwned::PasswordInspector::smartBinSearch);
+    }
+    else
+    {
+      std::cerr << "Invalid algorithm '" << algorithm << "'." << std::endl;
+      return EXIT_FAILURE;
+    }
+  }
+  std::cout << "Using *" << algorithm << "* algorithm ..." << std::endl;
+  auto lookup = std::bind(searchCallable, &inspector, std::placeholders::_1, std::placeholders::_2);
+
+
   for (;;)
   {
     std::cout << "Password? ";
@@ -152,16 +182,9 @@ int main(int argc, const char *argv[])
     const pwned::Hash soughtHash(pwd);
     std::cout << std::endl
               << "MD5 hash " << soughtHash << std::endl;
+    int nReads = 0;
     const auto &t0 = std::chrono::high_resolution_clock::now();
-    pwned::PasswordHashAndCount phc;
-    if (mphfFilename.empty())
-    {
-      phc = inspector.binSearch(soughtHash);
-    }
-    else
-    {
-      phc = inspector.mphfSearch(soughtHash);
-    }
+    pwned::PasswordHashAndCount phc = lookup(soughtHash, &nReads);
     const auto &t1 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
     if (phc.count > 0)
@@ -184,6 +207,7 @@ int main(int argc, const char *argv[])
       std::cout << "Not found." << std::endl;
     }
     std::cout << "Lookup time: " << time_span.count() * 1000 << " ms" << std::endl
+              << "Number of read() operations: " << nReads << std::endl
               << std::endl;
   }
   return EXIT_SUCCESS;
