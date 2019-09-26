@@ -111,7 +111,7 @@ int main(int argc, const char *argv[])
   ("index,X", po::value<std::string>(&indexFilename), "set index file")
   ("hash,H", po::value<std::string>(&mphfFilename), "set MPHF hashtable file")
   ("algorithm,A", po::value<std::string>(&algorithm)->default_value(pwned::AlgoSmartBinSearch), std::string("lookup algorithm (" + pwned::AlgoStringList + ")").c_str())
-  ("purge", po::bool_switch(&doPurgeFilesystemCache), "Purge filesystem cache before running benchmark (needs root privileges)")
+  ("purge", po::bool_switch(&doPurgeFilesystemCache), "Purge filesystem cache before each lookup (needs root privileges); useful for benchmarking")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
