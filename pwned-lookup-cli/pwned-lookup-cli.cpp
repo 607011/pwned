@@ -24,6 +24,7 @@
 
 #include <pwned-lib/passwordinspector.hpp>
 #include <pwned-lib/algorithms.hpp>
+#include <pwned-lib/util.hpp>
 
 namespace po = boost::program_options;
 
@@ -103,12 +104,14 @@ int main(int argc, const char *argv[])
   std::string indexFilename;
   std::string mphfFilename;
   std::string algorithm;
+  bool doPurgeFilesystemCache = false;
   desc.add_options()
   ("help", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set MD5:count input file")
   ("index,X", po::value<std::string>(&indexFilename), "set index file")
   ("hash,H", po::value<std::string>(&mphfFilename), "set MPHF hashtable file")
   ("algorithm,A", po::value<std::string>(&algorithm)->default_value(pwned::AlgoSmartBinSearch), std::string("lookup algorithm (" + pwned::AlgoStringList + ")").c_str())
+  ("purge", po::bool_switch(&doPurgeFilesystemCache), "Purge filesystem cache before running benchmark (needs root privileges)")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -174,6 +177,10 @@ int main(int argc, const char *argv[])
 
   for (;;)
   {
+    if (doPurgeFilesystemCache)
+    {
+      pwned::purgeFilesystemCacheOn(inputFilename);
+    }
     std::cout << "Password? ";
     std::string pwd;
     setStdinEcho(false);
