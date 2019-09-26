@@ -195,12 +195,12 @@ PasswordHashAndCount PasswordInspector::binSearch(const Hash &hash, int *readCou
 PasswordHashAndCount PasswordInspector::smartBinSearch(const Hash &hash, int *readCount)
 {
   static constexpr double MaxUInt64 = double(std::numeric_limits<uint64_t>::max());
-  static constexpr double MaxUInt64r = 1.0 / MaxUInt64;
   int nReads = 0;
   static constexpr int64_t OffsetMultiplicator = 2;
-  const double h128 = double(hash.upper) * MaxUInt64 + double(hash.lower);
-  int64_t potentialHitIdx = int64_t(double(size) * h128 * MaxUInt64r * MaxUInt64r);
+  const double h128 = double(hash.upper) + double(hash.lower) / MaxUInt64;
+  int64_t potentialHitIdx = int64_t(h128 / MaxUInt64 * double(size));
   potentialHitIdx -= potentialHitIdx % PasswordHashAndCount::size;
+  // shifting 12 times is the empirically determined optimal rate
   int64_t offset = std::max<int64_t>(int64_t(size >> 12), PasswordHashAndCount::size);
   offset -= offset % PasswordHashAndCount::size;
   int64_t lo = std::max<int64_t>(0, potentialHitIdx - offset);
@@ -241,9 +241,28 @@ PasswordHashAndCount PasswordInspector::smartBinSearch(const Hash &hash, int *re
   {
     throw("[PasswordInspector] Hash out of bounds: !(" + h0.toString() + " < " + hash.toString() + " < " + h1.toString() + ")");
   }
-  int nBinSearchReads = 0;
-  const PasswordHashAndCount &phc = binSearch(hash, &nBinSearchReads);
-  safe_assign(readCount, nReads + nBinSearchReads);
+  PasswordHashAndCount phc;
+  while (lo <= hi)
+  {
+    int64_t pos = (lo + hi) / 2;
+    pos -= pos % PasswordHashAndCount::size;
+    pos = std::max<int64_t>(0, pos);
+    phc.read(inputFile, pos);
+    ++nReads;
+    if (hash > phc.hash)
+    {
+      lo = pos + PasswordHashAndCount::size;
+    }
+    else if (hash < phc.hash)
+    {
+      hi = pos - PasswordHashAndCount::size;
+    }
+    else
+    {
+      break;
+    }
+  }
+  safe_assign(readCount, nReads);
   return phc;
 }
 
