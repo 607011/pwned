@@ -21,7 +21,7 @@ message(STATUS "OpenSSL version: ${OPENSSL_VERSION}")
 message(STATUS "OpenSSL include dirs: ${OPENSSL_INCLUDE_DIR}")
 message(STATUS "OpenSSL crypto lib: ${OPENSSL_CRYPTO_LIBRARY}")
 
-find_package(Boost COMPONENTS program_options chrono date_time filesystem REQUIRED)
+find_package(Boost COMPONENTS program_options filesystem REQUIRED)
 message(STATUS "Boost include dirs: ${Boost_INCLUDE_DIRS}")
 message(STATUS "Boost lib dirs: ${Boost_LIBRARY_DIRS}")
 message(STATUS "Boost libs: ${Boost_LIBRARIES}")

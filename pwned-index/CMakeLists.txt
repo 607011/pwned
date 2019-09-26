@@ -13,5 +13,6 @@ target_include_directories(pwned-index
 target_link_libraries(pwned-index
   pnwed
   ${PLATFORM_DEPENDENT_LIBRARIES}
+  ${OPENSSL_CRYPTO_LIBRARY}
   ${Boost_LIBRARIES}
 )
