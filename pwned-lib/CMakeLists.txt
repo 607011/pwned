@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.2)
 project(pwned_lib)
 
 add_library(pnwed STATIC
+  algorithms.cpp
 	hash.cpp
 	operation.cpp
 	passwordinspector.cpp

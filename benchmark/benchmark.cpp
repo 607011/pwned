@@ -47,6 +47,7 @@ extern "C"
 #include <pwned-lib/passwordhashandcount.hpp>
 #include <pwned-lib/passwordinspector.hpp>
 #include <pwned-lib/util.hpp>
+#include <pwned-lib/algorithms.hpp>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -122,12 +123,6 @@ int purgeFilesystemCacheOn(const std::string &filename)
 #endif
   return rc;
 }
-
-static const std::string AlgoBinSearch = "binsearch";
-static const std::string AlgoSmartBinSearch = "smart";
-static const std::string AlgoMPHFSearch = "mphf";
-static const std::vector<std::string> AlgoList = {AlgoBinSearch, AlgoSmartBinSearch, AlgoMPHFSearch};
-static const std::string AlgoStringList = std::accumulate(std::next(AlgoList.begin()), AlgoList.end(), "'" + AlgoList.front() + "'", [](std::string a, const std::string &b) { return std::move(a) + ", '" + b + "'"; });
 
 void benchmarkWithoutIndex(
   int nRuns,
@@ -252,7 +247,7 @@ int main(int argc, const char *argv[])
   ("input,I", po::value<std::string>(&inputFilename), "set user:pass input file")
   ("test-set,S", po::value<std::string>(&testsetFilename), "set user:pass test set file")
   ("runs,n", po::value<int>(&nRuns)->default_value(DefaultNumberOfRuns), "number of runs")
-  ("algorithm,A", po::value<std::string>(&algorithm)->default_value(AlgoSmartBinSearch), std::string("lookup algorithm (" + AlgoStringList + ")").c_str())
+  ("algorithm,A", po::value<std::string>(&algorithm)->default_value(pwned::AlgoSmartBinSearch), std::string("lookup algorithm (" + pwned::AlgoStringList + ")").c_str())
   ("index,X", po::value<std::string>(&indexFilename), "set index file")
   ("purge", po::bool_switch(&doPurgeFilesystemCache), "Purge filesystem cache before running benchmark (needs root privileges)")
   ("warranty", "display warranty information")
@@ -287,15 +282,15 @@ int main(int argc, const char *argv[])
   auto searchCallable = std::mem_fn(&pwned::PasswordInspector::smartBinSearch);
   if (vm.count("algorithm"))
   {
-    if (algorithm == AlgoBinSearch)
+    if (algorithm == pwned::AlgoBinSearch)
     {
       searchCallable = std::mem_fn(&pwned::PasswordInspector::binSearch);
     }
-    else if (algorithm == AlgoSmartBinSearch)
+    else if (algorithm == pwned::AlgoSmartBinSearch)
     {
       searchCallable = std::mem_fn(&pwned::PasswordInspector::smartBinSearch);
     }
-    else if (algorithm == AlgoMPHFSearch)
+    else if (algorithm == pwned::AlgoMPHFSearch)
     {
       searchCallable = std::mem_fn(&pwned::PasswordInspector::mphfSearch);
     }
