@@ -30,10 +30,14 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 ## Prerequisites
 
-### Ubuntu 
+### Ubuntu 19.04
 
 ```
-sudo apt install git clang g++ cmake libboost-filesystem-dev libboost-program-options-dev libboost-system-dev
+sudo apt install git \
+  clang g++ cmake \
+  libboost-filesystem-dev \
+  libboost-program-options-dev \
+  libboost-system-dev
 ```
 
 ## Get source code
