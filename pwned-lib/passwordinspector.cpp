@@ -200,7 +200,7 @@ PasswordHashAndCount PasswordInspector::smartBinSearch(const Hash &hash, int *re
   const double h128 = double(hash.upper) + double(hash.lower) / MaxUInt64;
   int64_t potentialHitIdx = int64_t(h128 / MaxUInt64 * double(size));
   potentialHitIdx -= potentialHitIdx % PasswordHashAndCount::size;
-  // shifting 12 times is the empirically determined optimal rate
+  // shifting 12 times leads to the empirically determined optimal offset
   int64_t offset = std::max<int64_t>(int64_t(size >> 12), PasswordHashAndCount::size);
   offset -= offset % PasswordHashAndCount::size;
   int64_t lo = std::max<int64_t>(0, potentialHitIdx - offset);
