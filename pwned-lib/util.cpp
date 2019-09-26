@@ -25,6 +25,8 @@
 #include <mach/mach_types.h>
 #include <mach/mach_init.h>
 #include <mach/mach_host.h>
+#elif defined(__linux__)
+#include <fstream>
 #endif
 
 #include <iostream>
