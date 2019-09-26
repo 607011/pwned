@@ -27,6 +27,7 @@
 #include <mach/mach_host.h>
 #endif
 
+#include <iostream>
 #include <string>
 #include <memory>
 #include <cstring>
@@ -207,6 +208,45 @@ void TermIO::enableBreak()
   tcgetattr(STDIN_FILENO, &t);
   t.c_lflag |= ISIG;
   tcsetattr(STDIN_FILENO, TCSANOW, &t);
+}
+
+int purgeFilesystemCacheOn(const std::string &filename)
+{
+  int rc = 0;
+#if defined(__APPLE__)
+  (void)(filename);
+  if (geteuid() == 0)
+  {
+    std::cout << "Purging filesystem cache (this can take a couple of minutes) ... " << std::flush;
+    vfs_purge(nullptr, nullptr, nullptr);
+    std::cout << std::endl << std::endl;
+  }
+  else
+  {
+    std::cout << "** WARNING** This program needs root privileges to purge the filesystem cache." << std::endl
+              << "** WARNING** Running benchmarks without purging first." << std::endl
+              << std::endl;
+    rc = 1;
+  }
+#elif defined(__linux__)
+  (void)(filename);
+  sync();
+  std::ofstream ofs("/proc/sys/vm/drop_caches");
+  ofs << '3' << std::endl;
+#elif defined(WIN32)
+  // https://stackoverflow.com/questions/478340/clear-file-cache-to-repeat-performance-testing/7113153#7113153
+  HANDLE hFile = CreateFile(filename.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, nullptr);
+  if (hFile == INVALID_HANDLE_VALUE)
+  {
+    std::cerr << "ERROR: Cannot read '" << inputFilename << "'." << std::endl;
+    rc = 1;
+  }
+  CloseHandle(hFile);
+#else
+  (void)(filename);
+  sync(); // XXX
+#endif
+  return rc;
 }
 
 } // namespace pwned

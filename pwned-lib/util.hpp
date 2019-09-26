@@ -61,6 +61,22 @@ public:
   void disableBreak();
   void enableBreak();
 };
-}; // namespace pwned
+
+
+#if defined(__APPLE__)
+extern "C"
+{
+  struct proc;
+  struct vfs_purge_args;
+  int vfs_purge(struct proc *, struct vfs_purge_args *, int *);
+};
+#elif defined(WIN32)
+  #define WIN32_LEAN_AND_MEAN
+  #include <windows.h>
+#endif
+
+extern int purgeFilesystemCacheOn(const std::string &filename);
+
+} // namespace pwned
 
 #endif // __util_hpp__
