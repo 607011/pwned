@@ -114,9 +114,6 @@ int main(int argc, const char *argv[])
     return EXIT_SUCCESS;
   }
 
-
-  const uint64_t size = boost::filesystem::file_size(inputFilename);
-  const uint64_t offset = size / uint64_t(N);
   std::ifstream in(inputFilename, std::ios::binary);
   if (!in.is_open())
   {
@@ -130,40 +127,42 @@ int main(int argc, const char *argv[])
     return EXIT_FAILURE;
   }
 
-  std::cout << "Input file:  " << inputFilename << " (" << size << " bytes, offset = " << offset << ")" << std::endl
+  const uint64_t size = boost::filesystem::file_size(inputFilename);
+  std::cout << "Input file:  " << inputFilename << " (" << size << " bytes)" << std::endl
             << "Output file: " << outputFilename << std::endl;
 
   if (onlyNonExistent)
   {
     std::cout << "Selecting " << N << " non-existent hashes ... " << std::endl;
     std::mt19937_64 gen;
-    gen.seed(31337);
+    gen.seed(std::mt19937_64::default_seed);
     pwned::PasswordInspector inspector(inputFilename);
-    for (auto i = 0; i < N; ++i)
+    for (int i = 0; i < N; ++i)
     {
       pwned::Hash hash(gen(), gen());
       pwned::PHC p = inspector.binSearch(hash);
       if (p.count == 0)
       {
+        std::cout << hash << " #" << i << std::endl;
         p.hash = hash;
         p.dump(out);
-        std::cout << hash << " #" << i << std::endl;
       }
     }
   }
   else
   {
     std::cout << "Selecting " << N << " existent hashes ... " << std::endl;
+    std::mt19937_64 gen;
+    gen.seed(std::mt19937_64::default_seed);
     pwned::PHC phc;
-    int i = 0;
-    for (uint64_t pos = 0; pos < size && i < N; pos += offset)
+    for (int i = 0; i < N; ++i)
     {
+      const uint64_t pos = gen() % size;
       const uint64_t idx = pos - pos % pwned::PHC::size;
       if (phc.read(in, idx))
       {
         std::cout << phc.hash << " @ " << idx << std::endl;
         phc.dump(out);
-        ++i;
       }
     }
   }
