@@ -179,7 +179,11 @@ int main(int argc, const char *argv[])
   {
     if (doPurgeFilesystemCache)
     {
+#if defined(WIN32)
       pwned::purgeFilesystemCacheOn(inputFilename);
+#else
+      pwned::purgeFilesystemCache();
+#endif
     }
     std::cout << "Password? ";
     std::string pwd;

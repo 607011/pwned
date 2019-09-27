@@ -90,7 +90,11 @@ void benchmarkWithoutIndex(
     if (doPurgeFilesystemCache)
     {
       std::cout << "Purging filesystem cache (this can take some time) ... " << std::flush;
+#if defined(WIN32)
       pwned::purgeFilesystemCacheOn(inputFilename);
+#else
+      pwned::purgeFilesystemCache();
+#endif
       std::cout << std::endl;
     }
     std::cout << "Benchmark run " << run << " of " << nRuns << " in progress ... " << std::flush;
@@ -149,7 +153,11 @@ void benchmarkWithIndex(
     if (doPurgeFilesystemCache)
     {
       std::cout << "Purging filesystem cache (this can take some time) ... " << std::flush;
+#if defined(WIN32)
       pwned::purgeFilesystemCacheOn(inputFilename);
+#else
+      pwned::purgeFilesystemCache();
+#endif
       std::cout << std::endl;
     }
     std::cout << "Benchmark run " << run << " of " << nRuns << " in progress ... " << std::flush;
@@ -246,7 +254,7 @@ int main(int argc, const char *argv[])
     std::cout << "** WARNING** This program needs root privileges to purge the filesystem cache." << std::endl
               << "** WARNING** Running benchmarks without purging first." << std::endl
               << std::endl;
-    doPurgeFilesystemCache = false; 
+    doPurgeFilesystemCache = false;
   }
   auto searchCallable = std::mem_fn(&pwned::PasswordInspector::smartBinSearch);
   if (vm.count("algorithm"))

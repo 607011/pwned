@@ -212,17 +212,9 @@ void TermIO::enableBreak()
   tcsetattr(STDIN_FILENO, TCSANOW, &t);
 }
 
+#if defined(WIN32)
 void purgeFilesystemCacheOn(const std::string &filename)
 {
-#if defined(__APPLE__)
-  (void)(filename);
-  vfs_purge(nullptr, nullptr, nullptr);
-#elif defined(__linux__)
-  (void)(filename);
-  sync();
-  std::ofstream ofs("/proc/sys/vm/drop_caches");
-  ofs << '3' << std::endl;
-#elif defined(WIN32)
   // https://stackoverflow.com/questions/478340/clear-file-cache-to-repeat-performance-testing/7113153#7113153
   HANDLE hFile = CreateFile(filename.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, nullptr);
   if (hFile == INVALID_HANDLE_VALUE)
@@ -231,10 +223,22 @@ void purgeFilesystemCacheOn(const std::string &filename)
     rc = 1;
   }
   CloseHandle(hFile);
+}
 #else
+void purgeFilesystemCache()
+{
+#  if defined(__APPLE__)
+  vfs_purge(nullptr, nullptr, nullptr);
+#  elif defined(__linux__)
+  (void)(filename);
+  sync();
+  std::ofstream ofs("/proc/sys/vm/drop_caches");
+  ofs << '3' << std::endl;
+#  else
   (void)(filename);
   sync(); // XXX
-#endif
+#  endif
 }
+#endif
 
 } // namespace pwned

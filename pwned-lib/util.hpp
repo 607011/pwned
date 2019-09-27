@@ -63,19 +63,22 @@ public:
 };
 
 
-#if defined(__APPLE__)
+
+#if defined(WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+extern void purgeFilesystemCacheOn(const std::string &filename);
+#else
+#  if defined(__APPLE__)
 extern "C"
 {
   struct proc;
   struct vfs_purge_args;
   int vfs_purge(struct proc *, struct vfs_purge_args *, int *);
 };
-#elif defined(WIN32)
-  #define WIN32_LEAN_AND_MEAN
-  #include <windows.h>
+#  endif
+extern void purgeFilesystemCache();
 #endif
-
-extern void purgeFilesystemCacheOn(const std::string &filename);
 
 } // namespace pwned
 
