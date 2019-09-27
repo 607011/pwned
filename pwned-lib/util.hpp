@@ -75,7 +75,7 @@ extern "C"
   #include <windows.h>
 #endif
 
-extern int purgeFilesystemCacheOn(const std::string &filename);
+extern void purgeFilesystemCacheOn(const std::string &filename);
 
 } // namespace pwned
 

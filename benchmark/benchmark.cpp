@@ -44,7 +44,7 @@ po::options_description desc("Allowed options");
 
 void hello()
 {
-  std::cout << "#pwned lookup benchmark 1.0-RC - Copyright (c) 2019 Oliver Lau" << std::endl
+  std::cout << "#pwned lookup benchmark 1.0 - Copyright (c) 2019 Oliver Lau" << std::endl
             << std::endl;
 }
 
@@ -79,17 +79,24 @@ void benchmarkWithoutIndex(
   const std::string &inputFilename,
   const std::vector<pwned::PasswordHashAndCount> &phcs,
 #if defined(__linux__)
-  std::_Mem_fn<pwned::PasswordHashAndCount(pwned::PasswordInspector::*)(const pwned::Hash &, int *)> searchCallable)
+  std::_Mem_fn<pwned::PasswordHashAndCount(pwned::PasswordInspector::*)(const pwned::Hash &, int *)> searchCallable,
 #elif defined(__APPLE__)
-  std::__mem_fn<pwned::PasswordHashAndCount(pwned::PasswordInspector::*)(const pwned::Hash &, int *)> searchCallable)
+  std::__mem_fn<pwned::PasswordHashAndCount(pwned::PasswordInspector::*)(const pwned::Hash &, int *)> searchCallable,
 #endif
+  bool doPurgeFilesystemCache)
 {
   for (int run = 1; run <= nRuns; ++run)
   {
-    int nReads = 0;
+    if (doPurgeFilesystemCache)
+    {
+      std::cout << "Purging filesystem cache (this can take some time) ... " << std::flush;
+      pwned::purgeFilesystemCacheOn(inputFilename);
+      std::cout << std::endl;
+    }
     std::cout << "Benchmark run " << run << " of " << nRuns << " in progress ... " << std::flush;
     pwned::PasswordInspector inspector(inputFilename);
     std::function<pwned::PasswordHashAndCount(const pwned::Hash &, int *)> lookup = std::bind(searchCallable, &inspector, std::placeholders::_1, std::placeholders::_2);
+    int nReads = 0;
     int found = 0;
     int notFound = 0;
     auto t0 = std::chrono::high_resolution_clock::now();
@@ -134,19 +141,25 @@ void benchmarkWithIndex(
   std::vector<double> &runTimes,
   const std::string &inputFilename,
   const std::vector<pwned::PasswordHashAndCount> &phcs,
-  const std::string &indexFilename)
+  const std::string &indexFilename,
+  bool doPurgeFilesystemCache)
 {
   for (int run = 1; run <= nRuns; ++run)
   {
-    int nReads = 0;
+    if (doPurgeFilesystemCache)
+    {
+      std::cout << "Purging filesystem cache (this can take some time) ... " << std::flush;
+      pwned::purgeFilesystemCacheOn(inputFilename);
+      std::cout << std::endl;
+    }
     std::cout << "Benchmark run " << run << " of " << nRuns << " in progress ... " << std::flush;
     pwned::PasswordInspector inspector(inputFilename, indexFilename);
+    int nReads = 0;
     int found = 0;
     int notFound = 0;
     auto t0 = std::chrono::high_resolution_clock::now();
     for (const auto &phc : phcs)
     {
-      ++nReads;
       int readCount = 0;
       try
       {
@@ -228,6 +241,13 @@ int main(int argc, const char *argv[])
     license();
     return EXIT_SUCCESS;
   }
+  if (doPurgeFilesystemCache && geteuid() != 0)
+  {
+    std::cout << "** WARNING** This program needs root privileges to purge the filesystem cache." << std::endl
+              << "** WARNING** Running benchmarks without purging first." << std::endl
+              << std::endl;
+    doPurgeFilesystemCache = false; 
+  }
   auto searchCallable = std::mem_fn(&pwned::PasswordInspector::smartBinSearch);
   if (vm.count("algorithm"))
   {
@@ -270,10 +290,6 @@ int main(int argc, const char *argv[])
     nRuns = DefaultNumberOfRuns;
   }
 
-  if (doPurgeFilesystemCache)
-  {
-    pwned::purgeFilesystemCacheOn(inputFilename);
-  }
   std::ifstream testset(testsetFilename, std::ios::binary);
   std::cout << "Reading test set ... " << std::flush;
   std::vector<pwned::PasswordHashAndCount> phcs;
@@ -287,13 +303,13 @@ int main(int argc, const char *argv[])
   if (indexFilename.empty())
   {
     std::cout << "Using *" << algorithm << "* algorithm." << std::endl;
-    benchmarkWithoutIndex(nRuns, runTimes, inputFilename, phcs, searchCallable);
+    benchmarkWithoutIndex(nRuns, runTimes, inputFilename, phcs, searchCallable, doPurgeFilesystemCache);
   }
   else {
     if (fs::file_size(indexFilename) % sizeof(uint64_t) == 0)
     {
       std::cout << "Using *binsearch* algorithm with index." << std::endl;
-      benchmarkWithIndex(nRuns, runTimes, inputFilename, phcs, indexFilename);
+      benchmarkWithIndex(nRuns, runTimes, inputFilename, phcs, indexFilename, doPurgeFilesystemCache);
     }
     else
     {

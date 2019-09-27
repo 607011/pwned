@@ -212,24 +212,11 @@ void TermIO::enableBreak()
   tcsetattr(STDIN_FILENO, TCSANOW, &t);
 }
 
-int purgeFilesystemCacheOn(const std::string &filename)
+void purgeFilesystemCacheOn(const std::string &filename)
 {
-  int rc = 0;
 #if defined(__APPLE__)
   (void)(filename);
-  if (geteuid() == 0)
-  {
-    std::cout << "Purging filesystem cache (this can take a couple of minutes) ... " << std::flush;
-    vfs_purge(nullptr, nullptr, nullptr);
-    std::cout << std::endl << std::endl;
-  }
-  else
-  {
-    std::cout << "** WARNING** This program needs root privileges to purge the filesystem cache." << std::endl
-              << "** WARNING** Running benchmarks without purging first." << std::endl
-              << std::endl;
-    rc = 1;
-  }
+  vfs_purge(nullptr, nullptr, nullptr);
 #elif defined(__linux__)
   (void)(filename);
   sync();
@@ -248,7 +235,6 @@ int purgeFilesystemCacheOn(const std::string &filename)
   (void)(filename);
   sync(); // XXX
 #endif
-  return rc;
 }
 
 } // namespace pwned
