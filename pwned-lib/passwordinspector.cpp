@@ -259,9 +259,11 @@ PasswordHashAndCount PasswordInspector::smartBinSearch(const Hash &hash, int *re
     }
     else
     {
-      break;
-    }
+      safe_assign(readCount, nReads);
+      return phc;
+     }
   }
+  phc.count = 0;
   safe_assign(readCount, nReads);
   return phc;
 }
