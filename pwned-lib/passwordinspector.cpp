@@ -42,6 +42,55 @@ inline void safe_assign(T *a, T b)
   }
 }
 
+#if defined(NO_POPCNT)
+inline unsigned int popcount64(uint64_t x)
+{
+  constexpr uint64_t m1 = 0x5555555555555555ULL;
+  constexpr uint64_t m2 = 0x3333333333333333ULL;
+  constexpr uint64_t m4 = 0x0f0f0f0f0f0f0f0fULL;
+  constexpr uint64_t m8 = 0x00ff00ff00ff00ffULL;
+  constexpr uint64_t m16 = 0x0000ffff0000ffffULL;
+  constexpr uint64_t m32 = 0x00000000ffffffffULL;
+  constexpr uint64_t h01 = 0x0101010101010101ULL;
+  x -= (x >> 1) & m1;
+  x = (x & m2) + ((x >> 2) & m2);
+  x = (x + (x >> 4)) & m4;
+  return static_cast<unsigned int>((x * h01) >> 56);
+}
+#else
+#define popcount64(x) static_cast<unsigned int>(_mm_popcnt_u64(x))
+#endif // NO_POPCNT
+
+static inline PasswordHashAndCount _binsearch(std::ifstream &inputFile, const Hash &hash, int64_t lo, int64_t hi, int *readCount)
+{
+  int nReads = 0;
+  PasswordHashAndCount phc;
+  while (lo <= hi)
+  {
+    int64_t pos = (lo + hi) / 2;
+    pos -= pos % PasswordHashAndCount::size;
+    pos = std::max<int64_t>(0, pos);
+    phc.read(inputFile, pos);
+    ++nReads;
+    if (hash > phc.hash)
+    {
+      lo = pos + PasswordHashAndCount::size;
+    }
+    else if (hash < phc.hash)
+    {
+      hi = pos - PasswordHashAndCount::size;
+    }
+    else
+    {
+      safe_assign(readCount, nReads);
+      return phc;
+    }
+  }
+  phc.count = 0;
+  safe_assign(readCount, nReads);
+  return phc;
+}
+
 PasswordInspector::PasswordInspector()
     : size(0)
     , shift(0)
@@ -67,34 +116,13 @@ bool PasswordInspector::open(const std::string &filename)
   return inputFile.is_open();
 }
 
-#ifdef NO_POPCNT
-inline unsigned int popcount64(uint64_t x)
-{
-  constexpr uint64_t m1 = 0x5555555555555555ULL;
-  constexpr uint64_t m2 = 0x3333333333333333ULL;
-  constexpr uint64_t m4 = 0x0f0f0f0f0f0f0f0fULL;
-  constexpr uint64_t m8 = 0x00ff00ff00ff00ffULL;
-  constexpr uint64_t m16 = 0x0000ffff0000ffffULL;
-  constexpr uint64_t m32 = 0x00000000ffffffffULL;
-  constexpr uint64_t h01 = 0x0101010101010101ULL;
-  x -= (x >> 1) & m1;
-  x = (x & m2) + ((x >> 2) & m2);
-  x = (x + (x >> 4)) & m4;
-  return (x * h01) >> 56;
-}
-#endif // NO_POPCNT
-
 bool PasswordInspector::openWithIndex(const std::string &inputFilename, const std::string &indexFilename)
 {
   bool ok = open(inputFilename);
   if (!indexFilename.empty())
   {
     const uint64_t nKeys = static_cast<uint64_t>(fs::file_size(indexFilename)) / sizeof(index_key_t);
-#ifndef NO_POPCNT
-    shift = sizeof(index_key_t) * 8 - static_cast<unsigned int>(_mm_popcnt_u64(nKeys - 1));
-#else
     shift = sizeof(index_key_t) * 8 - popcount64(nKeys - 1);
-#endif
     indexFile.open(indexFilename, std::ios::in | std::ios::binary);
     ok = ok && indexFile.is_open();
   }
@@ -165,30 +193,8 @@ PasswordHashAndCount PasswordInspector::binSearch(const Hash &hash, int *readCou
     }
     while (hi == std::numeric_limits<index_key_t>::max());
   }
-  PasswordHashAndCount phc;
-  while (lo <= hi)
-  {
-    int64_t pos = (lo + hi) / 2;
-    pos -= pos % PasswordHashAndCount::size;
-    pos = std::max<int64_t>(0, pos);
-    phc.read(inputFile, pos);
-    ++nReads;
-    if (hash > phc.hash)
-    {
-      lo = pos + PasswordHashAndCount::size;
-    }
-    else if (hash < phc.hash)
-    {
-      hi = pos - PasswordHashAndCount::size;
-    }
-    else
-    {
-      safe_assign(readCount, nReads);
-      return phc;
-    }
-  }
-  phc.count = 0;
-  safe_assign(readCount, nReads);
+  const PasswordHashAndCount &phc = _binsearch(inputFile, hash, lo, hi, &nReads);
+  safe_assign(readCount, nReads + *readCount);
   return phc;
 }
 
@@ -241,30 +247,8 @@ PasswordHashAndCount PasswordInspector::smartBinSearch(const Hash &hash, int *re
   {
     throw("[PasswordInspector] Hash out of bounds: !(" + h0.toString() + " < " + hash.toString() + " < " + h1.toString() + ")");
   }
-  PasswordHashAndCount phc;
-  while (lo <= hi)
-  {
-    int64_t pos = (lo + hi) / 2;
-    pos -= pos % PasswordHashAndCount::size;
-    pos = std::max<int64_t>(0, pos);
-    phc.read(inputFile, pos);
-    ++nReads;
-    if (hash > phc.hash)
-    {
-      lo = pos + PasswordHashAndCount::size;
-    }
-    else if (hash < phc.hash)
-    {
-      hi = pos - PasswordHashAndCount::size;
-    }
-    else
-    {
-      safe_assign(readCount, nReads);
-      return phc;
-     }
-  }
-  phc.count = 0;
-  safe_assign(readCount, nReads);
+  const PasswordHashAndCount &phc = _binsearch(inputFile, hash, lo, hi, &nReads);
+  safe_assign(readCount, nReads + *readCount);
   return phc;
 }
 
@@ -272,4 +256,5 @@ PasswordHashAndCount PasswordInspector::lookup(const std::string &pwd)
 {
   return binSearch(pwned::Hash(pwd));
 }
+
 } // namespace pwned
