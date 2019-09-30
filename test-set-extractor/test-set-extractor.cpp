@@ -131,16 +131,16 @@ int main(int argc, const char *argv[])
   std::cout << "Input file:  " << inputFilename << " (" << size << " bytes)" << std::endl
             << "Output file: " << outputFilename << std::endl;
 
+  std::mt19937_64 gen;
+  gen.seed(std::mt19937_64::default_seed);
   if (onlyNonExistent)
   {
     std::cout << "Selecting " << N << " non-existent hashes ... " << std::endl;
-    std::mt19937_64 gen;
-    gen.seed(std::mt19937_64::default_seed);
     pwned::PasswordInspector inspector(inputFilename);
     for (int i = 0; i < N; ++i)
     {
       pwned::Hash hash(gen(), gen());
-      pwned::PHC p = inspector.binSearch(hash);
+      pwned::PasswordHashAndCount p = inspector.binSearch(hash);
       if (p.count == 0)
       {
         std::cout << hash << " #" << i << std::endl;
@@ -152,9 +152,7 @@ int main(int argc, const char *argv[])
   else
   {
     std::cout << "Selecting " << N << " existent hashes ... " << std::endl;
-    std::mt19937_64 gen;
-    gen.seed(std::mt19937_64::default_seed);
-    pwned::PHC phc;
+    pwned::PasswordHashAndCount phc;
     for (int i = 0; i < N; ++i)
     {
       const uint64_t pos = gen() % size;
