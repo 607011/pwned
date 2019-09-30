@@ -230,12 +230,10 @@ void purgeFilesystemCache()
 #  if defined(__APPLE__)
   vfs_purge(nullptr, nullptr, nullptr);
 #  elif defined(__linux__)
-  (void)(filename);
   sync();
   std::ofstream ofs("/proc/sys/vm/drop_caches");
   ofs << '3' << std::endl;
 #  else
-  (void)(filename);
   sync(); // XXX
 #  endif
 }
