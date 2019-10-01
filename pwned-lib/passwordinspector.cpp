@@ -48,9 +48,6 @@ inline unsigned int popcount64(uint64_t x)
   constexpr uint64_t m1 = 0x5555555555555555ULL;
   constexpr uint64_t m2 = 0x3333333333333333ULL;
   constexpr uint64_t m4 = 0x0f0f0f0f0f0f0f0fULL;
-  constexpr uint64_t m8 = 0x00ff00ff00ff00ffULL;
-  constexpr uint64_t m16 = 0x0000ffff0000ffffULL;
-  constexpr uint64_t m32 = 0x00000000ffffffffULL;
   constexpr uint64_t h01 = 0x0101010101010101ULL;
   x -= (x >> 1) & m1;
   x = (x & m2) + ((x >> 2) & m2);
