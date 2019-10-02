@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 2.8)
 
-project(benchmark)
+project(pwned-benchmark)
 
-add_executable(benchmark benchmark.cpp)
-set_target_properties(benchmark PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
+add_executable(pwned-benchmark pwned-benchmark.cpp)
+set_target_properties(pwned-benchmark PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
 
-target_include_directories(benchmark
+target_include_directories(pwned-benchmark
 	PRIVATE ${PROJECT_INCLUDE_DIRS}
 	PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR}
 )
@@ -16,7 +16,7 @@ else()
   set(PLATFORM_DEPENDENT_LIBRARIES, "")
 endif()
 
-target_link_libraries(benchmark
+target_link_libraries(pwned-benchmark
   pnwed
   ${PLATFORM_DEPENDENT_LIBRARIES}
   ${OPENSSL_CRYPTO_LIBRARY}

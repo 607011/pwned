@@ -36,7 +36,11 @@ public:
                           const std::string &outputExt,
                           uint64_t maxMem,
                           const std::vector<pwned::UserPasswordReaderOptions> &options)
-      : srcFilePath(srcFilename), dstPath(dstDirectory), outputExt(outputExt), maxMem(maxMem), options(options)
+      : srcFilePath(srcFilename)
+      , dstPath(dstDirectory)
+      , outputExt(outputExt)
+      , maxMem(maxMem)
+      , options(options)
   {
   }
   const fs::path srcFilePath;
@@ -156,7 +160,7 @@ void ConvertOperation::execute() noexcept(false)
     std::ofstream f(dstFilePath.string(), std::ios::out | std::ios::binary);
     if (f.is_open())
     {
-      for (auto &phc : passwordList)
+      for (const auto &phc : passwordList)
       {
         phc.dump(f);
       }

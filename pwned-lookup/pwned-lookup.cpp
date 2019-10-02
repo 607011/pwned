@@ -174,7 +174,6 @@ int main(int argc, const char *argv[])
   std::cout << "Using *" << algorithm << "* algorithm ..." << std::endl;
   auto lookup = std::bind(searchCallable, &inspector, std::placeholders::_1, std::placeholders::_2);
 
-
   for (;;)
   {
     if (doPurgeFilesystemCache)

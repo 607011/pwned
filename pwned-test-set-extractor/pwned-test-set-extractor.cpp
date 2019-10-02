@@ -111,7 +111,7 @@ int main(int argc, const char *argv[])
   if (inputFilename.empty() || outputFilename.empty())
   {
     usage();
-    return EXIT_SUCCESS;
+    return EXIT_FAILURE;
   }
 
   std::ifstream in(inputFilename, std::ios::binary);

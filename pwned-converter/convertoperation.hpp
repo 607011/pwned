@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <cstdint>
 
 #include <pwned-lib/operation.hpp>
 #include <pwned-lib/hash.hpp>

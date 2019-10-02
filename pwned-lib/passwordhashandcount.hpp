@@ -18,7 +18,7 @@
 #ifndef __passwordhashandcount_hpp__
 #define __passwordhashandcount_hpp__
 
-#include <fstream>
+#include <iostream>
 #include <cstdint>
 
 #include "hash.hpp"
@@ -48,7 +48,7 @@ public:
   {
   }
 
-  inline bool read(std::ifstream &f)
+  inline bool read(std::istream &f)
   {
     f.read((char *)hash.data, Hash::size);
     if (f.gcount() != Hash::size)
@@ -57,13 +57,13 @@ public:
     return f.gcount() == sizeof(count);
   }
 
-  inline bool read(std::ifstream &f, uint64_t pos)
+  inline bool read(std::istream &f, uint64_t pos)
   {
     f.seekg(pos);
     return read(f);
   }
 
-  inline void dump(std::ofstream &f) const
+  inline void dump(std::ostream &f) const
   {
     f.write((char *)hash.data, Hash::size);
     f.write((char *)&count, sizeof(count));

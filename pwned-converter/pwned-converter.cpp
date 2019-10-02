@@ -38,7 +38,6 @@
 namespace fs = boost::filesystem;
 namespace ba = boost::algorithm;
 namespace po = boost::program_options;
-using namespace std::chrono;
 
 po::options_description desc("Allowed options");
 
@@ -51,9 +50,9 @@ void hello()
 void info()
 {
   std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details" << std::endl
-            << "type `pwned-merger --warranty'. This is free software, and" << std::endl
+            << "type `pwned-converter --warranty'. This is free software, and" << std::endl
             << "you are welcome to redistribute it under certain conditions;" << std::endl
-            << "type `pwned-merger --license' for details." << std::endl
+            << "type `pwned-converter --license' for details." << std::endl
             << std::endl;
 }
 
@@ -125,7 +124,7 @@ int main(int argc, const char *argv[])
   {
     std::cout << "Scanning " << srcDirectory << " for files ..." << std::flush;
     fs::recursive_directory_iterator fileTreeIterator(srcDirectory);
-    for (auto &&f : fileTreeIterator)
+    for (const auto &f : fileTreeIterator)
     {
       const std::string &filePath = f.path().string();
       if (fs::is_regular_file(f) && ba::ends_with(filePath, ".txt"))
@@ -165,10 +164,10 @@ int main(int argc, const char *argv[])
   std::cout << "Converting " << filenames.size() << " files." << std::endl;
   std::cout << "Destination directory: " << dstDirectory << std::endl
             << std::endl;
-  high_resolution_clock::time_point t0 = high_resolution_clock::now();
+  std::chrono::high_resolution_clock::time_point t0 = std::chrono::high_resolution_clock::now();
   std::cout << "Preparing queue ..." << std::endl;
   pwned::OperationQueue<ConvertOperation> opQueue;
-  for (auto filename : filenames)
+  for (const auto &filename : filenames)
   {
     ConvertOperation *op = new ConvertOperation(filename,
                                                 dstDirectory,
@@ -214,8 +213,8 @@ int main(int argc, const char *argv[])
   std::cout << "([Space] to pause/resume, Q to quit)" << std::endl;
   opQueue.execute(true);
   opQueue.waitForFinished();
-  high_resolution_clock::time_point t1 = high_resolution_clock::now();
-  duration<float> time_span = duration_cast<duration<float>>(t1 - t0);
+  std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::duration<float>>(t1 - t0);
   if (!opQueue.isCancelled())
   {
     std::cout << "Total time: " << pwned::readableTime(time_span.count()) << std::endl

@@ -26,7 +26,7 @@
 #include <boost/filesystem.hpp>
 
 #include <pwned-lib/passwordhashandcount.hpp>
-#include <pwned-merger-cli/lazy.hpp>
+#include <pwned-merger/lazy.hpp>
 
 namespace fs = boost::filesystem;
 

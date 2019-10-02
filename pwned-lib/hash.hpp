@@ -65,13 +65,13 @@ struct Hash
     lower = ntohll(lower);
   }
 
-  inline bool read(std::ifstream &f)
+  inline bool read(std::istream &f)
   {
-    f.read((char *)data, Hash::size);
+    f.read(reinterpret_cast<char *>(data), Hash::size);
     return f.gcount() == Hash::size;
   }
 
-  inline bool read(std::ifstream &f, uint64_t pos)
+  inline bool read(std::istream &f, uint64_t pos)
   {
     f.seekg(pos);
     return read(f);
