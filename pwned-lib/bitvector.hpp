@@ -18,6 +18,7 @@
 #ifndef __bitvector_hpp__
 #define __bitvector_hpp__
 
+#include <type_traits>
 #include <limits>
 #include <cstdint>
 #include <cstring>
@@ -25,9 +26,12 @@
 
 namespace pwned {
 
-template <typename value_type = uint64_t, element_type = uint64_t>
+template <typename value_type = uint64_t, typename element_type = uint64_t>
 class BitVector
 {
+  static_assert(std::is_integral<value_type>::value && std::is_integral<element_type>::value, "Integral required.");
+  static_assert(sizeof(value_type) <= sizeof(element_type), "element_type must have more or equal bits in comparison to value_type.");
+
 public:
   BitVector()
       : bitsPerEntry(0)
@@ -41,11 +45,11 @@ public:
       : bitsPerEntry(bitsPerEntry)
       , size(size)
   {
-    if (bitsPerEntry > sizeof(value_type) * 8)
+    if (bitsPerEntry > sizeof(element_type) * 8)
     {
       throw "Illegal number of bits per entry";
     }
-    data = new value_type[size * bitsPerEntry / 8 / sizeof(value_type)];
+    data = new element_type[size * bitsPerEntry / 8 / sizeof(element_type)];
     mask = (1 << bitsPerEntry) - 1;
   }
 
@@ -54,7 +58,7 @@ public:
       , size(other.size)
       , mask(other.mask)
   {
-    data = new value_type[size * bitsPerEntry / 8 / sizeof(value_type)];
+    data = new element_type[size * bitsPerEntry / 8 / sizeof(element_type)];
     memcpy(data, other.data, size * bitsPerEntry / 8);
   }
 
@@ -72,9 +76,9 @@ public:
     {
       out.write(reinterpret_cast<const char *>(&bitsPerEntry), sizeof(bitsPerEntry));
       out.write(reinterpret_cast<const char *>(&size), sizeof(size));
-      for (uint64_t i = 0; i < size * bitsPerEntry / 8 / sizeof(value_type); ++i)
+      for (uint64_t i = 0; i < size * bitsPerEntry / 8 / sizeof(element_type); ++i)
       {
-        out.write(reinterpret_cast<const char *>(data[i]), sizeof(value_type));
+        out.write(reinterpret_cast<const char *>(data[i]), sizeof(element_type));
       }
     }
   }
@@ -87,12 +91,12 @@ public:
     {
       delete[] data;
     }
-    const uint64_t N = size * bitsPerEntry / 8 / sizeof(value_type);
-    data = new value_type[N];
+    const uint64_t N = size * bitsPerEntry / 8 / sizeof(element_type);
+    data = new element_type[N];
     mask = (1 << bitsPerEntry) - 1;
     for (uint64_t i = 0; i < N; ++i)
     {
-      in.read(reinterpret_cast<char*>(data[i]), sizeof(value_type));
+      in.read(reinterpret_cast<char*>(data[i]), sizeof(element_type));
     }
   }
 
@@ -100,21 +104,21 @@ public:
   {
     // no bounds checking to improve performance
     const uint64_t bitIdx = pos * bitsPerEntry;
-    const unsigned int bitRem = static_cast<unsigned int>(bitIdx % sizeof(value_type));
-    const uint64_t idx = bitIdx / sizeof(value_type) / 8;
-    value_type val = 0;
+    const unsigned int bitRem = static_cast<unsigned int>(bitIdx % sizeof(element_type));
+    const uint64_t idx = bitIdx / sizeof(element_type) / 8;
+    element_type val = 0;
     if (bitRem < bitsPerEntry)
     {
-      const unsigned int shift = sizeof(value_type) * 8 - bitsPerEntry - bitRem;
+      const unsigned int shift = sizeof(element_type) * 8 - bitsPerEntry - bitRem;
       val = data[idx] >> shift;
     }
     else
     {
-      const unsigned int shift1 = sizeof(value_type) * 8 - bitRem;
-      const unsigned int shift2 = sizeof(value_type) * 8 - bitsPerEntry - bitRem - shift1;
+      const unsigned int shift1 = sizeof(element_type) * 8 - bitRem;
+      const unsigned int shift2 = sizeof(element_type) * 8 - bitsPerEntry - bitRem - shift1;
       val = (data[idx] << shift1) | (data[idx+1] >> shift2);
     }
-    return val & mask;
+    return static_cast<value_type>(val & mask);
   }
 
   value_type operator[] (uint64_t pos) const
@@ -125,14 +129,14 @@ public:
   void set(uint64_t pos, value_type val)
   {
     const uint64_t bitIdx = pos * bitsPerEntry;
-    const uint64_t bitRem = bitIdx % sizeof(value_type);
-    const uint64_t idx = bitIdx / sizeof(value_type) / 8;
+    const uint64_t bitRem = bitIdx % sizeof(element_type);
+    const uint64_t idx = bitIdx / sizeof(element_type) / 8;
     if (bitRem < bitsPerEntry)
     {
-      const int shift = sizeof(value_type) * 8 - bitsPerEntry - bitRem;
-      const value_type orig = data[idx];
-      const value_type newVal = val << shift;
-      const value_type invMask = 0;
+      const int shift = sizeof(element_type) * 8 - bitsPerEntry - bitRem;
+      const element_type orig = data[idx];
+      const element_type newVal = static_cast<element_type>(val) << shift;
+      const element_type invMask = 0;
       data[idx] = (orig & invMask) | newVal;
     }
 
@@ -143,7 +147,6 @@ private:
   uint64_t size;
   element_type mask;
   element_type *data;
-  static const char MAGIC[8];
 };
 
 } // namespace pwned
