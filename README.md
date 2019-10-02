@@ -10,22 +10,24 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 **pwned-lib**: library with basic classes and functions to read and write hashes and their according counts
 
-**pwned-converted-cli**: command-line interface to convert clear-text password files to binary files containing MD5 hashes and their according counts, sorted by hash
+**pwned-converter**: command-line interface to convert clear-text password files to binary files containing MD5 hashes and their according counts, sorted by hash
 
-**pwned-merger-cli**: command-line interface to merge MD5:count files
+**pwned-merger**: command-line interface to merge multiple MD5:count files into one
 
-**pwned-lookup-cli**: command-line interface to look up passwords in an MD5:count file
+**pwned-lookup**: command-line interface to look up passwords in an MD5:count file
 
-**pwned-index**: command-line interface to build an index of an MD5:count file
+**pwned-indexer**: command-line interface to build an index of an MD5:count file
+
+**pwned-mphf-gen**: command-line interface to build a minimal perfect hash of an MD5:count file (work in progress)
 
 
 ### Auxiliary programs
 
-**test-set-extractor**: command-line interface to extract a test set from a MD5:count file containing existent and non-existents hashes (used by benchmark)
+**pwned-test-set-extractor**: command-line interface to extract a test set from a MD5:count file containing existent and non-existents hashes (used by benchmark)
 
-**benchmark**: command-line interface to run performance tests with different search algorithms
+**pwned-benchmark**: command-line interface to run performance tests with different search algorithms
 
-**be2le**: command-line interface to convert a binary MD5:count file from Big-Endian to Little-Endian representation (no longer needed because the current release of pwned-converter-cli and pwneder-merger-cli already produces Little-Endian data)
+**pwned-be2le**: command-line interface to convert a binary MD5:count file from Big-Endian to Little-Endian representation (no longer needed because the current release of pwned-converter-cli and pwneder-merger-cli already produces Little-Endian data)
 
 
 ## Prerequisites
