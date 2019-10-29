@@ -133,7 +133,12 @@ void benchmarkWithoutIndex(
   std::vector<double> &runTimes,
   const std::string &inputFilename,
   const std::vector<pwned::PasswordHashAndCount> &phcs,
-  std::__1::__mem_fn<pwned::PasswordHashAndCount(pwned::PasswordInspector::*)(const pwned::Hash &, int *)> searchCallable)
+#ifdef __linux__
+  std::_Mem_fn<pwned::PasswordHashAndCount(pwned::PasswordInspector::*)(const pwned::Hash &, int *)> searchCallable
+#else
+  std::__1::__mem_fn<pwned::PasswordHashAndCount(pwned::PasswordInspector::*)(const pwned::Hash &, int *)> searchCallable
+#endif
+  )
 {
   for (int run = 1; run <= nRuns; ++run)
   {
