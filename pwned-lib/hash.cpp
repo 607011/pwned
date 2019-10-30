@@ -95,6 +95,7 @@ Hash Hash::fromHex(const std::string &seq)
     }
     hash.isValid = j == Hash::size;
   }
+  hash.toHostByteOrder();
   return hash;
 }
 
