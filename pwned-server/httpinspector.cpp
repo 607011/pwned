@@ -18,6 +18,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <chrono>
 #include <cpprest/json.h>
 #include <cpprest/uri.h>
 
@@ -53,21 +54,15 @@ void HttpInspector::handleGet(web::http::http_request message)
   {
     std::map<utility::string_t, utility::string_t> query = web::uri::split_query(web::uri::decode(message.request_uri().query()));
     const pwned::Hash hash = pwned::Hash::fromHex(query["hash"]);
-
-    std::cout << query["hash"] << " -> " << hash << " " << hash.isValid << std::endl;
+    const auto &t0 = std::chrono::high_resolution_clock::now();
     const pwned::PasswordHashAndCount &phc = inspector->binsearch(hash);
+    const auto &t1 = std::chrono::high_resolution_clock::now();
+    double duration = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0).count() * 1000;
     web::json::value response = web::json::value::object();
     response["hash"] = web::json::value::string(phc.hash.toString());
-    response["found"] = web::json::value::string(std::to_string(phc.count));
+    response["found"] = web::json::value::number(phc.count);
+    response["lookup-time-ms"] = web::json::value::number(duration);
     message.reply(web::http::status_codes::OK, response);
   }
-  message.reply(web::http::status_codes::NotImplemented, responseNotImpl(web::http::methods::GET));
-}
-
-web::json::value HttpInspector::responseNotImpl(const web::http::method &method)
-{
-  auto response = web::json::value::object();
-  response["serviceName"] = web::json::value::string("pwned lookup service");
-  response["http_method"] = web::json::value::string(method);
-  return response;
+  message.reply(web::http::status_codes::BadRequest);
 }

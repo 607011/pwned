@@ -34,7 +34,6 @@ public:
 
 private:
   void handleGet(web::http::http_request message);
-  web::json::value responseNotImpl(const web::http::method &method);
 
 private:
   web::http::experimental::listener::http_listener listener;
