@@ -33,12 +33,8 @@
 
 namespace po = boost::program_options;
 
-po::options_description desc("Allowed options");
-
-std::unique_ptr<HttpInspector> gHttpInspector;
-
-
-boost::asio::ip::tcp::resolver::iterator queryHostInetInfo() {
+boost::asio::ip::tcp::resolver::iterator queryHostInetInfo()
+{
   boost::asio::io_service ios;
   boost::asio::ip::tcp::resolver resolver(ios);
   boost::asio::ip::tcp::resolver::query query(boost::asio::ip::host_name(), "");
@@ -96,6 +92,8 @@ void warranty()
             << std::endl;
 }
 
+po::options_description desc("Allowed options");
+
 void usage()
 {
   std::cout << desc << std::endl;
@@ -135,7 +133,6 @@ int main(int argc, const char *argv[])
   }
 
   hello();
-  pwned::PasswordInspector *inspector = new pwned::PasswordInspector(inputFilename, indexFilename);
 
   web::uri endpointURI(endpoint);
   web::uri_builder endpointBuilder;
@@ -155,10 +152,11 @@ int main(int argc, const char *argv[])
   endpointBuilder.set_port(endpointURI.port());
   endpointBuilder.set_path(endpointURI.path());
   
-  gHttpInspector = std::unique_ptr<HttpInspector>(new HttpInspector(endpointBuilder.to_uri(), inspector));
+  pwned::PasswordInspector *pwdInspector = new pwned::PasswordInspector(inputFilename, indexFilename);
+  HttpInspector *httpInspector = new HttpInspector(endpointBuilder.to_uri(), pwdInspector);
 
   try {
-    gHttpInspector->accept().wait();
+    httpInspector->accept().wait();
     std::cout << "Listening for requests at " << endpointBuilder.to_string() << " ... " << std::endl;
   }
   catch (std::exception & e)
@@ -176,8 +174,9 @@ int main(int argc, const char *argv[])
   std::string line;
   std::getline(std::cin, line);
 
-  gHttpInspector->shutdown().wait();
-  delete inspector;
+  httpInspector->shutdown().wait();
+  delete httpInspector;
+  delete pwdInspector;
 
   return EXIT_SUCCESS;
 }
