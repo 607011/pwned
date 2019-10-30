@@ -23,9 +23,6 @@
 #include <boost/program_options.hpp>
 #include <boost/asio.hpp>
 
-#include <pwned-lib/passwordinspector.hpp>
-
-
 #include "httpinspector.hpp"
 
 #ifdef _WIN32
@@ -106,7 +103,7 @@ void usage()
 
 int main(int argc, const char *argv[])
 {
-  static const std::string DefaultURI = "http://host_auto_ip4:31337/v1/pwned/api";
+  static const std::string DefaultURI = "http://127.0.0.1:31337/v1/pwned/api";
   std::string inputFilename;
   std::string indexFilename;
   std::string endpoint = DefaultURI;
@@ -138,7 +135,7 @@ int main(int argc, const char *argv[])
   }
 
   hello();
-  pwned::PasswordInspector inspector(inputFilename, indexFilename);
+  pwned::PasswordInspector *inspector = new pwned::PasswordInspector(inputFilename, indexFilename);
 
   web::uri endpointURI(endpoint);
   web::uri_builder endpointBuilder;
@@ -157,17 +154,30 @@ int main(int argc, const char *argv[])
   }
   endpointBuilder.set_port(endpointURI.port());
   endpointBuilder.set_path(endpointURI.path());
+  
+  gHttpInspector = std::unique_ptr<HttpInspector>(new HttpInspector(endpointBuilder.to_uri(), inspector));
 
-  gHttpInspector = std::unique_ptr<HttpInspector>(new HttpInspector(endpointBuilder.to_uri()));
-  gHttpInspector->open().wait();
-
-  std::cout << "Listening for requests at " << endpointBuilder.to_string() << " ... " << std::endl;
+  try {
+    gHttpInspector->accept().wait();
+    std::cout << "Listening for requests at " << endpointBuilder.to_string() << " ... " << std::endl;
+  }
+  catch (std::exception & e)
+  {
+    std::cerr << "ERROR: " << e.what() << std::endl;
+    return EXIT_FAILURE;
+  }
+  catch (...)
+  {
+    std::cerr << "ERROR: unknown cause :-(" << std::endl;
+    return EXIT_FAILURE;
+  }
 
   std::cout << "Press ENTER to exit." << std::endl;
   std::string line;
   std::getline(std::cin, line);
 
-  gHttpInspector->close().wait();
+  gHttpInspector->shutdown().wait();
+  delete inspector;
 
   return EXIT_SUCCESS;
 }

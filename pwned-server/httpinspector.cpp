@@ -15,33 +15,59 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
-// #include <cpprest/asyncrt_utils.h>
+#include <string>
+#include <map>
+#include <vector>
 #include <cpprest/json.h>
 #include <cpprest/uri.h>
 
 #include "httpinspector.hpp"
 
-HttpInspector::HttpInspector(web::uri uri)
+HttpInspector::HttpInspector()
+: inspector(nullptr)
+{}
+
+HttpInspector::HttpInspector(web::uri uri, pwned::PasswordInspector *inspector)
 : listener(uri)
+, inspector(inspector)
 {
   listener.support(web::http::methods::GET, std::bind(&HttpInspector::handleGet, this, std::placeholders::_1));
+}
+
+pplx::task<void> HttpInspector::accept()
+{
+  return listener.open();
+}
+
+pplx::task<void> HttpInspector::shutdown()
+{
+  return listener.close();
 }
 
 void HttpInspector::handleGet(web::http::http_request message)
 {
   std::cout << message.to_string() << std::endl;
-  auto relativePath = web::uri::decode(message.relative_uri().path());
-  auto path = web::uri::split_path(relativePath);
-  message.reply(web::http::status_codes::OK);
+  utility::string_t relativePath = web::uri::decode(message.relative_uri().path());
+  std::vector<utility::string_t>  path = web::uri::split_path(relativePath);
+  if (path.size() == 1 && path[0] == "lookup")
+  {
+    std::map<utility::string_t, utility::string_t> query = web::uri::split_query(web::uri::decode(message.request_uri().query()));
+    const pwned::Hash hash = pwned::Hash::fromHex(query["hash"]);
+
+    std::cout << query["hash"] << " -> " << hash << " " << hash.isValid << std::endl;
+    const pwned::PasswordHashAndCount &phc = inspector->binsearch(hash);
+    web::json::value response = web::json::value::object();
+    response["hash"] = web::json::value::string(phc.hash.toString());
+    response["found"] = web::json::value::string(std::to_string(phc.count));
+    message.reply(web::http::status_codes::OK, response);
+  }
+  message.reply(web::http::status_codes::NotImplemented, responseNotImpl(web::http::methods::GET));
 }
 
-pplx::task<void> HttpInspector::open()
+web::json::value HttpInspector::responseNotImpl(const web::http::method &method)
 {
-  return listener.open();
-}
-
-pplx::task<void> HttpInspector::close()
-{
-  return listener.close();
+  auto response = web::json::value::object();
+  response["serviceName"] = web::json::value::string("pwned lookup service");
+  response["http_method"] = web::json::value::string(method);
+  return response;
 }

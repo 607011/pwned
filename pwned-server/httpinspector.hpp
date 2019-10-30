@@ -19,19 +19,26 @@
 #define __HTTPINSPECTOR_HPP__
 
 #include <cpprest/http_listener.h>
+#include <cpprest/json.h>
+
+#include <pwned-lib/passwordinspector.hpp>
 
 class HttpInspector
 {
 public:
-  HttpInspector() = default;
-  HttpInspector(web::uri uri);
+  HttpInspector();
+  HttpInspector(web::uri uri, pwned::PasswordInspector *inspector);
 
-  pplx::task<void> open();
-  pplx::task<void> close();
+  pplx::task<void> accept();
+  pplx::task<void> shutdown();
 
 private:
   void handleGet(web::http::http_request message);
+  web::json::value responseNotImpl(const web::http::method &method);
+
+private:
   web::http::experimental::listener::http_listener listener;
+  pwned::PasswordInspector *inspector;
 };
 
 #endif
