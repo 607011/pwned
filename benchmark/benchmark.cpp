@@ -136,7 +136,7 @@ void benchmarkWithoutIndex(
 #ifdef __linux__
   std::_Mem_fn<pwned::PasswordHashAndCount(pwned::PasswordInspector::*)(const pwned::Hash &, int *)> searchCallable
 #else
-  std::__1::__mem_fn<pwned::PasswordHashAndCount(pwned::PasswordInspector::*)(const pwned::Hash &, int *)> searchCallable
+  std::__mem_fn<pwned::PasswordHashAndCount(pwned::PasswordInspector::*)(const pwned::Hash &, int *)> searchCallable
 #endif
   )
 {
