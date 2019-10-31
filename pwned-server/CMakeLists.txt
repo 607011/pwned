@@ -17,7 +17,6 @@ else()
   set(PLATFORM_DEPENDENT_LIBRARIES, "")
 endif()
 
-find_package(cpprestsdk REQUIRED)
 find_library(cpprestsdk-lib cpprest)
 message(STATUS "cpprestsdk-lib = ${cpprestsdk-lib}")
 

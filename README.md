@@ -29,6 +29,13 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 **be2le**: command-line interface to convert a binary MD5:count file from Big-Endian to Little-Endian representation (no longer needed because the current release of pwned-converter-cli and pwneder-merger-cli already produces Little-Endian data)
 
+## Prerequisites
+
+### Ubuntu 19.xx
+
+```
+sudo apt install git cmake c++ libssl-dev libboost-dev libcpprest-dev libboost-program-options-dev libboost-date-time-dev
+```
 
 ## Build for release
 
