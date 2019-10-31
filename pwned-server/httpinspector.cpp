@@ -50,7 +50,7 @@ void HttpInspector::handleGet(web::http::http_request message)
   std::cout << message.to_string() << std::endl;
   utility::string_t relativePath = web::uri::decode(message.relative_uri().path());
   std::vector<utility::string_t>  path = web::uri::split_path(relativePath);
-  if (path.size() == 1 && path[0] == "lookup")
+  if (path.size() == 1 && path[0] == "lookup" && inspector != nullptr)
   {
     std::map<utility::string_t, utility::string_t> query = web::uri::split_query(web::uri::decode(message.request_uri().query()));
     const pwned::Hash hash = pwned::Hash::fromHex(query["hash"]);
