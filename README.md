@@ -46,7 +46,7 @@ sudo apt install git cmake c++ \
 
 Check out #pwned tools from GitHub:
 
-````
+```
 git clone https://github.com/ola-ct/pwned.git
 ```
 
