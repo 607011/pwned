@@ -33,8 +33,21 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 ### Ubuntu 19.xx
 
+Install necessary programs and libraries:
+
 ```
-sudo apt install git cmake c++ libssl-dev libboost-dev libcpprest-dev libboost-program-options-dev libboost-date-time-dev
+sudo apt install git cmake c++ \
+  libssl-dev \
+  libboost-dev \
+  libboost-program-options-dev \
+  libboost-date-time-dev \
+  libcpprest-dev
+```
+
+Check out #pwned tools from GitHub:
+
+````
+git clone https://github.com/ola-ct/pwned.git
 ```
 
 ## Build for release
@@ -42,14 +55,14 @@ sudo apt install git cmake c++ libssl-dev libboost-dev libcpprest-dev libboost-p
 Go to the build directory:
 
 ```
-cd build/Release
+cd pwned/build/Release
 ```
 
 Start the build process:
 
 ```
 cmake -DCMAKE_BUILD_TYPE=Release ../..
-make
+make -j 5
 ```
 
 If compiling for processors that don't have a `POPCNT` instruction prepend `NO_POPCNT=1 ` to the `cmake` command.
@@ -62,7 +75,6 @@ export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
 ```
 
 Then call `cmake` again (see above).
-
 
 ---
 
