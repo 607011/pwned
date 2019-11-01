@@ -3,14 +3,31 @@ info:
   title: pwned lookup API
   description: REST API to query an MD5:count file for a hash
   version: 1.0
+  contact:
+    name: pwned support
+    email: ola@ct.de
+  license:
+    name: GPL v3
+    url: https://www.gnu.org/licenses/gpl-3.0.txt
 
 servers:
   - url: https://example.com/v1/pwned/api
     description: main server
+    port:
+      enum:
+        - '31337'
 
 paths:
-  /lookup?hash={hash}:
+  /lookup:
     get:
+      parameters:
+        - in: query
+          name: hash
+          required: true
+          schema:
+            type: string
+            pattern: [0-9a-fA-F]{32}
+          description: the hex encoded MD5 hash to look up
       summary: Query an MD5 hash and return the numbers of times it was found
       responses:
         '200':
@@ -24,7 +41,9 @@ paths:
                     type: string
                   found:
                     type: integer
+                    description: number of times the hash has been found
                   lookup-time-ms:
-                    type: integer
+                    type: number
+                    description: lookup time in milliseconds
         '400':
           description: The hash could not be found
