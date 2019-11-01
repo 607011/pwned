@@ -91,6 +91,11 @@ bool PasswordInspector::open(const std::string &inputFilename, const std::string
   return ok;
 }
 
+bool PasswordInspector::isOpen() const
+{
+  return inputFile.is_open();
+}
+
 PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCount)
 {
   int nReads = 0;

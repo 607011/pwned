@@ -44,6 +44,7 @@ public:
   ~PasswordInspector();
   bool open(const std::string &inputFilename);
   bool open(const std::string &inputFilename, const std::string &indexFilename);
+  bool isOpen() const;
   PasswordHashAndCount lookup(const std::string &pwd);
   PasswordHashAndCount binsearch(const pwned::Hash &hash, int *readCount = nullptr);
   PasswordHashAndCount smart_binsearch(const pwned::Hash &hash, int *readCount = nullptr);
