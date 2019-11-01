@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: pwned lookup API
   description: REST API to query an MD5:count file for a hash
-  version: 1.0
+  version: '1.0'
   contact:
     name: pwned support
     email: ola@ct.de
@@ -11,11 +11,15 @@ info:
     url: https://www.gnu.org/licenses/gpl-3.0.txt
 
 servers:
-  - url: https://example.com/v1/pwned/api
+  - url: https://example.com:{port}/v1/pwned/api
     description: main server
-    port:
-      enum:
-        - '31337'
+    variables:
+      port:
+        enum:
+          - '31337'
+          - '443'
+          - '80'
+        default: '443'
 
 paths:
   /lookup:
@@ -26,7 +30,7 @@ paths:
           required: true
           schema:
             type: string
-            pattern: [0-9a-fA-F]{32}
+            pattern: /[0-9a-fA-F]{32}/
           description: the hex encoded MD5 hash to look up
       summary: Query an MD5 hash and return the numbers of times it was found
       responses:
