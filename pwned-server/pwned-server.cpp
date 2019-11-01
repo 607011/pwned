@@ -152,11 +152,21 @@ int main(int argc, const char *argv[])
   endpointBuilder.set_port(endpointURI.port());
   endpointBuilder.set_path(endpointURI.path());
   
-  pwned::PasswordInspector *pwdInspector = new pwned::PasswordInspector(inputFilename, indexFilename);
-  HttpInspector *httpInspector = new HttpInspector(endpointBuilder.to_uri(), pwdInspector);
+  pwned::PasswordInspector pwdInspector(inputFilename, indexFilename);
+  if (pwdInspector.isOpen())
+  {
+    std::cout << "Using " << inputFilename << " ..." << std::endl;
+  }
+  else
+  {
+    std::cerr << "Cannot open " << inputFilename << "." << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  HttpInspector httpInspector(endpointBuilder.to_uri(), &pwdInspector);
 
   try {
-    httpInspector->accept().wait();
+    httpInspector.accept().wait();
     std::cout << "Listening for requests at " << endpointBuilder.to_string() << " ... " << std::endl;
   }
   catch (std::exception & e)
@@ -174,9 +184,7 @@ int main(int argc, const char *argv[])
   std::string line;
   std::getline(std::cin, line);
 
-  httpInspector->shutdown().wait();
-  delete httpInspector;
-  delete pwdInspector;
+  httpInspector.shutdown().wait();
 
   return EXIT_SUCCESS;
 }
