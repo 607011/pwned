@@ -45,7 +45,7 @@ std::string hostIP(unsigned short family)
 {
   auto hostInetInfo = queryHostInetInfo();
   boost::asio::ip::tcp::resolver::iterator end;
-  while(hostInetInfo != end) {
+  while (hostInetInfo != end) {
     boost::asio::ip::tcp::endpoint ep = *hostInetInfo++;
     sockaddr sa = *ep.data();
     if (sa.sa_family == family) {
