@@ -165,7 +165,7 @@ void benchmarkWithoutIndex(
           ++notFound;
         }
       }
-      catch (std::exception e)
+      catch (std::exception &e)
       {
         std::cerr << "ERROR: " << e.what() << std::endl;
         return;
@@ -217,7 +217,7 @@ void benchmarkWithIndex(
           ++notFound;
         }
       }
-      catch (std::exception e)
+      catch (std::exception &e)
       {
         std::cerr << "ERROR: " << e.what() << std::endl;
         return;
