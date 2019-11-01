@@ -1,0 +1,30 @@
+openapi: 3.0.0
+info:
+  title: pwned lookup API
+  description: REST API to query an MD5:count file for a hash
+  version: 1.0
+
+servers:
+  - url: https://example.com/v1/pwned/api
+    description: main server
+
+paths:
+  /lookup?hash={hash}:
+    get:
+      summary: Query an MD5 hash and return the numbers of times it was found
+      responses:
+        '200':
+          description: A JSON object containing the hash and the number of times it was found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hash:
+                    type: string
+                  found:
+                    type: integer
+                  lookup-time-ms:
+                    type: integer
+        '400':
+          description: The hash could not be found
