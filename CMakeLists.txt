@@ -5,7 +5,7 @@ project(pwned)
 cmake_policy(SET CMP0054 NEW)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -g3 -glldb -ggdb -DDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -g3 -ggdb -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wno-#pragma-messages")
 
 if($ENV{NO_POPCNT})
