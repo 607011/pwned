@@ -107,7 +107,7 @@ PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCou
       ++nReads;
       loIdx -= sizeof(index_key_t);
     }
-    while (lo == std::numeric_limits<index_key_t>::max());
+    while (lo == static_cast<int64_t>(std::numeric_limits<index_key_t>::max()));
     uint64_t hiIdx = idx + sizeof(index_key_t);
     do {
       indexFile.seekg(hiIdx);
@@ -115,7 +115,7 @@ PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCou
       ++nReads;
       hiIdx += sizeof(index_key_t);
     }
-    while (hi == std::numeric_limits<index_key_t>::max());
+    while (hi == static_cast<int64_t>(std::numeric_limits<index_key_t>::max()));
   }
   PasswordHashAndCount phc;
   while (lo <= hi)
@@ -179,7 +179,7 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *r
     throw("[PasswordInspector] Cannot read @ hi = " + std::to_string(hi));
   }
   int64_t hiOffset = offset;
-  while (hash > h1 && hi <= size - hiOffset - PasswordHashAndCount::size)
+  while (hash > h1 && hi <= size - hiOffset - static_cast<int64_t>(PasswordHashAndCount::size))
   {
     hi += hiOffset;
     h1.read(inputFile, hi);
