@@ -56,13 +56,17 @@ void HttpInspector::handleGet(web::http::http_request message)
     const pwned::Hash hash = pwned::Hash::fromHex(query["hash"]);
     const auto &t0 = std::chrono::high_resolution_clock::now();
     const pwned::PasswordHashAndCount &phc = inspector->binsearch(hash);
-    const auto &t1 = std::chrono::high_resolution_clock::now();
-    double duration = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0).count() * 1000;
-    web::json::value response = web::json::value::object();
-    response["hash"] = web::json::value::string(phc.hash.toString());
-    response["found"] = web::json::value::number(phc.count);
-    response["lookup-time-ms"] = web::json::value::number(duration);
-    message.reply(web::http::status_codes::OK, response);
+    if (phc.count > 0)
+    {
+      const auto &t1 = std::chrono::high_resolution_clock::now();
+      double duration = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0).count() * 1000;
+      web::json::value response = web::json::value::object();
+      response["hash"] = web::json::value::string(phc.hash.toString());
+      response["found"] = web::json::value::number(phc.count);
+      response["lookup-time-ms"] = web::json::value::number(duration);
+      message.reply(web::http::status_codes::OK, response);
+    }
+    message.reply(web::http::status_codes::NotFound);
   }
   message.reply(web::http::status_codes::BadRequest);
 }
