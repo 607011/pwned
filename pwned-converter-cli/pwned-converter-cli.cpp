@@ -125,7 +125,7 @@ int main(int argc, const char *argv[])
   {
     std::cout << "Scanning " << srcDirectory << " for files ..." << std::flush;
     fs::recursive_directory_iterator fileTreeIterator(srcDirectory);
-    for (auto &&f : fileTreeIterator)
+    for (const auto &f : fileTreeIterator)
     {
       const std::string &filePath = f.path().string();
       if (fs::is_regular_file(f) && ba::ends_with(filePath, ".txt"))
