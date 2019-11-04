@@ -18,10 +18,14 @@
 #ifndef __HTTPWORKER_HPP__
 #define __HTTPWORKER_HPP__
 
+#include <regex>
+
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/asio.hpp>
+
+#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
 #include <pwned-lib/hash.hpp>
@@ -114,42 +118,56 @@ private:
       });
   }
 
+  static std::string toJson(const pt::ptree &pt)
+  {
+    std::ostringstream ss;
+    pt::write_json(ss, pt);
+    const std::regex re("\\\"([0-9]+\\.{0,1}[0-9]*)\\\"");
+    return std::regex_replace(ss.str(), re, "$1");
+  }
+
   void sendResponse(boost::beast::string_view target)
   {
     URI uri;
     uri.parseTarget(target.to_string());
-    const pwned::Hash &hash = pwned::Hash::fromHex(uri.query().at("hash"));
-    const auto &t0 = std::chrono::high_resolution_clock::now();
-    const pwned::PasswordHashAndCount &phc = mInspector.binsearch(hash);
-    const auto &t1 = std::chrono::high_resolution_clock::now();
-    const double duration = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0).count() * 1000;
-    pt::ptree response;
-    response.put("hash", hash.toString());
-    response.put("found", phc.count);
-    response.put("lookup-time-ms", duration);
-    mStringResponse.emplace(
-      std::piecewise_construct,
-      std::make_tuple(),
-      std::make_tuple(mAlloc));
-      mStringResponse->result(http::status::ok);
-    mStringResponse->keep_alive(false);
-    mStringResponse->set(http::field::server, "#pnwed server 1.0");
-    mStringResponse->set(http::field::content_type, "application/json");
-    std::stringstream ss;
-    pt::write_json(ss, response);
-    mStringResponse->body() = ss.str();
-    mStringResponse->prepare_payload();
-    mStringSerializer.emplace(*mStringResponse);
-    http::async_write(
-      mSocket,
-      *mStringSerializer,
-      [this](boost::beast::error_code ec, std::size_t)
-      {
-        mSocket.shutdown(tcp::socket::shutdown_send, ec);
-        mStringSerializer.reset();
-        mStringResponse.reset();
-        accept();
-      });
+    std::cout << std::chrono::high_resolution_clock::now().time_since_epoch().count() << " " << target.to_string() << std::endl;
+    if (uri.path() == "/v1/pwned/api/lookup")
+    {
+      const pwned::Hash &hash = pwned::Hash::fromHex(uri.query().at("hash"));
+      const auto &t0 = std::chrono::high_resolution_clock::now();
+      const pwned::PasswordHashAndCount &phc = mInspector.binsearch(hash);
+      const auto &t1 = std::chrono::high_resolution_clock::now();
+      const double duration = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0).count() * 1000;
+      pt::ptree response;
+      response.put<std::string>("hash", hash.toString());
+      response.put<int>("found", phc.count);
+      response.put<double>("lookup-time-ms", duration);
+      mStringResponse.emplace(
+        std::piecewise_construct,
+        std::make_tuple(),
+        std::make_tuple(mAlloc));
+        mStringResponse->result(http::status::ok);
+      mStringResponse->keep_alive(false);
+      mStringResponse->set(http::field::server, "#pnwed server 1.0");
+      mStringResponse->set(http::field::content_type, "application/json");
+      mStringResponse->body() = toJson(response);
+      mStringResponse->prepare_payload();
+      mStringSerializer.emplace(*mStringResponse);
+      http::async_write(
+        mSocket,
+        *mStringSerializer,
+        [this](boost::beast::error_code ec, std::size_t)
+        {
+          mSocket.shutdown(tcp::socket::shutdown_send, ec);
+          mStringSerializer.reset();
+          mStringResponse.reset();
+          accept();
+        });
+    }
+    else
+    {
+      sendBadResponse(http::status::not_found, "");
+    }
   }
 
   void processRequest(http::request<request_body_t, http::basic_fields<alloc_t>> const& req)
