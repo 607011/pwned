@@ -16,15 +16,8 @@ else()
   set(PLATFORM_DEPENDENT_LIBRARIES, "")
 endif()
 
-find_path(cpprestsdk-include cpprest
-  HINTS /opt/cpprestsdk/include)
-find_library(cpprestsdk-lib cpprest
-  HINTS /opt/cpprestsdk/lib)
-message(STATUS "cpprestsdk-lib = ${cpprestsdk-lib}")
-message(STATUS "cpprestsdk-include = ${cpprestsdk-include}")
-
 target_include_directories(pwned-server
-	PRIVATE ${PROJECT_INCLUDE_DIRS} ${cpprestsdk-include}
+	PRIVATE ${PROJECT_INCLUDE_DIRS}
 	PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 
 target_link_libraries(pwned-server
@@ -32,5 +25,4 @@ target_link_libraries(pwned-server
 	${OPENSSL_CRYPTO_LIBRARY}
 	${OPENSSL_SSL_LIBRARY}
 	${Boost_LIBRARIES}
-	${cpprestsdk-lib}
 )
