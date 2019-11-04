@@ -31,7 +31,7 @@ paths:
           schema:
             type: string
             pattern: /[0-9a-fA-F]{32}/
-          description: the hex encoded MD5 hash to look up
+          description: The hex encoded MD5 hash to look up
       summary: Query an MD5 hash and return the numbers of times it was found
       responses:
         '200':
@@ -45,9 +45,7 @@ paths:
                     type: string
                   found:
                     type: integer
-                    description: number of times the hash has been found
+                    description: Number of times the hash has been found
                   lookup-time-ms:
                     type: number
-                    description: lookup time in milliseconds
-        '400':
-          description: The hash could not be found
+                    description: Lookup time in milliseconds
