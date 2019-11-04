@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 
 project(pwned-server)
 
-add_executable(pwned-server pwned-server.cpp httpinspector.cpp)
+add_executable(pwned-server 
+  pwned-server.cpp
+	uri.cpp
+)
 set_target_properties(pwned-server PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
 
 if(UNIX)

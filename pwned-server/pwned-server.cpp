@@ -19,52 +19,17 @@
 #include <fstream>
 #include <string>
 #include <chrono>
+#include <memory>
+#include <exception>
+#include <sstream>
+#include <map>
 
 #include <boost/program_options.hpp>
-#include <boost/asio.hpp>
 
-#include "httpinspector.hpp"
-
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <sys/time.h>
-#endif
+#include "uri.hpp"
+#include "httpworker.hpp"
 
 namespace po = boost::program_options;
-
-boost::asio::ip::tcp::resolver::iterator queryHostInetInfo()
-{
-  boost::asio::io_service ios;
-  boost::asio::ip::tcp::resolver resolver(ios);
-  boost::asio::ip::tcp::resolver::query query(boost::asio::ip::host_name(), "");
-  return resolver.resolve(query);
-}
-
-std::string hostIP(unsigned short family)
-{
-  auto hostInetInfo = queryHostInetInfo();
-  boost::asio::ip::tcp::resolver::iterator end;
-  while (hostInetInfo != end) {
-    boost::asio::ip::tcp::endpoint ep = *hostInetInfo++;
-    sockaddr sa = *ep.data();
-    if (sa.sa_family == family) {
-      return ep.address().to_string();
-    }
-  }
-  return nullptr;
-}
-
-inline std::string hostIP4()
-{
-  return hostIP(AF_INET);
-}
-
-inline std::string hostIP6()
-{
-  return hostIP(AF_INET6);
-}
-
 
 void hello()
 {
@@ -101,15 +66,19 @@ void usage()
 
 int main(int argc, const char *argv[])
 {
-  static const std::string DefaultURI = "http://127.0.0.1:31337/v1/pwned/api";
+  static const std::string DefaultAddress = "http://127.0.0.1:31337/v1/pwned/api";
+  static const int DefaultNumWorkers = 4;
   std::string inputFilename;
   std::string indexFilename;
-  std::string endpoint = DefaultURI;
+  std::string address;
+  std::string path;
+  int numWorkers = 4;
   desc.add_options()
   ("help", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set MD5:count input file")
   ("index,X", po::value<std::string>(&indexFilename), "set index file")
-  ("address", po::value<std::string>(&endpoint)->default_value(DefaultURI), "server URI")
+  ("address", po::value<std::string>(&address)->default_value(DefaultAddress), "server address")
+  ("threads", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "number of worker threads")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -134,57 +103,30 @@ int main(int argc, const char *argv[])
 
   hello();
 
-  web::uri endpointURI(endpoint);
-  web::uri_builder endpointBuilder;
-  endpointBuilder.set_scheme(endpointURI.scheme());
-  if (endpointURI.host() == "host_auto_ip4")
+  if (numWorkers < 1)
   {
-    endpointBuilder.set_host(hostIP4());        
+    std::cout << "WARNING: Illegal number of workers given. Defaulting to " << DefaultNumWorkers << std::endl;
+    numWorkers = DefaultNumWorkers;
   }
-  else if (endpointURI.host() == "host_auto_ip6")
+
+  try
   {
-    endpointBuilder.set_host(hostIP6());
+    URI uri(address);
+    boost::asio::io_context ioc{1};
+    tcp::acceptor acceptor{ioc, {boost::asio::ip::make_address(uri.host()), uri.port()}};
+    std::list<HttpWorker> workers;
+    for (int i = 0; i < numWorkers; ++i)
+    {
+      workers.emplace_back(acceptor, path, inputFilename, indexFilename);
+      workers.back().start();
+    }
+    ioc.run();
   }
-  else
+  catch (const std::exception &e)
   {
-    endpointBuilder.set_host(endpointURI.host());
-  }
-  endpointBuilder.set_port(endpointURI.port());
-  endpointBuilder.set_path(endpointURI.path());
-  
-  pwned::PasswordInspector pwdInspector(inputFilename, indexFilename);
-  if (pwdInspector.isOpen())
-  {
-    std::cout << "Using " << inputFilename << " ..." << std::endl;
-  }
-  else
-  {
-    std::cerr << "Cannot open " << inputFilename << "." << std::endl;
+    std::cerr << "Error: " << e.what() << std::endl;
     return EXIT_FAILURE;
   }
-
-  HttpInspector httpInspector(endpointBuilder.to_uri(), &pwdInspector);
-
-  try {
-    httpInspector.accept().wait();
-    std::cout << "Listening for requests at " << endpointBuilder.to_string() << " ... " << std::endl;
-  }
-  catch (std::exception & e)
-  {
-    std::cerr << "ERROR: " << e.what() << std::endl;
-    return EXIT_FAILURE;
-  }
-  catch (...)
-  {
-    std::cerr << "ERROR: unknown cause :-(" << std::endl;
-    return EXIT_FAILURE;
-  }
-
-  std::cout << "Press ENTER to exit." << std::endl;
-  std::string line;
-  std::getline(std::cin, line);
-
-  httpInspector.shutdown().wait();
 
   return EXIT_SUCCESS;
 }
