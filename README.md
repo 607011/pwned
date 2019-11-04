@@ -40,9 +40,10 @@ sudo apt install git cmake c++ \
   libssl-dev \
   libboost-dev \
   libboost-program-options-dev \
-  libboost-date-time-dev \
-  libcpprest-dev
+  libboost-date-time-dev
 ```
+
+In case your compiler throws errors concerning Boost code you should use Boost 1.67.
 
 Check out #pwned tools from GitHub:
 
