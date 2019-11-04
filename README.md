@@ -43,8 +43,6 @@ sudo apt install git cmake c++ \
   libboost-date-time-dev
 ```
 
-In case your compiler throws errors concerning Boost code you should [use Boost 1.67](https://www.boost.org/doc/libs/1_67_0/more/getting_started/unix-variants.html).
-
 Check out #pwned tools from GitHub:
 
 ```
@@ -76,6 +74,8 @@ export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
 ```
 
 Then call `cmake` again (see above).
+
+In case your compiler throws errors concerning Boost code you should [use Boost 1.67](https://www.boost.org/doc/libs/1_67_0/more/getting_started/unix-variants.html).
 
 ---
 
