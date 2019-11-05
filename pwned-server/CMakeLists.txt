@@ -16,6 +16,10 @@ else()
   set(PLATFORM_DEPENDENT_LIBRARIES, "")
 endif()
 
+add_custom_command(TARGET pwned-server 
+  POST_BUILD
+  COMMAND strip pwned-server)
+
 target_include_directories(pwned-server
 	PRIVATE ${PROJECT_INCLUDE_DIRS}
 	PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
@@ -26,3 +30,4 @@ target_link_libraries(pwned-server
 	${OPENSSL_SSL_LIBRARY}
 	${Boost_LIBRARIES}
 )
+
