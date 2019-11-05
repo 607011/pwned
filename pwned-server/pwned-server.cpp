@@ -117,9 +117,10 @@ int main(int argc, const char *argv[])
     std::list<HttpWorker> workers;
     for (int i = 0; i < numWorkers; ++i)
     {
-      workers.emplace_back(acceptor, path, inputFilename, indexFilename);
+      workers.emplace_back(acceptor, uri.path(), inputFilename, indexFilename);
       workers.back().start();
     }
+    std::cout << numWorkers << " workers listening on " << uri.host() << ':' << uri.port() << " ..." << std::endl;
     ioc.run();
   }
   catch (const std::exception &e)

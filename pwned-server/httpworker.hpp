@@ -15,8 +15,8 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef __HTTPWORKER_HPP__
-#define __HTTPWORKER_HPP__
+#ifndef __httpworker_hpp__
+#define __httpworker_hpp__
 
 #include <regex>
 
@@ -31,6 +31,7 @@
 #include <pwned-lib/hash.hpp>
 #include <pwned-lib/passwordinspector.hpp>
 
+#include "pwned-server.hpp"
 #include "uri.hpp"
 #include "fields_alloc.hpp"
 
@@ -47,9 +48,9 @@ public:
   HttpWorker(HttpWorker const &) = delete;
   HttpWorker& operator=(HttpWorker const &) = delete;
 
-  HttpWorker(tcp::acceptor &acceptor, const std::string &path, const std::string &inputFilename, const std::string &indexFilename)
+  HttpWorker(tcp::acceptor &acceptor, const std::string &basePath, const std::string &inputFilename, const std::string &indexFilename)
   : mAcceptor(acceptor)
-  , mBasePath(path)
+  , mBasePath(basePath)
   , mInspector(inputFilename, indexFilename)
   {}
 
@@ -130,8 +131,9 @@ private:
   {
     URI uri;
     uri.parseTarget(target.to_string());
+    const std::string &lookupPath = mBasePath + "/lookup";
     std::cout << std::chrono::high_resolution_clock::now().time_since_epoch().count() << " " << target.to_string() << std::endl;
-    if (uri.path() == "/v1/pwned/api/lookup")
+    if (uri.path() == lookupPath && uri.query().find("hash") != uri.query().end())
     {
       const pwned::Hash &hash = pwned::Hash::fromHex(uri.query().at("hash"));
       const auto &t0 = std::chrono::high_resolution_clock::now();
@@ -228,6 +230,4 @@ private:
   }
 };
 
-
-
-#endif // __HTTPWORKER_HPP__
+#endif // __httpworker_hpp__
