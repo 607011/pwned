@@ -71,7 +71,6 @@ int main(int argc, const char *argv[])
   std::string inputFilename;
   std::string indexFilename;
   std::string address;
-  std::string path;
   int numWorkers = 4;
   desc.add_options()
   ("help", "produce help message")
