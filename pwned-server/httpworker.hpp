@@ -66,11 +66,11 @@ private:
   tcp::acceptor &mAcceptor;
   std::string mBasePath;
   pwned::PasswordInspector mInspector;
-  tcp::socket mSocket{mAcceptor.get_executor().context()};
+  tcp::socket mSocket{mAcceptor.get_executor()};
   beast::flat_static_buffer<8192> mBuffer;
   alloc_t mAlloc{8192};
   boost::optional<http::request_parser<request_body_t, alloc_t>> mParser;
-  boost::asio::basic_waitable_timer<std::chrono::steady_clock> mRequestDeadline{mAcceptor.get_executor().context(), (std::chrono::steady_clock::time_point::max)()};
+  boost::asio::basic_waitable_timer<std::chrono::steady_clock> mRequestDeadline{mAcceptor.get_executor(), (std::chrono::steady_clock::time_point::max)()};
   boost::optional<http::response<http::string_body, http::basic_fields<alloc_t>>> mStringResponse;
   boost::optional<http::response_serializer<http::string_body, http::basic_fields<alloc_t>>> mStringSerializer;
 
