@@ -117,7 +117,7 @@ int main(int argc, const char *argv[])
     std::list<Session> workers;
     for (unsigned int i = 0; i < numWorkers; ++i)
     {
-      workers.emplace_back(ioc, address, inputFilename, static_cast<uint64_t>(i));
+      workers.emplace_back(ioc, address, inputFilename, runtimeSecs, static_cast<uint64_t>(i));
       workers.back().run();
     }
     ioc.run();
@@ -127,7 +127,7 @@ int main(int argc, const char *argv[])
       totalRequests += worker.requests();
     }
     std::cout << std::endl
-    << totalRequests <<" requests in " << runtimeSecs << " seconds (" << (totalRequests / runtimeSecs) << " reqs/sec)" << std::endl;
+              << totalRequests <<" requests in " << runtimeSecs << " seconds (" << (totalRequests / runtimeSecs) << " reqs/sec)" << std::endl;
   }
   catch (const std::exception &e)
   {

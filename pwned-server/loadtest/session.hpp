@@ -62,14 +62,16 @@ class Session
   std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> mT1;
   std::ifstream mInputFile;
   uint64_t mInputSize;
+  unsigned int mRuntimeSecs;
   uint64_t mId;
   uint64_t mRequests;
 
 public:
-  explicit Session(net::io_context& ioc, const std::string &address, const std::string &inputFilename, uint64_t id)
+  explicit Session(net::io_context& ioc, const std::string &address, const std::string &inputFilename, unsigned int runtimeSecs, uint64_t id)
       : mResolver(net::make_strand(ioc))
       , mStream(net::make_strand(ioc))
       , mAddress(address)
+      , mRuntimeSecs(runtimeSecs)
       , mId(id)
       , mRequests(0)
   {
@@ -77,7 +79,7 @@ public:
     mInputFile.open(inputFilename, std::ios::binary);
     mInputSize = boost::filesystem::file_size(inputFilename);
     mT0 = std::chrono::high_resolution_clock::now();
-    mT1 = mT0 + std::chrono::seconds(10);
+    mT1 = mT0 + std::chrono::seconds(static_cast<int>(mRuntimeSecs));
   }
 
   void run()
