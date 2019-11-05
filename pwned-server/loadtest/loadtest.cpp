@@ -16,13 +16,13 @@
  */
 
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <chrono>
 #include <memory>
 #include <exception>
 #include <sstream>
 #include <list>
+#include <numeric>
 
 #include <boost/program_options.hpp>
 
@@ -65,17 +65,20 @@ void usage()
 
 int main(int argc, const char *argv[])
 {
-  static const std::string DefaultAddress = "http://127.0.0.1:31337/v1/pwned/api";
-  static const int DefaultNumWorkers = 4;
+  static const std::string DefaultAddress = "http://127.0.0.1:31337/v1/pwned/api/lookup";
+  static const unsigned int DefaultNumWorkers = 4;
+  static const unsigned int DefaultRuntimeSecs = 10;
   std::string inputFilename;
   std::string indexFilename;
   std::string address;
-  int numWorkers = 4;
+  unsigned int runtimeSecs = DefaultRuntimeSecs;
+  unsigned int numWorkers = 4;
   desc.add_options()
   ("help", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set MD5:count input file")
   ("address", po::value<std::string>(&address)->default_value(DefaultAddress), "server address")
-  ("threads", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "number of worker threads")
+  ("secs", po::value<unsigned int>(&runtimeSecs)->default_value(DefaultRuntimeSecs), "run load test for so many seconds")
+  ("threads", po::value<unsigned int>(&numWorkers)->default_value(DefaultNumWorkers), "number of worker threads")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -106,19 +109,25 @@ int main(int argc, const char *argv[])
     numWorkers = DefaultNumWorkers;
   }
 
+  std::cout << "Running load test on " << address << " in " << numWorkers << " worker thread(s) for " << runtimeSecs << " seconds ... " << std::flush;
   try
   {
     URI uri(address);
-    boost::asio::io_context ioc{1};
-    tcp::acceptor acceptor{ioc, {boost::asio::ip::make_address(uri.host()), uri.port()}};
-    std::list<session> workers;
-    for (int i = 0; i < numWorkers; ++i)
+    boost::asio::io_context ioc;
+    std::list<Session> workers;
+    for (unsigned int i = 0; i < numWorkers; ++i)
     {
-      workers.emplace_back(acceptor, uri.path(), inputFilename, indexFilename);
-      workers.back().start();
+      workers.emplace_back(ioc, address, inputFilename, static_cast<uint64_t>(i));
+      workers.back().run();
     }
-    std::cout << numWorkers << " workers listening on " << uri.host() << ':' << uri.port() << " ..." << std::endl;
     ioc.run();
+    uint64_t totalRequests = 0;
+    for (const auto &worker : workers)
+    {
+      totalRequests += worker.requests();
+    }
+    std::cout << std::endl
+    << totalRequests <<" requests in " << runtimeSecs << " seconds (" << (totalRequests / runtimeSecs) << " reqs/sec)" << std::endl;
   }
   catch (const std::exception &e)
   {

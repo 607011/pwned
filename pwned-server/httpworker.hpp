@@ -19,6 +19,7 @@
 #define __httpworker_hpp__
 
 #include <regex>
+#include <cstdio>
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
@@ -143,7 +144,10 @@ private:
       pt::ptree response;
       response.put<std::string>("hash", hash.toString());
       response.put<int>("found", phc.count);
-      response.put<double>("lookup-time-ms", duration);
+      constexpr int BufSize = 100;
+      char buf[BufSize];
+      std::snprintf(buf, BufSize, "%.5f", duration);
+      response.put<char*>("lookup-time-ms", buf);
       mStringResponse.emplace(
         std::piecewise_construct,
         std::make_tuple(),
