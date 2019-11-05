@@ -26,6 +26,7 @@
 
 #include <boost/program_options.hpp>
 
+#include "pwned-server.hpp"
 #include "uri.hpp"
 #include "httpworker.hpp"
 
@@ -33,8 +34,7 @@ namespace po = boost::program_options;
 
 void hello()
 {
-  std::cout << "#pwned server - Copyright (c) 2019 Oliver Lau" << std::endl
-            << std::endl;
+  std::cout << "#pwned server " << PWNED_SERVER_VERSION << " - Copyright (c) 2019 Oliver Lau" << std::endl;
 }
 
 void license()

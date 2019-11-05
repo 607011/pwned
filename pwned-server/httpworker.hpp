@@ -150,7 +150,7 @@ private:
         std::make_tuple(mAlloc));
         mStringResponse->result(http::status::ok);
       mStringResponse->keep_alive(false);
-      mStringResponse->set(http::field::server, "#pnwed server 1.0");
+      mStringResponse->set(http::field::server, std::string("#pnwed server ") + PWNED_SERVER_VERSION);
       mStringResponse->set(http::field::content_type, "application/json");
       mStringResponse->body() = toJson(response);
       mStringResponse->prepare_payload();
