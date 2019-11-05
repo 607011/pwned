@@ -77,6 +77,12 @@ Then call `cmake` again (see above).
 
 In case your compiler throws errors concerning Boost code you should [use Boost 1.71](https://www.boost.org/doc/libs/1_71_0/more/getting_started/unix-variants.html).
 
+To introduce Boost 1.71 to `cmake` call `cmake` prepended by a hint to the Boost directory:
+
+```
+BOOST_ROOT=/path/to/boost-1.71 cmake -DCMAKE_BUILD_TYPE=Release ../..
+```
+
 ---
 
 Copyright &copy; 2019 [Oliver Lau](mailto:ola@ct.de), [Heise Medien GmbH & Co. KG](http://www.heise.de/).
