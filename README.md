@@ -31,7 +31,7 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 ## Prerequisites
 
-### Ubuntu 19.xx
+### Ubuntu 19.xx / Raspi w/ Debian Buster
 
 Install necessary programs and libraries:
 
@@ -42,6 +42,8 @@ sudo apt install git cmake c++ \
   libboost-program-options-dev \
   libboost-date-time-dev
 ```
+
+## Get #pwned source code
 
 Check out #pwned tools from GitHub:
 
@@ -63,8 +65,6 @@ Start the build process:
 cmake -DCMAKE_BUILD_TYPE=Release ../..
 make
 ```
-
-If compiling for processors that don't have a `POPCNT` instruction prepend `NO_POPCNT=1 ` to the `cmake` command.
 
 If `cmake` can't find OpenSSL, set the environment variable `OPENSSL_ROOT_DIR` to
 an appropriate value, e.g.:

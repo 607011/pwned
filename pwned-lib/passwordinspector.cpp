@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <limits>
 
-#ifndef NO_POPCNT
+#ifdef USE_POPCNT
 #include <popcntintrin.h>
 #endif
 
