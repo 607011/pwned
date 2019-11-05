@@ -61,7 +61,7 @@ Start the build process:
 
 ```
 cmake -DCMAKE_BUILD_TYPE=Release ../..
-make -j 5
+make
 ```
 
 If compiling for processors that don't have a `POPCNT` instruction prepend `NO_POPCNT=1 ` to the `cmake` command.
