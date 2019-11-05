@@ -36,7 +36,7 @@ static inline int decodeHex(const char c)
   {
     result = c - 'a' + 10;
   }
-  else if ('A' <= c && c <= 'A')
+  else if ('A' <= c && c <= 'F')
   {
     result = c - 'A' + 10;
   }
