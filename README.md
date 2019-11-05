@@ -43,11 +43,26 @@ sudo apt install git cmake c++ \
   libboost-date-time-dev
 ```
 
+The #pwned tools need Boost 1.71 to compile. Follow the instructions on [how to build Boost](https://www.boost.org/doc/libs/1_71_0/more/getting_started/unix-variants.html) on your own.
+
+In brief:
+
+```
+mkdir -p ~/dev/boost-1.71
+wget https://dl.bintray.com/boostorg/release/1.71.0/source/boost_1_71_0.tar.bz2
+tar xjvf boost_1_71_0.tar.bz2
+cd boost_1_71_0
+./bootstrap.sh --prefix=~/dev/boost-1.71
+./b2 install
+```
+
 ## Get #pwned source code
 
 Check out #pwned tools from GitHub:
 
 ```
+mkdir -p ~/dev
+cd ~/dev
 git clone https://github.com/ola-ct/pwned.git
 ```
 
@@ -73,14 +88,12 @@ an appropriate value, e.g.:
 export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
 ```
 
-Then call `cmake` again (see above).
+Then call `cmake` again as shown above.
 
-In case your compiler throws errors concerning Boost code you should [use Boost 1.71](https://www.boost.org/doc/libs/1_71_0/more/getting_started/unix-variants.html).
-
-To introduce Boost 1.71 to `cmake` call `cmake` prepended by a hint to the Boost directory:
+If you compiled Boost 1.71 on your own as shown above, you have to introduce it to `cmake`:
 
 ```
-BOOST_ROOT=/path/to/boost-1.71 cmake -DCMAKE_BUILD_TYPE=Release ../..
+BOOST_ROOT=~/dev/boost-1.71 cmake -DCMAKE_BUILD_TYPE=Release ../..
 ```
 
 ---
