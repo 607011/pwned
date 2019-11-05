@@ -34,7 +34,7 @@ void URI::parse(const std::string &uri)
     if (m.size() > 2)
     {
       std::vector<std::string> kv;
-      const std::string &credentials = m[2];
+      const std::string &credentials = m[2].str();
       boost::split(kv, credentials, boost::is_any_of(":"));
       if (kv.size() == 2)
       {
@@ -52,7 +52,7 @@ void URI::parse(const std::string &uri)
     }
     if (m.size() > 4)
     {
-      port_ = std::atoi(m[4].str().c_str());
+      port_ = std::stoi(m[4].str());
     }
     if (m.size() > 5)
     {
@@ -69,7 +69,7 @@ void URI::parse(const std::string &uri)
         boost::split(pair, param, boost::is_any_of("="));
         if (pair.size() == 2)
         {
-          query_[pair[0]] = pair[1];
+          query_[pair.at(0)] = pair.at(1);
         }
         else
         {
@@ -90,29 +90,29 @@ void URI::parseTarget(const std::string &target)
   boost::split(pathAndQuery, target, boost::is_any_of("?"));
   if (pathAndQuery.size() > 0)
   {
-    path_ = pathAndQuery[0];
+    path_ = pathAndQuery.at(0);
   }
   if (pathAndQuery.size() > 1)
   {
     std::vector<std::string> queryAndFragment;
-    boost::split(queryAndFragment, pathAndQuery[1], boost::is_any_of("#"));
+    boost::split(queryAndFragment, pathAndQuery.at(1), boost::is_any_of("#"));
     if (queryAndFragment.size() > 0)
     {
       std::vector<std::string> kv;
-      boost::split(kv, queryAndFragment[0], boost::is_any_of("&"));
+      boost::split(kv, queryAndFragment.at(0), boost::is_any_of("&"));
       for (const auto &param : kv)
       {
         std::vector<std::string> pair;
         boost::split(pair, param, boost::is_any_of("="));
         if (pair.size() == 2)
         {
-          query_[pair[0]] = pair[1];
+          query_[pair.at(0)] = pair.at(1);
         }
       }
     }
     if (queryAndFragment.size() > 1)
     {
-      fragment_ = queryAndFragment[1];
+      fragment_ = queryAndFragment.at(1);
     }
   }
 }
