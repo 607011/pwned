@@ -72,6 +72,13 @@ std::string Hash::toString() const
   return ss.str();
 }
 
+std::string Hash::toStringLC() const
+{
+  std::ostringstream ss;
+  ss << std::setw(16) << std::setfill('0') << std::hex << upper << std::setw(16) << std::setfill('0') << lower;
+  return ss.str();
+}
+
 Hash Hash::fromHex(const std::string &seq)
 {
   Hash hash;
