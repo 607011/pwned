@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(pwned-server)
+project(loadtest)
 
-add_executable(pwned-server 
-  pwned-server.cpp
-	uri.cpp
+add_executable(loadtest 
+  loadtest.cpp
 )
-set_target_properties(pwned-server PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
+set_target_properties(loadtest PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
 
 if(UNIX)
   set(PLATFORM_DEPENDENT_LIBRARIES, "-lpthread")
@@ -16,19 +15,17 @@ else()
   set(PLATFORM_DEPENDENT_LIBRARIES, "")
 endif()
 
-add_custom_command(TARGET pwned-server 
+add_custom_command(TARGET loadtest 
   POST_BUILD
-  COMMAND strip pwned-server)
+  COMMAND strip loadtest)
 
-target_include_directories(pwned-server
+target_include_directories(loadtest
 	PRIVATE ${PROJECT_INCLUDE_DIRS}
 	PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 
-target_link_libraries(pwned-server
+target_link_libraries(loadtest
 	pnwed
 	${OPENSSL_CRYPTO_LIBRARY}
 	${OPENSSL_SSL_LIBRARY}
 	${Boost_LIBRARIES}
 )
-
-add_subdirectory(loadtest)

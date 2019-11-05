@@ -70,6 +70,7 @@ int main(int argc, const char *argv[])
   hello();
   std::string inputFilename;
   std::string outputFilename;
+  std::string testUrlPrefix;
   bool writeLoadTestUrls;
   static constexpr int DefaultN = 20000;
   int N = DefaultN;
@@ -81,6 +82,7 @@ int main(int argc, const char *argv[])
   ("num,N", po::value<int>(&N)->default_value(DefaultN), "number of data sets to extract")
   ("non-existent", po::bool_switch(&onlyNonExistent)->default_value(false), "select only non-existing hashes (or else only hashes contained in the input file will be selected)")
   ("test-urls", po::bool_switch(&writeLoadTestUrls)->default_value(false), "write file with urls for load testing")
+  ("test-url-prefix", po::value<std::string>(&testUrlPrefix)->default_value("http://127.0.0.1:31337/v1/pwned/api/lookup?hash="), "write file with urls for load testing")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -149,7 +151,7 @@ int main(int argc, const char *argv[])
       {
         if (writeLoadTestUrls)
         {
-          out << "http://127.0.0.1:31337/v1/pwned/api/lookup?hash=" << hash.toString() << std::endl;
+          out << testUrlPrefix << hash.toString() << std::endl;
         }
         else
         {
@@ -173,7 +175,7 @@ int main(int argc, const char *argv[])
         std::cout << phc.hash << " @ " << idx << std::endl;
         if (writeLoadTestUrls)
         {
-          out << "http://127.0.0.1:31337/v1/pwned/api/lookup?hash=" << phc.hash.toString() << std::endl;
+          out << testUrlPrefix << phc.hash.toString() << std::endl;
         }
         else
         {
