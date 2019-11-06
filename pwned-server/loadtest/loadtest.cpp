@@ -19,17 +19,21 @@
 #include <string>
 #include <chrono>
 #include <memory>
+#include <algorithm>
 #include <exception>
-#include <sstream>
 #include <list>
 #include <numeric>
 
 #include <boost/program_options.hpp>
+#include <pwned-lib/util.hpp>
+#include <boost/beast/ssl.hpp>
 
 #include "session.hpp"
+#include "root_certificates.hpp"
 #include "../uri.hpp"
 
 namespace po = boost::program_options;
+namespace ssl = boost::asio::ssl;
 
 void hello()
 {
@@ -108,26 +112,60 @@ int main(int argc, const char *argv[])
     std::cout << "WARNING: Illegal number of workers given. Defaulting to " << DefaultNumWorkers << std::endl;
     numWorkers = DefaultNumWorkers;
   }
+  if (runtimeSecs < 1)
+  {
+    std::cout << "WARNING: Illegal runtime given. Defaulting to " << DefaultRuntimeSecs << std::endl;
+    runtimeSecs = DefaultRuntimeSecs;
+  }
 
   std::cout << "Running load test on " << address << " in " << numWorkers << " worker thread(s) for " << runtimeSecs << " seconds ... " << std::flush;
   try
   {
     URI uri(address);
+    // std::cout << "scheme = " << uri.scheme() << std::endl
+    //           << "host = " << uri.host() << std::endl
+    //           << "port = " << uri.port() << std::endl
+    //           << "path = " << uri.path() << std::endl;
     boost::asio::io_context ioc;
+    ssl::context ctx{ssl::context::tlsv12_client};
+    boost::system::error_code ec;
+    load_root_certificates(ctx, ec);
+    if (ec)
+    {
+      std::cerr << ec.message() << std::endl;
+    }
+    ctx.set_verify_mode(ssl::verify_peer);
     std::list<Session> workers;
     for (unsigned int i = 0; i < numWorkers; ++i)
     {
-      workers.emplace_back(ioc, address, inputFilename, runtimeSecs, static_cast<uint64_t>(i));
+      workers.emplace_back(ioc, ctx, address, inputFilename, runtimeSecs, static_cast<uint64_t>(i));
       workers.back().run();
     }
     ioc.run();
     uint64_t totalRequests = 0;
+    std::vector<std::chrono::nanoseconds> rtts;
     for (const auto &worker : workers)
     {
-      totalRequests += worker.requests();
+      totalRequests += worker.requestCount();
+      rtts.insert(rtts.end(), worker.rtts().begin(), worker.rtts().end());
+    }
+    std::sort(rtts.begin(), rtts.end());
+    uint64_t totalRTT = 0;
+    for (const auto &rtt : rtts)
+    {
+      totalRTT += rtt.count();
     }
     std::cout << std::endl
-              << totalRequests <<" requests in " << runtimeSecs << " seconds (" << (totalRequests / runtimeSecs) << " reqs/sec)" << std::endl;
+              << totalRequests << " requests in " << runtimeSecs << " seconds (" << (totalRequests / runtimeSecs) << " reqs/sec)"
+              << std::endl;
+    if (rtts.size() > 0)
+    {
+      std::cout << "min RTT: " << 1e-6 * double(rtts.front().count()) << "ms, "
+                << "max RTT: " << 1e-6 * double(rtts.back().count()) << "ms, "
+                << "avg RTT: " << 1e-6 * double(totalRTT) / rtts.size() << "ms, "
+                << "median RTT: " << 1e-6 * double(rtts[rtts.size() / 2].count()) << "ms"
+                << std::endl;
+    }
   }
   catch (const std::exception &e)
   {

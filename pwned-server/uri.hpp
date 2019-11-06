@@ -25,15 +25,8 @@
 class URI
 {
 public:
-  URI()
-  : isValid_(true)
-  , port_(0)
-  {}
-  URI(const std::string &uri)
-  : URI()
-  {
-    parse(uri);
-  }
+  URI();
+  URI(const std::string &uri);
   ~URI() = default;
   bool isValid() const { return isValid_; }
   const std::string &host() const { return host_; } 
@@ -60,6 +53,7 @@ private:
   std::string fragment_;
   unsigned short port_;
   std::map<std::string, std::string> query_;
+  static const std::map<std::string, unsigned short> schemeToPort; 
 };
 
 #endif // __URI_HPP__

@@ -15,12 +15,29 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "uri.hpp"
-
+#include <iostream>
 #include <vector>
 #include <boost/algorithm/string.hpp>
 
+#include "uri.hpp"
+
 const std::regex URI::RE("^([a-z0-9+.-]+):(?:\\/\\/(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(\\/(?:[a-z0-9-._~!$&'()*+,;=:@\\/]|%[0-9A-F]{2})*)?|(\\/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@\\/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:\\/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:\\/?@]|%[0-9A-F]{2})*))?$");
+const std::map<std::string, unsigned short> URI::schemeToPort = {
+  { "http", 80 },
+  { "https", 443 }
+};
+
+URI::URI()
+    : isValid_(true)
+    , port_(0)
+{
+}
+
+URI::URI(const std::string &uri)
+    : URI()
+{
+  parse(uri);
+}
 
 void URI::parse(const std::string &uri)
 {
@@ -50,9 +67,13 @@ void URI::parse(const std::string &uri)
     {
       host_ = m[3].str();
     }
-    if (m.size() > 4)
+    if (m.size() > 4 && m[4].str().size() > 0)
     {
       port_ = std::stoi(m[4].str());
+    }
+    else if (schemeToPort.find(scheme_) != schemeToPort.end())
+    {
+      port_ = schemeToPort.at(scheme_);
     }
     if (m.size() > 5)
     {

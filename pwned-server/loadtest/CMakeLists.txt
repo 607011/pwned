@@ -4,6 +4,8 @@ project(loadtest)
 
 add_executable(loadtest 
   loadtest.cpp
+  session.cpp
+  root_certificates.cpp
   ../uri.cpp
 )
 set_target_properties(loadtest PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
