@@ -16,6 +16,7 @@
  */
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <chrono>
 #include <memory>
@@ -28,7 +29,7 @@
 #include <pwned-lib/util.hpp>
 #include <boost/beast/ssl.hpp>
 
-#include "session.hpp"
+#include "httpclientworker.hpp"
 #include "root_certificates.hpp"
 #include "../uri.hpp"
 
@@ -109,12 +110,12 @@ int main(int argc, const char *argv[])
 
   if (numWorkers < 1)
   {
-    std::cout << "WARNING: Illegal number of workers given. Defaulting to " << DefaultNumWorkers << std::endl;
+    std::cout << "WARNING: Illegal number of workers given. Defaulting to " << DefaultNumWorkers << "." << std::endl;
     numWorkers = DefaultNumWorkers;
   }
   if (runtimeSecs < 1)
   {
-    std::cout << "WARNING: Illegal runtime given. Defaulting to " << DefaultRuntimeSecs << std::endl;
+    std::cout << "WARNING: Illegal runtime given. Defaulting to " << DefaultRuntimeSecs << " seconds." << std::endl;
     runtimeSecs = DefaultRuntimeSecs;
   }
 
@@ -122,7 +123,7 @@ int main(int argc, const char *argv[])
   try
   {
     URI uri(address);
-    boost::asio::io_context ioc;
+    boost::asio::io_context ioc{numWorkers};
     ssl::context ctx{ssl::context::tlsv12_client};
     boost::system::error_code ec;
     load_root_certificates(ctx, ec);
@@ -131,10 +132,10 @@ int main(int argc, const char *argv[])
       std::cerr << ec.message() << std::endl;
     }
     ctx.set_verify_mode(ssl::verify_peer);
-    std::list<std::shared_ptr<Session>> workers;
+    std::list<std::shared_ptr<HttpClientWorker>> workers;
     for (int i = 0; i < numWorkers; ++i)
     {
-      std::shared_ptr<Session> w = std::make_shared<Session>(ioc, ctx, address, inputFilename, runtimeSecs, i);
+      std::shared_ptr<HttpClientWorker> w = std::make_shared<HttpClientWorker>(ioc, ctx, address, inputFilename, runtimeSecs, i);
       workers.push_back(w);
       w->run();
     }
@@ -163,11 +164,14 @@ int main(int argc, const char *argv[])
               << std::endl;
     if (rtts.size() > 0)
     {
-      std::cout << "min RTT: " << 1e-6 * double(rtts.front().count()) << "ms, "
-                << "max RTT: " << 1e-6 * double(rtts.back().count()) << "ms, "
-                << "avg RTT: " << 1e-6 * double(totalRTT) / rtts.size() << "ms, "
-                << "median RTT: " << 1e-6 * double(rtts[rtts.size() / 2].count()) << "ms"
-                << std::endl;
+      std::cout << "min RTT   : " << std::setw(8) << std::setprecision(6) << std::setfill(' ')
+                << 1e-6 * double(rtts.front().count()) << " ms" << std::endl
+                << "max RTT   : " << std::setw(8) << std::setprecision(6) << std::setfill(' ')
+                << 1e-6 * double(rtts.back().count()) << " ms" << std::endl
+                << "avg RTT   : " << std::setw(8) << std::setprecision(6) << std::setfill(' ')
+                << 1e-6 * double(totalRTT) / rtts.size() << " ms" << std::endl
+                << "median RTT: " << std::setw(8) << std::setprecision(6) << std::setfill(' ')
+                << 1e-6 * double(rtts[rtts.size() / 2].count()) << " ms" << std::endl;
     }
   }
   catch (const std::exception &e)

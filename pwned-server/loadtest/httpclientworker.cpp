@@ -1,4 +1,20 @@
-#include "session.hpp"
+/*
+ Copyright © 2019 Oliver Lau <ola@ct.de>, Heise Medien GmbH & Co. KG - Redaktion c't
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <iostream>
 #include <cstdlib>
 #include <functional>
@@ -25,6 +41,7 @@
 #include <pwned-lib/passwordhashandcount.hpp>
 
 #include "../uri.hpp"
+#include "httpclientworker.hpp"
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -37,7 +54,7 @@ static void fail(const beast::error_code &ec, char const *what)
   std::cerr << what << ": " << ec.message() << " #" << ec.value() << std::endl;
 }
 
-Session::Session(
+HttpClientWorker::HttpClientWorker(
   net::io_context &ioc,
   ssl::context &ctx,
   const std::string &address,
@@ -48,14 +65,15 @@ Session::Session(
     , mCtx(ctx)
     , mResolver(net::make_strand(ioc))
     , mStream(net::make_strand(ioc))
-    , mSSLStream(net::make_strand(ioc), ctx)
     , mAddress(address)
     , mRuntimeSecs(runtimeSecs)
     , mRequestCount(0)
     , mURI(address)
-    , mSSL(false)
 {
-  mSSL = mURI.scheme() == "https";
+  if (mURI.scheme() == "https")
+  {
+    mSSLStream = beast::ssl_stream<beast::tcp_stream>(net::make_strand(ioc), ctx);
+  }
   mGen.seed(static_cast<uint64_t>(id));
   mInputSize = boost::filesystem::file_size(inputFilename);
   mInputFile.open(inputFilename, std::ios::binary);
@@ -63,11 +81,11 @@ Session::Session(
   mT1 = mT0 + std::chrono::seconds(mRuntimeSecs);
 }
 
-void Session::run()
+void HttpClientWorker::run()
 {
-  if (mSSL)
+  if (mSSLStream)
   {
-    if (!SSL_set_tlsext_host_name(mSSLStream.native_handle(), mURI.host().c_str()))
+    if (!SSL_set_tlsext_host_name(mSSLStream->native_handle(), mURI.host().c_str()))
     {
       beast::error_code ec{static_cast<int>(::ERR_get_error()), net::error::get_ssl_category()};
       std::cerr << ec.message() << std::endl;
@@ -88,86 +106,86 @@ void Session::run()
   mResolver.async_resolve(
       mURI.host(),
       std::to_string(mURI.port()),
-      beast::bind_front_handler(&Session::onResolve, shared_from_this()));
+      beast::bind_front_handler(&HttpClientWorker::onResolve, shared_from_this()));
 }
 
-void Session::onResolve(beast::error_code ec, tcp::resolver::results_type results)
+void HttpClientWorker::onResolve(beast::error_code ec, tcp::resolver::results_type results)
 {
   if (ec)
     return fail(ec, "resolve");
-  if (mSSL)
+  if (mSSLStream)
   {
-    beast::get_lowest_layer(mSSLStream).expires_after(std::chrono::seconds(ExpiresAfterSecs));
-    beast::get_lowest_layer(mSSLStream).async_connect(
+    beast::get_lowest_layer(*mSSLStream).expires_after(std::chrono::seconds(ExpiresAfterSecs));
+    beast::get_lowest_layer(*mSSLStream).async_connect(
         results,
-        beast::bind_front_handler(&Session::onConnect, shared_from_this()));
+        beast::bind_front_handler(&HttpClientWorker::onConnect, shared_from_this()));
   }
   else
   {
-    mStream.expires_after(std::chrono::seconds(ExpiresAfterSecs));
-    mStream.async_connect(results, beast::bind_front_handler(&Session::onConnect, shared_from_this()));
+    mStream->expires_after(std::chrono::seconds(ExpiresAfterSecs));
+    mStream->async_connect(results, beast::bind_front_handler(&HttpClientWorker::onConnect, shared_from_this()));
   }
 }
 
-void Session::onConnect(beast::error_code ec, tcp::resolver::results_type::endpoint_type)
+void HttpClientWorker::onConnect(beast::error_code ec, tcp::resolver::results_type::endpoint_type)
 {
   if (ec)
     return fail(ec, "connect");
-  if (mSSL)
+  if (mSSLStream)
   {
-    mSSLStream.async_handshake(
+    mSSLStream->async_handshake(
         ssl::stream_base::client,
-        beast::bind_front_handler(&Session::onHandshake, shared_from_this()));
+        beast::bind_front_handler(&HttpClientWorker::onHandshake, shared_from_this()));
   }
   else
   {
-    mStream.expires_after(std::chrono::seconds(ExpiresAfterSecs));
+    mStream->expires_after(std::chrono::seconds(ExpiresAfterSecs));
     http::async_write(
-      mStream,
+      *mStream,
       mReq,
-      beast::bind_front_handler(&Session::onWrite, shared_from_this()));
+      beast::bind_front_handler(&HttpClientWorker::onWrite, shared_from_this()));
   }
 }
 
-void Session::onHandshake(beast::error_code ec)
+void HttpClientWorker::onHandshake(beast::error_code ec)
 {
   if (ec)
     return fail(ec, "handshake");
-  beast::get_lowest_layer(mSSLStream).expires_after(std::chrono::seconds(ExpiresAfterSecs));
+  beast::get_lowest_layer(*mSSLStream).expires_after(std::chrono::seconds(ExpiresAfterSecs));
   http::async_write(
-    mSSLStream,
+    *mSSLStream,
     mReq,
-    beast::bind_front_handler(&Session::onWrite, shared_from_this()));
+    beast::bind_front_handler(&HttpClientWorker::onWrite, shared_from_this()));
 }
 
-void Session::onWrite(beast::error_code ec, std::size_t /*bytes_transferred*/)
+void HttpClientWorker::onWrite(beast::error_code ec, std::size_t /*bytes_transferred*/)
 {
   if (ec)
     return fail(ec, "write");
-  if (mSSL)
+  if (mSSLStream)
   {
     http::async_read(
-      mSSLStream,
+      *mSSLStream,
       mBuffer,
       mRes,
-      beast::bind_front_handler(&Session::onRead, shared_from_this()));
+      beast::bind_front_handler(&HttpClientWorker::onRead, shared_from_this()));
   }
   else
   {
     http::async_read(
-      mStream,
+      *mStream,
       mBuffer,
       mRes,
-      beast::bind_front_handler(&Session::onRead, shared_from_this()));
+      beast::bind_front_handler(&HttpClientWorker::onRead, shared_from_this()));
   }
 }
 
-void Session::onRead(beast::error_code ec, std::size_t /*bytes_transferred*/)
+void HttpClientWorker::onRead(beast::error_code ec, std::size_t /*bytes_transferred*/)
 {
   if (ec)
     return fail(ec, "read");
   const std::string &resStr = mRes.body().data();
-  std::cout << mRes << std::endl;
+  // std::cout << mRes << std::endl;
   pt::ptree res;
   boost::iostreams::array_source as(&resStr[0], resStr.size());
   boost::iostreams::stream<boost::iostreams::array_source> is(as);
@@ -183,22 +201,22 @@ void Session::onRead(beast::error_code ec, std::size_t /*bytes_transferred*/)
   const auto rtt = std::chrono::high_resolution_clock::now() - mRTTt0;
   mRTT.push_back(rtt);
   ++mRequestCount;
-  if (mSSL)
+  if (mSSLStream)
   {
-    beast::get_lowest_layer(mSSLStream).expires_after(std::chrono::seconds(ExpiresAfterSecs));
-    mSSLStream.async_shutdown(
-      beast::bind_front_handler(&Session::onShutdown, shared_from_this()));
+    beast::get_lowest_layer(*mSSLStream).expires_after(std::chrono::seconds(ExpiresAfterSecs));
+    mSSLStream->async_shutdown(
+      beast::bind_front_handler(&HttpClientWorker::onShutdown, shared_from_this()));
   }
   else
   {
-    mStream.socket().shutdown(tcp::socket::shutdown_both, ec);
+    mStream->socket().shutdown(tcp::socket::shutdown_both, ec);
     if (ec && ec != beast::errc::not_connected)
       return fail(ec, "shutdown");
     restart();
   }
 }
 
-void Session::onShutdown(beast::error_code ec)
+void HttpClientWorker::onShutdown(beast::error_code ec)
 {
   if (ec == net::error::eof || ec == net::ssl::error::stream_truncated)
   {
@@ -209,14 +227,14 @@ void Session::onShutdown(beast::error_code ec)
   restart();
 }
 
-void Session::restart()
+void HttpClientWorker::restart()
 {
   const auto now = std::chrono::high_resolution_clock::now();
   mRes.clear();
   mRes.body().clear();
   if (now < mT1)
   {
-    if (mSSL)
+    if (mSSLStream)
     {
       // boost::beast::ssl_stream cannot be reused (https://github.com/boostorg/beast/issues/821#issuecomment-338354949)
       mSSLStream = boost::beast::ssl_stream<boost::beast::tcp_stream>(net::make_strand(mIoc), mCtx);
@@ -229,17 +247,17 @@ void Session::restart()
   }
 }
 
-uint64_t Session::requestCount() const
+uint64_t HttpClientWorker::requestCount() const
 {
   return mRequestCount;
 }
 
-std::vector<std::chrono::nanoseconds> Session::rtts() const
+std::vector<std::chrono::nanoseconds> HttpClientWorker::rtts() const
 {
   return mRTT;
 }
 
-std::chrono::nanoseconds Session::dt() const
+std::chrono::nanoseconds HttpClientWorker::dt() const
 {
   return mT1 - mT0;
 }

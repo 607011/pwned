@@ -111,7 +111,7 @@ int main(int argc, const char *argv[])
   try
   {
     URI uri(address);
-    boost::asio::io_context ioc{1};
+    boost::asio::io_context ioc{numWorkers};
     tcp::acceptor acceptor{ioc, {boost::asio::ip::make_address(uri.host()), uri.port()}};
     std::list<HttpWorker> workers;
     for (int i = 0; i < numWorkers; ++i)

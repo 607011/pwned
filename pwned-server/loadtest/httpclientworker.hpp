@@ -15,8 +15,8 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef __session_hpp__
-#define __session_hpp__
+#ifndef __httpclientworker_hpp__
+#define __httpclientworker_hpp__
 
 #include <cstdlib>
 #include <string>
@@ -47,13 +47,13 @@ namespace ssl = boost::asio::ssl;
 
 using tcp = boost::asio::ip::tcp;
 
-class Session : public std::enable_shared_from_this<Session>
+class HttpClientWorker : public std::enable_shared_from_this<HttpClientWorker>
 {
   net::io_context &mIoc;
   ssl::context &mCtx;
   tcp::resolver mResolver;
-  beast::tcp_stream mStream;
-  beast::ssl_stream<beast::tcp_stream> mSSLStream;
+  boost::optional<beast::tcp_stream> mStream;
+  boost::optional<beast::ssl_stream<beast::tcp_stream>> mSSLStream;
   beast::flat_buffer mBuffer;
   http::request<http::empty_body> mReq;
   http::response<http::string_body> mRes;
@@ -69,11 +69,10 @@ class Session : public std::enable_shared_from_this<Session>
   std::chrono::time_point<std::chrono::high_resolution_clock> mRTTt0;
   std::vector<std::chrono::nanoseconds> mRTT;
   URI mURI;
-  bool mSSL;
 
 public:
-  Session() = delete;
-  Session(
+  HttpClientWorker() = delete;
+  HttpClientWorker(
     net::io_context& ioc,
     ssl::context &ctx,
     const std::string &address,
@@ -95,4 +94,4 @@ public:
   static const int ExpiresAfterSecs = 30;
 };
 
-#endif // __session_hpp__
+#endif // __httpclientworker_hpp__

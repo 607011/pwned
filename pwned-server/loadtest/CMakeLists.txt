@@ -4,7 +4,7 @@ project(loadtest)
 
 add_executable(loadtest 
   loadtest.cpp
-  session.cpp
+  httpclientworker.cpp
   root_certificates.cpp
   ../uri.cpp
 )
