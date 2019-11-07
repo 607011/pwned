@@ -143,14 +143,15 @@ int main(int argc, const char *argv[])
     }
     ioc.run();
     uint64_t totalRequests = 0;
+    uint64_t totalRTT = 0;
     std::vector<std::chrono::nanoseconds> rtts;
     for (const auto &worker : workers)
     {
       totalRequests += worker.requestCount();
-      rtts.insert(rtts.end(), worker.rtts().begin(), worker.rtts().end());
+      const std::vector<std::chrono::nanoseconds> &r = worker.rtts();
+      rtts.insert(rtts.end(), r.begin(), r.end());
     }
     std::sort(rtts.begin(), rtts.end());
-    uint64_t totalRTT = 0;
     for (const auto &rtt : rtts)
     {
       totalRTT += rtt.count();

@@ -33,6 +33,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/beast/ssl.hpp>
 
+#include <pwned-lib/hash.hpp>
 #include <pwned-lib/passwordhashandcount.hpp>
 
 #include "../uri.hpp"
@@ -58,7 +59,9 @@ class Session
   std::chrono::time_point<std::chrono::high_resolution_clock> mT1;
   std::ifstream mInputFile;
   uint64_t mInputSize;
+  pwned::Hash mQueriedHash;
   unsigned int mRuntimeSecs;
+  uint64_t mId;
   uint64_t mRequestCount;
   std::chrono::time_point<std::chrono::high_resolution_clock> mRTTt0;
   std::vector<std::chrono::nanoseconds> mRTT;
@@ -79,6 +82,8 @@ public:
   uint64_t requestCount() const;
   std::vector<std::chrono::nanoseconds> rtts() const;
   std::chrono::nanoseconds dt() const;
+
+  static const int ExpiresAfterSecs = 30;
 };
 
 #endif // __session_hpp__

@@ -17,6 +17,10 @@
 #include <boost/beast/ssl.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 #include <pwned-lib/passwordhashandcount.hpp>
 
@@ -25,6 +29,7 @@
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace net = boost::asio;
+namespace pt = boost::property_tree;
 using tcp = boost::asio::ip::tcp;
 
 static void fail(beast::error_code ec, char const *what)
@@ -43,6 +48,7 @@ Session::Session(
     , mStream(net::make_strand(ioc))
     , mSSLStream(net::make_strand(ioc), ctx)
     , mAddress(address)
+    , mId(id)
     , mRuntimeSecs(runtimeSecs)
     , mRequestCount(0)
     , mURI(address)
@@ -73,9 +79,10 @@ void Session::run()
   const uint64_t idx = pos - pos % pwned::PHC::size;
   pwned::PasswordHashAndCount phc;
   phc.read(mInputFile, idx);
+  mQueriedHash = phc.hash;
   mReq.version(11);
   mReq.method(http::verb::get);
-  mReq.target(mURI.path() + "?hash=" + phc.hash.toStringLC());
+  mReq.target(mURI.path() + "?hash=" + mQueriedHash.toStringLC());
   mReq.set(http::field::host, mURI.host());
   mReq.set(http::field::user_agent, "#pwned load test");
   mRTTt0 = std::chrono::high_resolution_clock::now();
@@ -91,14 +98,14 @@ void Session::onResolve(beast::error_code ec, tcp::resolver::results_type result
     return fail(ec, "resolve");
   if (mSSL)
   {
-    beast::get_lowest_layer(mSSLStream).expires_after(std::chrono::seconds(30));
+    beast::get_lowest_layer(mSSLStream).expires_after(std::chrono::seconds(ExpiresAfterSecs));
     beast::get_lowest_layer(mSSLStream).async_connect(
         results,
         beast::bind_front_handler(&Session::onConnect, this));
   }
   else
   {
-    mStream.expires_after(std::chrono::seconds(30));
+    mStream.expires_after(std::chrono::seconds(ExpiresAfterSecs));
     mStream.async_connect(results, beast::bind_front_handler(&Session::onConnect, this));
   }
 }
@@ -107,7 +114,7 @@ void Session::onHandshake(beast::error_code ec)
 {
   if (ec)
     return fail(ec, "handshake");
-  beast::get_lowest_layer(mSSLStream).expires_after(std::chrono::seconds(30));
+  beast::get_lowest_layer(mSSLStream).expires_after(std::chrono::seconds(ExpiresAfterSecs));
   http::async_write(
     mSSLStream,
     mReq,
@@ -126,7 +133,7 @@ void Session::onConnect(beast::error_code ec, tcp::resolver::results_type::endpo
   }
   else
   {
-    mStream.expires_after(std::chrono::seconds(30));
+    mStream.expires_after(std::chrono::seconds(ExpiresAfterSecs));
     http::async_write(
       mStream,
       mReq,
@@ -160,14 +167,25 @@ void Session::onRead(beast::error_code ec, std::size_t /*bytes_transferred*/)
 {
   if (ec)
     return fail(ec, "read");
-  // std::cout << mRes << std::endl;
+  const std::string &resStr = mRes.body().data();
+  pt::ptree res;
+  boost::iostreams::array_source as(&resStr[0], resStr.size());
+  boost::iostreams::stream<boost::iostreams::array_source> is(as);
+  try
+  {
+    pt::read_json(is, res);
+  }
+  catch(const std::exception &e)
+  {
+    std::cerr << "ERROR in read_json(): " << e.what() << std::endl;
+    return;
+  }
   const auto rtt = std::chrono::high_resolution_clock::now() - mRTTt0;
-  std::cout << rtt.count() << std::endl;
   mRTT.push_back(rtt);
   ++mRequestCount;
   if (mSSL)
   {
-    beast::get_lowest_layer(mSSLStream).expires_after(std::chrono::seconds(30));
+    beast::get_lowest_layer(mSSLStream).expires_after(std::chrono::seconds(ExpiresAfterSecs));
     mSSLStream.async_shutdown(
       beast::bind_front_handler(&Session::onShutdown, this));
   }
@@ -193,13 +211,16 @@ void Session::onShutdown(beast::error_code ec)
 
 void Session::restart()
 {
-  if (std::chrono::high_resolution_clock::now() < mT1)
+  const auto now = std::chrono::high_resolution_clock::now();
+  mRes.clear();
+  mRes.body().clear();
+  if (now < mT1)
   {
     run();
   }
   else
   {
-    mT1 = std::chrono::high_resolution_clock::now();
+    mT1 = now;
   }
 }
 
