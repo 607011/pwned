@@ -13,8 +13,6 @@
 #include <boost/asio/ssl.hpp>
 #include <boost/system/error_code.hpp>
 
-namespace ssl = boost::asio::ssl;
-
 void load_root_certificates(boost::asio::ssl::context &ctx, boost::system::error_code &ec);
 void load_root_certificates(boost::asio::ssl::context &ctx);
 

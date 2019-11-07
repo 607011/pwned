@@ -13,13 +13,6 @@
 
 namespace ssl = boost::asio::ssl;
 
-namespace detail
-{
-
-// The template argument is gratuituous, to
-// allow the implementation to be header-only.
-//
-template <class = void>
 void load_root_certificates(ssl::context &ctx, boost::system::error_code &ec)
 {
   const std::string cert =
@@ -3028,17 +3021,10 @@ void load_root_certificates(ssl::context &ctx, boost::system::error_code &ec)
   ctx.add_certificate_authority(boost::asio::buffer(cert.data(), cert.size()), ec);
 }
 
-} // namespace detail
-
-void load_root_certificates(ssl::context &ctx, boost::system::error_code &ec)
-{
-  detail::load_root_certificates(ctx, ec);
-}
-
 void load_root_certificates(ssl::context &ctx)
 {
   boost::system::error_code ec;
-  detail::load_root_certificates(ctx, ec);
+  load_root_certificates(ctx, ec);
   if (ec)
     throw boost::system::system_error{ec};
 }
