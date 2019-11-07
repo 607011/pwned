@@ -140,7 +140,6 @@ int main(int argc, const char *argv[])
     }
     ioc.run();
     int64_t totalRequests = 0;
-    uint64_t totalRTT = 0;
     std::vector<std::chrono::nanoseconds> rtts;
     std::chrono::nanoseconds totalRuntime;
     for (const auto &worker : workers)
@@ -154,6 +153,7 @@ int main(int argc, const char *argv[])
       }
     }
     std::sort(rtts.begin(), rtts.end());
+    int64_t totalRTT = 0;
     for (const auto &rtt : rtts)
     {
       totalRTT += rtt.count();
