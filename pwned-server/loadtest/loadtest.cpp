@@ -70,19 +70,19 @@ void usage()
 int main(int argc, const char *argv[])
 {
   static const std::string DefaultAddress = "http://127.0.0.1:31337/v1/pwned/api/lookup";
-  static const unsigned int DefaultNumWorkers = 4;
-  static const unsigned int DefaultRuntimeSecs = 10;
+  static const int DefaultNumWorkers = 4;
+  static const int DefaultRuntimeSecs = 10;
   std::string inputFilename;
   std::string indexFilename;
   std::string address;
-  unsigned int runtimeSecs = DefaultRuntimeSecs;
-  unsigned int numWorkers = 4;
+  int runtimeSecs = DefaultRuntimeSecs;
+  int numWorkers = 4;
   desc.add_options()
   ("help", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set MD5:count input file")
   ("address", po::value<std::string>(&address)->default_value(DefaultAddress), "server address")
-  ("secs", po::value<unsigned int>(&runtimeSecs)->default_value(DefaultRuntimeSecs), "run load test for so many seconds")
-  ("threads", po::value<unsigned int>(&numWorkers)->default_value(DefaultNumWorkers), "number of worker threads")
+  ("secs", po::value<int>(&runtimeSecs)->default_value(DefaultRuntimeSecs), "run load test for so many seconds")
+  ("threads", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "number of worker threads")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -122,10 +122,6 @@ int main(int argc, const char *argv[])
   try
   {
     URI uri(address);
-    // std::cout << "scheme = " << uri.scheme() << std::endl
-    //           << "host = " << uri.host() << std::endl
-    //           << "port = " << uri.port() << std::endl
-    //           << "path = " << uri.path() << std::endl;
     boost::asio::io_context ioc;
     ssl::context ctx{ssl::context::tlsv12_client};
     boost::system::error_code ec;
@@ -135,21 +131,27 @@ int main(int argc, const char *argv[])
       std::cerr << ec.message() << std::endl;
     }
     ctx.set_verify_mode(ssl::verify_peer);
-    std::list<Session> workers;
-    for (unsigned int i = 0; i < numWorkers; ++i)
+    std::list<std::shared_ptr<Session>> workers;
+    for (int i = 0; i < numWorkers; ++i)
     {
-      workers.emplace_back(ioc, ctx, address, inputFilename, runtimeSecs, static_cast<uint64_t>(i));
-      workers.back().run();
+      std::shared_ptr<Session> w = std::make_shared<Session>(ioc, ctx, address, inputFilename, runtimeSecs, i);
+      workers.push_back(w);
+      w->run();
     }
     ioc.run();
-    uint64_t totalRequests = 0;
+    int64_t totalRequests = 0;
     uint64_t totalRTT = 0;
     std::vector<std::chrono::nanoseconds> rtts;
+    std::chrono::nanoseconds totalRuntime;
     for (const auto &worker : workers)
     {
-      totalRequests += worker.requestCount();
-      const std::vector<std::chrono::nanoseconds> &r = worker.rtts();
+      totalRequests += worker->requestCount();
+      const std::vector<std::chrono::nanoseconds> &r = worker->rtts();
       rtts.insert(rtts.end(), r.begin(), r.end());
+      if (worker->dt() > totalRuntime)
+      {
+        totalRuntime = worker->dt();
+      }
     }
     std::sort(rtts.begin(), rtts.end());
     for (const auto &rtt : rtts)
@@ -157,7 +159,7 @@ int main(int argc, const char *argv[])
       totalRTT += rtt.count();
     }
     std::cout << std::endl
-              << totalRequests << " requests in " << runtimeSecs << " seconds (" << (totalRequests / runtimeSecs) << " reqs/sec)"
+              << totalRequests << " requests in " << 1e-9 * totalRuntime.count() << " seconds (" << (1e9 * totalRequests / totalRuntime.count()) << " reqs/sec)"
               << std::endl;
     if (rtts.size() > 0)
     {

@@ -21,17 +21,19 @@
 #include <cstdlib>
 #include <string>
 #include <random>
-#include <fstream>
 #include <vector>
+#include <chrono>
+#include <memory>
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
+#include <boost/beast/ssl.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/beast/ssl.hpp>
+#include <boost/optional.hpp>
 
 #include <pwned-lib/hash.hpp>
 #include <pwned-lib/passwordhashandcount.hpp>
@@ -45,8 +47,10 @@ namespace ssl = boost::asio::ssl;
 
 using tcp = boost::asio::ip::tcp;
 
-class Session
+class Session : public std::enable_shared_from_this<Session>
 {
+  net::io_context &mIoc;
+  ssl::context &mCtx;
   tcp::resolver mResolver;
   beast::tcp_stream mStream;
   beast::ssl_stream<beast::tcp_stream> mSSLStream;
@@ -60,17 +64,22 @@ class Session
   std::ifstream mInputFile;
   uint64_t mInputSize;
   pwned::Hash mQueriedHash;
-  unsigned int mRuntimeSecs;
-  uint64_t mId;
+  int mRuntimeSecs;
   uint64_t mRequestCount;
   std::chrono::time_point<std::chrono::high_resolution_clock> mRTTt0;
   std::vector<std::chrono::nanoseconds> mRTT;
   URI mURI;
-  bool mInitialized;
   bool mSSL;
 
 public:
-  explicit Session(net::io_context& ioc, ssl::context &ctx, const std::string &address, const std::string &inputFilename, unsigned int runtimeSecs, uint64_t id);
+  Session() = delete;
+  Session(
+    net::io_context& ioc,
+    ssl::context &ctx,
+    const std::string &address,
+    const std::string &inputFilename,
+    int runtimeSecs,
+    int id);
   void run();
   void onResolve(beast::error_code ec, tcp::resolver::results_type results);
   void onConnect(beast::error_code ec, tcp::resolver::results_type::endpoint_type);
