@@ -52,7 +52,7 @@ class HttpClientWorker
   net::io_context &mIoc;
   ssl::context &mCtx;
   tcp::resolver mResolver;
-  boost::optional<beast::tcp_stream> mStream;
+  beast::tcp_stream mStream;
   boost::optional<beast::ssl_stream<beast::tcp_stream>> mSSLStream;
   beast::flat_buffer mBuffer;
   http::request<http::empty_body> mReq;
