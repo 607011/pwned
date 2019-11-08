@@ -166,7 +166,7 @@ void HttpWorker::sendBadResponse(
       std::make_tuple(mAlloc));
   mStringResponse->result(status);
   mStringResponse->keep_alive(false);
-  mStringResponse->set(http::field::server, "Beast");
+  mStringResponse->set(http::field::server, std::string("#pnwed server ") + PWNED_SERVER_VERSION);
   mStringResponse->set(http::field::content_type, "text/plain");
   mStringResponse->body() = error;
   mStringResponse->prepare_payload();
