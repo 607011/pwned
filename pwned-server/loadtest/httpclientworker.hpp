@@ -47,7 +47,7 @@ namespace ssl = boost::asio::ssl;
 
 using tcp = boost::asio::ip::tcp;
 
-class HttpClientWorker : public std::enable_shared_from_this<HttpClientWorker>
+class HttpClientWorker
 {
   net::io_context &mIoc;
   ssl::context &mCtx;

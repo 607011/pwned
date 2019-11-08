@@ -132,12 +132,11 @@ int main(int argc, const char *argv[])
       std::cerr << ec.message() << std::endl;
     }
     ctx.set_verify_mode(ssl::verify_peer);
-    std::list<std::shared_ptr<HttpClientWorker>> workers;
+    std::list<HttpClientWorker> workers;
     for (int i = 0; i < numWorkers; ++i)
     {
-      std::shared_ptr<HttpClientWorker> w = std::make_shared<HttpClientWorker>(ioc, ctx, address, inputFilename, runtimeSecs, i);
-      workers.push_back(w);
-      w->run();
+      workers.emplace_back(ioc, ctx, address, inputFilename, runtimeSecs, i);
+      workers.back().run();
     }
     ioc.run();
     int64_t totalRequests = 0;
@@ -145,12 +144,12 @@ int main(int argc, const char *argv[])
     std::chrono::nanoseconds totalRuntime;
     for (const auto &worker : workers)
     {
-      totalRequests += worker->requestCount();
-      const std::vector<std::chrono::nanoseconds> &r = worker->rtts();
+      totalRequests += worker.requestCount();
+      const std::vector<std::chrono::nanoseconds> &r = worker.rtts();
       rtts.insert(rtts.end(), r.begin(), r.end());
-      if (worker->dt() > totalRuntime)
+      if (worker.dt() > totalRuntime)
       {
-        totalRuntime = worker->dt();
+        totalRuntime = worker.dt();
       }
     }
     std::sort(rtts.begin(), rtts.end());

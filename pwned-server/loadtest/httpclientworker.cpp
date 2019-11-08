@@ -106,7 +106,7 @@ void HttpClientWorker::run()
   mResolver.async_resolve(
       mURI.host(),
       std::to_string(mURI.port()),
-      beast::bind_front_handler(&HttpClientWorker::onResolve, shared_from_this()));
+      beast::bind_front_handler(&HttpClientWorker::onResolve, this));
 }
 
 void HttpClientWorker::onResolve(beast::error_code ec, tcp::resolver::results_type results)
@@ -118,12 +118,12 @@ void HttpClientWorker::onResolve(beast::error_code ec, tcp::resolver::results_ty
     beast::get_lowest_layer(*mSSLStream).expires_after(std::chrono::seconds(ExpiresAfterSecs));
     beast::get_lowest_layer(*mSSLStream).async_connect(
         results,
-        beast::bind_front_handler(&HttpClientWorker::onConnect, shared_from_this()));
+        beast::bind_front_handler(&HttpClientWorker::onConnect, this));
   }
   else
   {
-    mStream->expires_after(std::chrono::seconds(ExpiresAfterSecs));
-    mStream->async_connect(results, beast::bind_front_handler(&HttpClientWorker::onConnect, shared_from_this()));
+    mStream.expires_after(std::chrono::seconds(ExpiresAfterSecs));
+    mStream.async_connect(results, beast::bind_front_handler(&HttpClientWorker::onConnect, this));
   }
 }
 
@@ -135,15 +135,15 @@ void HttpClientWorker::onConnect(beast::error_code ec, tcp::resolver::results_ty
   {
     mSSLStream->async_handshake(
         ssl::stream_base::client,
-        beast::bind_front_handler(&HttpClientWorker::onHandshake, shared_from_this()));
+        beast::bind_front_handler(&HttpClientWorker::onHandshake, this));
   }
   else
   {
-    mStream->expires_after(std::chrono::seconds(ExpiresAfterSecs));
+    mStream.expires_after(std::chrono::seconds(ExpiresAfterSecs));
     http::async_write(
-      *mStream,
+      mStream,
       mReq,
-      beast::bind_front_handler(&HttpClientWorker::onWrite, shared_from_this()));
+      beast::bind_front_handler(&HttpClientWorker::onWrite, this));
   }
 }
 
@@ -155,7 +155,7 @@ void HttpClientWorker::onHandshake(beast::error_code ec)
   http::async_write(
     *mSSLStream,
     mReq,
-    beast::bind_front_handler(&HttpClientWorker::onWrite, shared_from_this()));
+    beast::bind_front_handler(&HttpClientWorker::onWrite, this));
 }
 
 void HttpClientWorker::onWrite(beast::error_code ec, std::size_t /*bytes_transferred*/)
@@ -168,15 +168,15 @@ void HttpClientWorker::onWrite(beast::error_code ec, std::size_t /*bytes_transfe
       *mSSLStream,
       mBuffer,
       mRes,
-      beast::bind_front_handler(&HttpClientWorker::onRead, shared_from_this()));
+      beast::bind_front_handler(&HttpClientWorker::onRead, this));
   }
   else
   {
     http::async_read(
-      *mStream,
+      mStream,
       mBuffer,
       mRes,
-      beast::bind_front_handler(&HttpClientWorker::onRead, shared_from_this()));
+      beast::bind_front_handler(&HttpClientWorker::onRead, this));
   }
 }
 
@@ -205,11 +205,11 @@ void HttpClientWorker::onRead(beast::error_code ec, std::size_t /*bytes_transfer
   {
     beast::get_lowest_layer(*mSSLStream).expires_after(std::chrono::seconds(ExpiresAfterSecs));
     mSSLStream->async_shutdown(
-      beast::bind_front_handler(&HttpClientWorker::onShutdown, shared_from_this()));
+      beast::bind_front_handler(&HttpClientWorker::onShutdown, this));
   }
   else
   {
-    mStream->socket().shutdown(tcp::socket::shutdown_both, ec);
+    mStream.socket().shutdown(tcp::socket::shutdown_both, ec);
     if (ec && ec != beast::errc::not_connected)
       return fail(ec, "shutdown");
     restart();
