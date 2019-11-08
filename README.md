@@ -99,6 +99,10 @@ If you compiled Boost 1.71 on your own as shown above, you have to introduce it 
 BOOST_ROOT=~/dev/boost-1.71 cmake -DCMAKE_BUILD_TYPE=Release ../..
 ```
 
+## Literature
+
+ - [Oliver Lau, Cleverer/2, Wie man die binäre Suche pimpen kann, c't 23/2019, S. 172](https://www.heise.de/select/ct/2019/23/1572876495268649)
+
 ---
 
 Copyright &copy; 2019 [Oliver Lau](mailto:ola@ct.de), [Heise Medien GmbH & Co. KG](http://www.heise.de/).
