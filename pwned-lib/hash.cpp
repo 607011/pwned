@@ -65,17 +65,17 @@ Hash::Hash(const std::string &pwd)
   isValid = true;
 }
 
-std::string Hash::toString() const
+std::string Hash::toString(bool uppercase) const
 {
   std::ostringstream ss;
+  if (uppercase)
+  {
   ss << std::setw(16) << std::setfill('0') << std::hex << std::uppercase << upper << std::setw(16) << std::setfill('0') << std::uppercase << lower;
-  return ss.str();
 }
-
-std::string Hash::toStringLC() const
+  else
 {
-  std::ostringstream ss;
   ss << std::setw(16) << std::setfill('0') << std::hex << upper << std::setw(16) << std::setfill('0') << lower;
+  }
   return ss.str();
 }
 

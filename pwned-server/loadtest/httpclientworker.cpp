@@ -99,7 +99,7 @@ void HttpClientWorker::run()
   mQueriedHash = phc.hash;
   mReq.version(11);
   mReq.method(http::verb::get);
-  mReq.target(mURI.path() + "?hash=" + mQueriedHash.toStringLC());
+  mReq.target(mURI.path() + "?hash=" + mQueriedHash.toString());
   mReq.set(http::field::host, mURI.host());
   mReq.set(http::field::user_agent, "#pwned load test");
   mRTTt0 = std::chrono::high_resolution_clock::now();

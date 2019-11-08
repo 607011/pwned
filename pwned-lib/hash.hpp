@@ -78,8 +78,7 @@ struct Hash
   }
 
   static Hash fromHex(const std::string &seq);
-  std::string toString() const;
-  std::string toStringLC() const;
+  std::string toString(bool uppercase = false) const;
 
   inline Hash &operator=(const Hash &rhs)
   {
