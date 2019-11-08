@@ -114,7 +114,6 @@ int main(int argc, const char *argv[])
     URI uri(address);
     boost::asio::io_context ioc{numWorkers};
     tcp::acceptor acceptor{ioc, {boost::asio::ip::make_address(uri.host()), uri.port()}};
-    acceptor.get_executor();
     std::list<webservice::HttpWorker> workers;
     for (int i = 0; i < numWorkers; ++i)
     {
