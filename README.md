@@ -102,6 +102,7 @@ BOOST_ROOT=~/dev/boost-1.71 cmake -DCMAKE_BUILD_TYPE=Release ../..
 ## Literature
 
  - [Oliver Lau, Cleverer/2, Wie man die binäre Suche pimpen kann, c't 23/2019, S. 172](https://www.heise.de/select/ct/2019/23/1572876495268649)
+ - [Pina Merkert, Passwortsuche mit Turbo, 25 Gigabyte Passwortlisten von HaveIBeenPwned schnell lokal durchsuchen, c't 5/2019, S. 42](https://www.heise.de/select/ct/2019/5/1551437903574108)
 
 ---
 
