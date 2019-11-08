@@ -28,6 +28,11 @@
 
 #include <pwned-lib/passwordinspector.hpp>
 
+namespace webservice {
+
+namespace beast = boost::beast;
+namespace http = boost::beast::http;
+
 class HttpWorker
 {
 public:
@@ -44,23 +49,28 @@ public:
 
 private:
   using alloc_t = std::allocator<char>;
-  boost::asio::ip::tcp::acceptor &mAcceptor;
+  using tcp = boost::asio::ip::tcp;
+  tcp::acceptor &mAcceptor;
+  tcp::socket mSocket{mAcceptor.get_executor()};
+  beast::flat_buffer mBuffer;
+  alloc_t mAlloc;
+  boost::optional<http::request_parser<http::string_body>> mParser;
+  boost::asio::basic_waitable_timer<std::chrono::steady_clock> mReqTimeout{
+    mAcceptor.get_executor(),
+    (std::chrono::steady_clock::time_point::max)()};
+  boost::optional<http::response<http::string_body, http::basic_fields<alloc_t>>> mResponse;
+  boost::optional<http::response_serializer<http::string_body, http::basic_fields<alloc_t>>> mSerializer;
   std::string mBasePath;
   pwned::PasswordInspector mInspector;
-  boost::asio::ip::tcp::socket mSocket{mAcceptor.get_executor()};
-  boost::beast::flat_buffer mBuffer;
-  alloc_t mAlloc;
-  boost::optional<boost::beast::http::request_parser<boost::beast::http::string_body>> mParser;
-  boost::asio::basic_waitable_timer<std::chrono::steady_clock> mReqTimeout{mAcceptor.get_executor(), (std::chrono::steady_clock::time_point::max)()};
-  boost::optional<boost::beast::http::response<boost::beast::http::string_body, boost::beast::http::basic_fields<alloc_t>>> mResponse;
-  boost::optional<boost::beast::http::response_serializer<boost::beast::http::string_body, boost::beast::http::basic_fields<alloc_t>>> mSerializer;
 
   void accept();
   void readRequest();
-  void sendResponse(boost::beast::string_view target);
-  void processRequest(boost::beast::http::request<boost::beast::http::string_body, boost::beast::http::basic_fields<alloc_t>> const &req);
-  void sendBadResponse(boost::beast::http::status status, const std::string &error);
+  void sendResponse(beast::string_view target);
+  void processRequest(http::request<http::string_body, http::basic_fields<alloc_t>> const &req);
+  void sendBadResponse(http::status status, const std::string &error);
   void checkTimeout();
 };
+
+}
 
 #endif // __httpworker_hpp__

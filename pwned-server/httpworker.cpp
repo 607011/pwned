@@ -33,6 +33,8 @@ namespace http = beast::http;
 namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 
+namespace webservice {
+
 HttpWorker::HttpWorker(
     tcp::acceptor &acceptor,
     const std::string &basePath,
@@ -196,4 +198,6 @@ void HttpWorker::checkTimeout()
       [this](beast::error_code) {
         checkTimeout();
       });
+}
+
 }
