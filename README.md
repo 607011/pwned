@@ -26,11 +26,11 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 ### Auxiliary programs
 
-**test-set-extractor**: command-line interface to extract a test set from a MD5:count file containing existent and non-existents hashes (used by benchmark)
+**extras/test-set-extractor**: command-line interface to extract a test set from a MD5:count file containing existent and non-existents hashes (used by benchmark)
 
-**benchmark**: command-line interface to run performance tests with different search algorithms
+**extras/benchmark**: command-line interface to run performance tests with different search algorithms
 
-**be2le**: command-line interface to convert a binary MD5:count file from Big-Endian to Little-Endian representation (no longer needed because the current release of pwned-converter-cli and pwneder-merger-cli already produces Little-Endian data)
+**deprecated/be2le**: command-line interface to convert a binary MD5:count file from Big-Endian to Little-Endian representation (no longer needed because the current release of pwned-converter-cli and pwneder-merger-cli already produces Little-Endian data)
 
 ## Prerequisites
 
