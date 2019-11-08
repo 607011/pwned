@@ -45,7 +45,7 @@ HttpWorker::HttpWorker(
 void HttpWorker::start()
 {
   accept();
-  checkDeadline();
+  checkTimeout();
 }
 
 void HttpWorker::accept()
@@ -62,7 +62,7 @@ void HttpWorker::accept()
         }
         else
         {
-          mRequestDeadline.expires_after(std::chrono::seconds(60));
+          mReqTimeout.expires_after(Timeout);
           readRequest();
         }
       });
@@ -118,24 +118,24 @@ void HttpWorker::sendResponse(boost::beast::string_view target)
     char buf[BufSize];
     std::snprintf(buf, BufSize, "%.5f", duration);
     response.put<char *>("lookup-time-ms", buf);
-    mStringResponse.emplace(
+    mResponse.emplace(
         std::piecewise_construct,
         std::make_tuple(),
         std::make_tuple(mAlloc));
-    mStringResponse->result(http::status::ok);
-    mStringResponse->keep_alive(false);
-    mStringResponse->set(http::field::server, std::string("#pnwed server ") + PWNED_SERVER_VERSION);
-    mStringResponse->set(http::field::content_type, "application/json");
-    mStringResponse->body() = toJson(response);
-    mStringResponse->prepare_payload();
-    mStringSerializer.emplace(*mStringResponse);
+    mResponse->result(http::status::ok);
+    mResponse->keep_alive(false);
+    mResponse->set(http::field::server, std::string("#pnwed server ") + PWNED_SERVER_VERSION);
+    mResponse->set(http::field::content_type, "application/json");
+    mResponse->body() = toJson(response);
+    mResponse->prepare_payload();
+    mSerializer.emplace(*mResponse);
     http::async_write(
         mSocket,
-        *mStringSerializer,
+        *mSerializer,
         [this](boost::beast::error_code ec, std::size_t) {
           mSocket.shutdown(tcp::socket::shutdown_send, ec);
-          mStringSerializer.reset();
-          mStringResponse.reset();
+          mSerializer.reset();
+          mResponse.reset();
           accept();
         });
   }
@@ -162,38 +162,38 @@ void HttpWorker::processRequest(http::request<http::string_body, http::basic_fie
 
 void HttpWorker::sendBadResponse(http::status status, const std::string &error)
 {
-  mStringResponse.emplace(
+  mResponse.emplace(
       std::piecewise_construct,
       std::make_tuple(),
       std::make_tuple(mAlloc));
-  mStringResponse->result(status);
-  mStringResponse->keep_alive(false);
-  mStringResponse->set(http::field::server, std::string("#pnwed server ") + PWNED_SERVER_VERSION);
-  mStringResponse->set(http::field::content_type, "text/plain");
-  mStringResponse->body() = error;
-  mStringResponse->prepare_payload();
-  mStringSerializer.emplace(*mStringResponse);
+  mResponse->result(status);
+  mResponse->keep_alive(false);
+  mResponse->set(http::field::server, std::string("#pnwed server ") + PWNED_SERVER_VERSION);
+  mResponse->set(http::field::content_type, "text/plain");
+  mResponse->body() = error;
+  mResponse->prepare_payload();
+  mSerializer.emplace(*mResponse);
   http::async_write(
       mSocket,
-      *mStringSerializer,
+      *mSerializer,
       [this](beast::error_code ec, std::size_t) {
         mSocket.shutdown(tcp::socket::shutdown_send, ec);
-        mStringSerializer.reset();
-        mStringResponse.reset();
+        mSerializer.reset();
+        mResponse.reset();
         accept();
       });
 }
 
-void HttpWorker::checkDeadline()
+void HttpWorker::checkTimeout()
 {
-  if (mRequestDeadline.expiry() <= std::chrono::steady_clock::now())
+  if (mReqTimeout.expiry() <= std::chrono::steady_clock::now())
   {
     beast::error_code ec;
     mSocket.close();
-    mRequestDeadline.expires_at(std::chrono::steady_clock::time_point::max());
+    mReqTimeout.expires_at(std::chrono::steady_clock::time_point::max());
   }
-  mRequestDeadline.async_wait(
+  mReqTimeout.async_wait(
       [this](beast::error_code) {
-        checkDeadline();
+        checkTimeout();
       });
 }

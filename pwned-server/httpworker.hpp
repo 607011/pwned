@@ -19,6 +19,7 @@
 #define __httpworker_hpp__
 
 #include <string>
+#include <chrono>
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
@@ -39,6 +40,8 @@ public:
       const std::string &indexFilename);
   void start();
 
+  static constexpr std::chrono::seconds Timeout{60};
+
 private:
   using alloc_t = std::allocator<char>;
   boost::asio::ip::tcp::acceptor &mAcceptor;
@@ -48,16 +51,16 @@ private:
   boost::beast::flat_buffer mBuffer;
   alloc_t mAlloc;
   boost::optional<boost::beast::http::request_parser<boost::beast::http::string_body>> mParser;
-  boost::asio::basic_waitable_timer<std::chrono::steady_clock> mRequestDeadline{mAcceptor.get_executor(), (std::chrono::steady_clock::time_point::max)()};
-  boost::optional<boost::beast::http::response<boost::beast::http::string_body, boost::beast::http::basic_fields<alloc_t>>> mStringResponse;
-  boost::optional<boost::beast::http::response_serializer<boost::beast::http::string_body, boost::beast::http::basic_fields<alloc_t>>> mStringSerializer;
+  boost::asio::basic_waitable_timer<std::chrono::steady_clock> mReqTimeout{mAcceptor.get_executor(), (std::chrono::steady_clock::time_point::max)()};
+  boost::optional<boost::beast::http::response<boost::beast::http::string_body, boost::beast::http::basic_fields<alloc_t>>> mResponse;
+  boost::optional<boost::beast::http::response_serializer<boost::beast::http::string_body, boost::beast::http::basic_fields<alloc_t>>> mSerializer;
 
   void accept();
   void readRequest();
   void sendResponse(boost::beast::string_view target);
   void processRequest(boost::beast::http::request<boost::beast::http::string_body, boost::beast::http::basic_fields<alloc_t>> const &req);
   void sendBadResponse(boost::beast::http::status status, const std::string &error);
-  void checkDeadline();
+  void checkTimeout();
 };
 
 #endif // __httpworker_hpp__
