@@ -5,6 +5,7 @@
 testdata/
 converted/
 archives/
+experiments/
 
 *.pbxuser
 !default.pbxuser
