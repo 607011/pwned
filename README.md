@@ -18,7 +18,7 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 **pwned-index**: command-line interface to build an index of an MD5:count file
 
-**pwned-server**: a web service to look up hashes via REST API
+**pwned-server**: a RESTful web service to look up hashes via REST API
 
 **pwned-server/loadttest**: a load tester for the RESTful web service
 
