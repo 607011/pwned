@@ -59,14 +59,14 @@ class HttpClientWorker
   http::response<http::string_body> mRes;
   std::string mAddress;
   std::mt19937_64 mGen;
-  std::chrono::time_point<std::chrono::high_resolution_clock> mT0;
-  std::chrono::time_point<std::chrono::high_resolution_clock> mT1;
+  std::chrono::time_point<std::chrono::steady_clock> mT0;
+  std::chrono::time_point<std::chrono::steady_clock> mT1;
   std::ifstream mInputFile;
   uint64_t mInputSize;
   pwned::Hash mQueriedHash;
   int mRuntimeSecs;
   uint64_t mRequestCount;
-  std::chrono::time_point<std::chrono::high_resolution_clock> mRTTt0;
+  std::chrono::time_point<std::chrono::steady_clock> mRTTt0;
   std::vector<std::chrono::nanoseconds> mRTT;
   URI mURI;
 

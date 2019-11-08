@@ -77,7 +77,7 @@ HttpClientWorker::HttpClientWorker(
   mGen.seed(static_cast<uint64_t>(id));
   mInputSize = boost::filesystem::file_size(inputFilename);
   mInputFile.open(inputFilename, std::ios::binary);
-  mT0 = std::chrono::high_resolution_clock::now();
+  mT0 = std::chrono::steady_clock::now();
   mT1 = mT0 + std::chrono::seconds(mRuntimeSecs);
 }
 
@@ -102,7 +102,7 @@ void HttpClientWorker::run()
   mReq.target(mURI.path() + "?hash=" + mQueriedHash.toString());
   mReq.set(http::field::host, mURI.host());
   mReq.set(http::field::user_agent, "#pwned load test");
-  mRTTt0 = std::chrono::high_resolution_clock::now();
+  mRTTt0 = std::chrono::steady_clock::now();
   mResolver.async_resolve(
       mURI.host(),
       std::to_string(mURI.port()),
@@ -198,7 +198,7 @@ void HttpClientWorker::onRead(beast::error_code ec, std::size_t /*bytes_transfer
     std::cerr << "ERROR in read_json(): " << e.what() << std::endl;
     return;
   }
-  const auto rtt = std::chrono::high_resolution_clock::now() - mRTTt0;
+  const auto rtt = std::chrono::steady_clock::now() - mRTTt0;
   mRTT.push_back(rtt);
   ++mRequestCount;
   if (mSSLStream)
@@ -229,7 +229,7 @@ void HttpClientWorker::onShutdown(beast::error_code ec)
 
 void HttpClientWorker::restart()
 {
-  const auto now = std::chrono::high_resolution_clock::now();
+  const auto now = std::chrono::steady_clock::now();
   mRes.clear();
   mRes.body().clear();
   if (now < mT1)
