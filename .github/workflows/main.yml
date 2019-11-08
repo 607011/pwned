@@ -1,4 +1,4 @@
-name: CI
+name: C++ CI
 
 on: [push]
 
@@ -9,5 +9,6 @@ jobs:
     - uses: actions/checkout@v1
     - name: cmake-configure
       uses: snickerbockers/cmake-configure@prerel1
-      
+    - name: make
+      run: make  
       
