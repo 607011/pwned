@@ -70,11 +70,11 @@ std::string Hash::toString(bool uppercase) const
   std::ostringstream ss;
   if (uppercase)
   {
-  ss << std::setw(16) << std::setfill('0') << std::hex << std::uppercase << upper << std::setw(16) << std::setfill('0') << std::uppercase << lower;
-}
+    ss << std::setw(16) << std::setfill('0') << std::hex << std::uppercase << upper << std::setw(16) << std::setfill('0') << std::uppercase << lower;
+  }
   else
-{
-  ss << std::setw(16) << std::setfill('0') << std::hex << upper << std::setw(16) << std::setfill('0') << lower;
+  {
+    ss << std::setw(16) << std::setfill('0') << std::hex << upper << std::setw(16) << std::setfill('0') << lower;
   }
   return ss.str();
 }
