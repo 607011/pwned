@@ -4,6 +4,7 @@ project(pwned-server)
 
 add_executable(pwned-server 
   pwned-server.cpp
+  httpworker.cpp
 	uri.cpp
 )
 set_target_properties(pwned-server PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
