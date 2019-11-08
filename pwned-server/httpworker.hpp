@@ -22,15 +22,10 @@
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
-#include <boost/asio.hpp>
-#include <boost/optional.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/optional/optional.hpp>
 
 #include <pwned-lib/passwordinspector.hpp>
-
-namespace beast = boost::beast;
-namespace http = beast::http;
-namespace net = boost::asio;
-using tcp = boost::asio::ip::tcp;
 
 class HttpWorker
 {
@@ -38,7 +33,7 @@ public:
   HttpWorker(HttpWorker const &) = delete;
   HttpWorker& operator=(HttpWorker const &) = delete;
   HttpWorker(
-      tcp::acceptor &acceptor,
+      boost::asio::ip::tcp::acceptor &acceptor,
       const std::string &basePath,
       const std::string &inputFilename,
       const std::string &indexFilename);
@@ -46,22 +41,22 @@ public:
 
 private:
   using alloc_t = std::allocator<char>;
-  tcp::acceptor &mAcceptor;
+  boost::asio::ip::tcp::acceptor &mAcceptor;
   std::string mBasePath;
   pwned::PasswordInspector mInspector;
-  tcp::socket mSocket{mAcceptor.get_executor()};
-  beast::flat_buffer mBuffer;
+  boost::asio::ip::tcp::socket mSocket{mAcceptor.get_executor()};
+  boost::beast::flat_buffer mBuffer;
   alloc_t mAlloc;
-  boost::optional<http::request_parser<http::string_body>> mParser;
+  boost::optional<boost::beast::http::request_parser<boost::beast::http::string_body>> mParser;
   boost::asio::basic_waitable_timer<std::chrono::steady_clock> mRequestDeadline{mAcceptor.get_executor(), (std::chrono::steady_clock::time_point::max)()};
-  boost::optional<http::response<http::string_body, http::basic_fields<alloc_t>>> mStringResponse;
-  boost::optional<http::response_serializer<http::string_body, http::basic_fields<alloc_t>>> mStringSerializer;
+  boost::optional<boost::beast::http::response<boost::beast::http::string_body, boost::beast::http::basic_fields<alloc_t>>> mStringResponse;
+  boost::optional<boost::beast::http::response_serializer<boost::beast::http::string_body, boost::beast::http::basic_fields<alloc_t>>> mStringSerializer;
 
   void accept();
   void readRequest();
   void sendResponse(boost::beast::string_view target);
-  void processRequest(http::request<http::string_body, http::basic_fields<alloc_t>> const &req);
-  void sendBadResponse(http::status status, std::string const &error);
+  void processRequest(boost::beast::http::request<boost::beast::http::string_body, boost::beast::http::basic_fields<alloc_t>> const &req);
+  void sendBadResponse(boost::beast::http::status status, const std::string &error);
   void checkDeadline();
 };
 

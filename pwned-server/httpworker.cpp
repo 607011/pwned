@@ -28,6 +28,10 @@
 #include "httpworker.hpp"
 
 namespace pt = boost::property_tree;
+namespace beast = boost::beast;
+namespace http = beast::http;
+namespace net = boost::asio;
+using tcp = boost::asio::ip::tcp;
 
 HttpWorker::HttpWorker(
     tcp::acceptor &acceptor,
@@ -156,9 +160,7 @@ void HttpWorker::processRequest(http::request<http::string_body, http::basic_fie
   }
 }
 
-void HttpWorker::sendBadResponse(
-    http::status status,
-    std::string const &error)
+void HttpWorker::sendBadResponse(http::status status, const std::string &error)
 {
   mStringResponse.emplace(
       std::piecewise_construct,

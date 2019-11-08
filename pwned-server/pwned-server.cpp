@@ -31,6 +31,7 @@
 #include "httpworker.hpp"
 
 namespace po = boost::program_options;
+using tcp = boost::asio::ip::tcp;
 
 void hello()
 {

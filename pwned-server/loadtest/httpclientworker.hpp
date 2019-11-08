@@ -25,38 +25,31 @@
 #include <chrono>
 #include <memory>
 
+#include <boost/asio/connect.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/strand.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/beast/ssl.hpp>
-#include <boost/asio/connect.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/strand.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/optional.hpp>
+#include <boost/optional/optional.hpp>
 
 #include <pwned-lib/hash.hpp>
 #include <pwned-lib/passwordhashandcount.hpp>
 
 #include "../uri.hpp"
 
-namespace beast = boost::beast;
-namespace http = beast::http;
-namespace net = boost::asio;
-namespace ssl = boost::asio::ssl;
-
-using tcp = boost::asio::ip::tcp;
-
 class HttpClientWorker
 {
-  net::io_context &mIoc;
-  ssl::context &mCtx;
-  tcp::resolver mResolver;
-  beast::tcp_stream mStream;
-  boost::optional<beast::ssl_stream<beast::tcp_stream>> mSSLStream;
-  beast::flat_buffer mBuffer;
-  http::request<http::empty_body> mReq;
-  http::response<http::string_body> mRes;
+  boost::asio::io_context &mIoc;
+  boost::asio::ssl::context &mCtx;
+  boost::asio::ip::tcp::resolver mResolver;
+  boost::beast::tcp_stream mStream;
+  boost::optional<boost::beast::ssl_stream<boost::beast::tcp_stream>> mSSLStream;
+  boost::beast::flat_buffer mBuffer;
+  boost::beast::http::request<boost::beast::http::empty_body> mReq;
+  boost::beast::http::response<boost::beast::http::string_body> mRes;
   std::string mAddress;
   std::mt19937_64 mGen;
   std::chrono::time_point<std::chrono::steady_clock> mT0;
@@ -73,19 +66,19 @@ class HttpClientWorker
 public:
   HttpClientWorker() = delete;
   HttpClientWorker(
-    net::io_context& ioc,
-    ssl::context &ctx,
+    boost::asio::io_context& ioc,
+    boost::asio::ssl::context &ctx,
     const std::string &address,
     const std::string &inputFilename,
     int runtimeSecs,
     int id);
   void run();
-  void onResolve(beast::error_code ec, tcp::resolver::results_type results);
-  void onConnect(beast::error_code ec, tcp::resolver::results_type::endpoint_type);
-  void onWrite(beast::error_code ec, std::size_t /*bytes_transferred*/);
-  void onRead(beast::error_code ec, std::size_t /*bytes_transferred*/);
-  void onHandshake(beast::error_code ec);
-  void onShutdown(beast::error_code ec);
+  void onResolve(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type results);
+  void onConnect(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type::endpoint_type);
+  void onWrite(boost::beast::error_code ec, std::size_t /*bytes_transferred*/);
+  void onRead(boost::beast::error_code ec, std::size_t /*bytes_transferred*/);
+  void onHandshake(boost::beast::error_code ec);
+  void onShutdown(boost::beast::error_code ec);
   void restart();
   uint64_t requestCount() const;
   std::vector<std::chrono::nanoseconds> rtts() const;

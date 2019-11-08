@@ -30,7 +30,7 @@
 #include <boost/beast/version.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/beast/ssl.hpp>
+#include <boost/asio/ssl.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/iostreams/device/array.hpp>
@@ -47,6 +47,7 @@ namespace beast = boost::beast;
 namespace http = beast::http;
 namespace net = boost::asio;
 namespace pt = boost::property_tree;
+namespace ssl = boost::asio::ssl;
 using tcp = boost::asio::ip::tcp;
 
 static void fail(const beast::error_code &ec, char const *what)

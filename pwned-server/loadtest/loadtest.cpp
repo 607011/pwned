@@ -27,7 +27,7 @@
 
 #include <boost/program_options.hpp>
 #include <pwned-lib/util.hpp>
-#include <boost/beast/ssl.hpp>
+#include <boost/asio/ssl.hpp>
 
 #include "httpclientworker.hpp"
 #include "root_certificates.hpp"
