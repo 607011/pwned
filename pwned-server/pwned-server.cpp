@@ -121,7 +121,12 @@ int main(int argc, const char *argv[])
       workers.back().start();
     }
     std::cout << numWorkers << " workers listening on " << uri.host() << ':' << uri.port() << " ..." << std::endl;
-    ioc.run();
+    boost::system::error_code ec;
+    ioc.run(ec);
+    if (ec)
+    {
+      std::cerr << "Error: " << ec.message() << std::endl;
+    }
   }
   catch (const std::exception &e)
   {
