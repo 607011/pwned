@@ -10,8 +10,6 @@ jobs:
     - name: cmake-configure
       uses: snickerbockers/cmake-configure@prerel1
     - name: cmake
-      run: |
-        cd build/Release |
-        cmake -DCMAKE_BUILD_TYPE=Release ../..
+      run: cmake -DCMAKE_BUILD_TYPE=Release .
     - name: make
       run: make
