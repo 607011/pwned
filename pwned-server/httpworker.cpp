@@ -72,10 +72,7 @@ void HttpWorker::accept()
 
 void HttpWorker::readRequest()
 {
-  mParser.emplace(
-      std::piecewise_construct,
-      std::make_tuple(),
-      std::make_tuple(mAlloc));
+  mParser.emplace();
   http::async_read(
       mSocket,
       mBuffer,
@@ -100,6 +97,21 @@ static std::string toJson(const pt::ptree &pt)
   return std::regex_replace(ss.str(), re, "$1");
 }
 
+void HttpWorker::processRequest(http::request<http::string_body> const &req)
+{
+  switch (req.method())
+  {
+  case http::verb::get:
+    sendResponse(req.target());
+    break;
+  default:
+    sendBadResponse(
+        http::status::bad_request,
+        "Invalid request method '" + std::string(req.method_string()) + "'\r\n");
+    break;
+  }
+}
+
 void HttpWorker::sendResponse(boost::beast::string_view target)
 {
   URI uri;
@@ -120,12 +132,8 @@ void HttpWorker::sendResponse(boost::beast::string_view target)
     char buf[BufSize];
     std::snprintf(buf, BufSize, "%.5f", duration);
     response.put<char *>("lookup-time-ms", buf);
-    mResponse.emplace(
-        std::piecewise_construct,
-        std::make_tuple(),
-        std::make_tuple(mAlloc));
+    mResponse.emplace();
     mResponse->result(http::status::ok);
-    mResponse->keep_alive(false);
     mResponse->set(http::field::server, std::string("#pnwed server ") + PWNED_SERVER_VERSION);
     mResponse->set(http::field::content_type, "application/json");
     mResponse->body() = toJson(response);
@@ -147,29 +155,10 @@ void HttpWorker::sendResponse(boost::beast::string_view target)
   }
 }
 
-void HttpWorker::processRequest(http::request<http::string_body, http::basic_fields<alloc_t>> const &req)
-{
-  switch (req.method())
-  {
-  case http::verb::get:
-    sendResponse(req.target());
-    break;
-  default:
-    sendBadResponse(
-        http::status::bad_request,
-        "Invalid request method '" + std::string(req.method_string()) + "'\r\n");
-    break;
-  }
-}
-
 void HttpWorker::sendBadResponse(http::status status, const std::string &error)
 {
-  mResponse.emplace(
-      std::piecewise_construct,
-      std::make_tuple(),
-      std::make_tuple(mAlloc));
+  mResponse.emplace();
   mResponse->result(status);
-  mResponse->keep_alive(false);
   mResponse->set(http::field::server, std::string("#pnwed server ") + PWNED_SERVER_VERSION);
   mResponse->set(http::field::content_type, "text/plain");
   mResponse->body() = error;

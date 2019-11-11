@@ -48,25 +48,23 @@ public:
   static constexpr std::chrono::seconds Timeout{60};
 
 private:
-  using alloc_t = std::allocator<char>;
   using tcp = boost::asio::ip::tcp;
   tcp::acceptor &mAcceptor;
   tcp::socket mSocket{mAcceptor.get_executor()};
   beast::flat_buffer mBuffer;
-  alloc_t mAlloc;
   boost::optional<http::request_parser<http::string_body>> mParser;
   boost::asio::basic_waitable_timer<std::chrono::steady_clock> mReqTimeout{
     mAcceptor.get_executor(),
     (std::chrono::steady_clock::time_point::max)()};
-  boost::optional<http::response<http::string_body, http::basic_fields<alloc_t>>> mResponse;
-  boost::optional<http::response_serializer<http::string_body, http::basic_fields<alloc_t>>> mSerializer;
+  boost::optional<http::response<http::string_body>> mResponse;
+  boost::optional<http::response_serializer<http::string_body>> mSerializer;
   std::string mBasePath;
   pwned::PasswordInspector mInspector;
 
   void accept();
   void readRequest();
   void sendResponse(beast::string_view target);
-  void processRequest(http::request<http::string_body, http::basic_fields<alloc_t>> const &req);
+  void processRequest(http::request<http::string_body> const &req);
   void sendBadResponse(http::status status, const std::string &error);
   void checkTimeout();
 };
