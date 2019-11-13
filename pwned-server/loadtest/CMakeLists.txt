@@ -22,6 +22,12 @@ add_custom_command(TARGET loadtest
   POST_BUILD
   COMMAND strip loadtest)
 
+add_custom_target(rootcerts 
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMAND ./cert/getcerts.py)
+
+add_dependencies(loadtest rootcerts)
+
 target_include_directories(loadtest
 	PRIVATE ${PROJECT_INCLUDE_DIRS}
 	PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
