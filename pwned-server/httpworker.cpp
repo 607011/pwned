@@ -112,7 +112,7 @@ void HttpWorker::processRequest(http::request<http::string_body> const &req)
   }
 }
 
-void HttpWorker::sendResponse(boost::beast::string_view target)
+void HttpWorker::sendResponse(const boost::beast::string_view &target)
 {
   URI uri;
   uri.parseTarget(target.to_string());

@@ -31,15 +31,17 @@
 namespace webservice {
 
 namespace beast = boost::beast;
-namespace http = boost::beast::http;
+namespace http = beast::http;
 
 class HttpWorker
 {
+  using tcp = boost::asio::ip::tcp;
+
 public:
   HttpWorker(HttpWorker const &) = delete;
   HttpWorker& operator=(HttpWorker const &) = delete;
   HttpWorker(
-      boost::asio::ip::tcp::acceptor &acceptor,
+      tcp::acceptor &acceptor,
       const std::string &basePath,
       const std::string &inputFilename,
       const std::string &indexFilename);
@@ -48,7 +50,6 @@ public:
   static constexpr std::chrono::seconds Timeout{60};
 
 private:
-  using tcp = boost::asio::ip::tcp;
   tcp::acceptor &mAcceptor;
   tcp::socket mSocket{mAcceptor.get_executor()};
   beast::flat_buffer mBuffer;
@@ -63,7 +64,7 @@ private:
 
   void accept();
   void readRequest();
-  void sendResponse(beast::string_view target);
+  void sendResponse(const beast::string_view &target);
   void processRequest(http::request<http::string_body> const &req);
   void sendBadResponse(http::status status, const std::string &error);
   void checkTimeout();
