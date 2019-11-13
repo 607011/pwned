@@ -16,7 +16,7 @@ namespace ssl = boost::asio::ssl;
 
 void load_root_certificates(ssl::context &ctx, boost::system::error_code &ec)
 {
-  const std::string cert = ROOT_CERTIFICATES;
+  const std::string cert(ROOT_CERTIFICATES);
   ctx.add_certificate_authority(boost::asio::buffer(cert.data(), cert.size()), ec);
 }
 
