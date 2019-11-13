@@ -133,9 +133,9 @@ int main(int argc, const char *argv[])
     }
     ctx.set_verify_mode(ssl::verify_peer);
     std::list<HttpClientWorker> workers;
-    for (int i = 0; i < numWorkers; ++i)
+    for (int id = 0; id < numWorkers; ++id)
     {
-      workers.emplace_back(ioc, ctx, address, inputFilename, runtimeSecs, i);
+      workers.emplace_back(ioc, ctx, address, inputFilename, runtimeSecs, id);
       workers.back().start();
     }
     ioc.run();
