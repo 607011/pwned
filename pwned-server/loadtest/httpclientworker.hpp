@@ -72,7 +72,7 @@ public:
     const std::string &inputFilename,
     int runtimeSecs,
     int id);
-  void run();
+  void start();
   void onResolve(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type results);
   void onConnect(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type::endpoint_type);
   void onWrite(boost::beast::error_code ec, std::size_t /*bytes_transferred*/);

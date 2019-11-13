@@ -136,7 +136,7 @@ int main(int argc, const char *argv[])
     for (int i = 0; i < numWorkers; ++i)
     {
       workers.emplace_back(ioc, ctx, address, inputFilename, runtimeSecs, i);
-      workers.back().run();
+      workers.back().start();
     }
     ioc.run();
     int64_t totalRequests = 0;

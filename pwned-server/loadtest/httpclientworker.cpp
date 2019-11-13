@@ -82,7 +82,7 @@ HttpClientWorker::HttpClientWorker(
   mT1 = mT0 + std::chrono::seconds(mRuntimeSecs);
 }
 
-void HttpClientWorker::run()
+void HttpClientWorker::start()
 {
   if (mSSLStream)
   {
@@ -240,7 +240,7 @@ void HttpClientWorker::restart()
       // boost::beast::ssl_stream cannot be reused (https://github.com/boostorg/beast/issues/821#issuecomment-338354949)
       mSSLStream = boost::beast::ssl_stream<boost::beast::tcp_stream>(net::make_strand(mIoc), mCtx);
     }
-    run();
+    start();
   }
   else
   {
