@@ -40,7 +40,6 @@
 
 #include <pwned-lib/passwordhashandcount.hpp>
 
-#include "../uri.hpp"
 #include "httpclientworker.hpp"
 
 namespace beast = boost::beast;
@@ -66,41 +65,49 @@ HttpClientWorker::HttpClientWorker(
     , mCtx(ctx)
     , mResolver(net::make_strand(ioc))
     , mStream(net::make_strand(ioc))
-    , mAddress(address)
-    , mRuntimeSecs(runtimeSecs)
-    , mRequestCount(0)
+    , mGen(static_cast<uint64_t>(id))
+    , mInputFile(inputFilename, std::ios::binary)
+    , mInputSize(boost::filesystem::file_size(inputFilename))
+    , mT0(std::chrono::steady_clock::now())
+    , mT1(mT0 + std::chrono::seconds(runtimeSecs))
     , mURI(address)
 {
-  if (mURI.scheme() == "https")
-  {
-    mSSLStream = beast::ssl_stream<beast::tcp_stream>(net::make_strand(ioc), ctx);
-  }
-  mGen.seed(static_cast<uint64_t>(id));
-  mInputSize = boost::filesystem::file_size(inputFilename);
-  mInputFile.open(inputFilename, std::ios::binary);
-  mT0 = std::chrono::steady_clock::now();
-  mT1 = mT0 + std::chrono::seconds(mRuntimeSecs);
 }
 
 void HttpClientWorker::start()
 {
-  if (mSSLStream)
+  if (!mInputFile.is_open())
   {
+    std::cerr << "ERROR: Input file cannot be read." << std::endl;
+    return;
+  }
+  if (mURI.scheme() == "https")
+  {
+    mSSLStream = beast::ssl_stream<beast::tcp_stream>(net::make_strand(mIoc), mCtx);
+    if (!mSSLStream.is_initialized())
+    {
+      std::cerr << "ERROR: Could not initialize ssl_stream." << std::endl;
+      return;
+    }
     if (!SSL_set_tlsext_host_name(mSSLStream->native_handle(), mURI.host().c_str()))
     {
       beast::error_code ec{static_cast<int>(::ERR_get_error()), net::error::get_ssl_category()};
-      std::cerr << ec.message() << std::endl;
+      std::cerr << "ERROR: " << ec.message() << std::endl;
       return;
     }
   }
   const uint64_t pos = mGen() % mInputSize;
   const uint64_t idx = pos - pos % pwned::PHC::size;
   pwned::PasswordHashAndCount phc;
-  phc.read(mInputFile, idx);
-  mQueriedHash = phc.hash;
+  bool ok = phc.read(mInputFile, idx);
+  if (!ok)
+  {
+    std::cerr << "ERROR while reading from input file." << std::endl;
+    return;
+  }
   mReq.version(11);
   mReq.method(http::verb::get);
-  mReq.target(mURI.path() + "?hash=" + mQueriedHash.toString());
+  mReq.target(mURI.path() + "?hash=" + phc.hash.toString());
   mReq.set(http::field::host, mURI.host());
   mReq.set(http::field::user_agent, "#pwned load test");
   mRTTt0 = std::chrono::steady_clock::now();
@@ -230,16 +237,12 @@ void HttpClientWorker::onShutdown(beast::error_code ec)
 
 void HttpClientWorker::restart()
 {
-  const auto now = std::chrono::steady_clock::now();
   mRes.clear();
   mRes.body().clear();
+  const auto now = std::chrono::steady_clock::now();
   if (now < mT1)
   {
-    if (mSSLStream)
-    {
-      // boost::beast::ssl_stream cannot be reused (https://github.com/boostorg/beast/issues/821#issuecomment-338354949)
-      mSSLStream = boost::beast::ssl_stream<boost::beast::tcp_stream>(net::make_strand(mIoc), mCtx);
-    }
+    mSSLStream.reset();
     start();
   }
   else

@@ -18,7 +18,7 @@
 #ifndef __httpclientworker_hpp__
 #define __httpclientworker_hpp__
 
-#include <cstdlib>
+#include <cstdint>
 #include <string>
 #include <random>
 #include <vector>
@@ -35,9 +35,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/optional/optional.hpp>
 
-#include <pwned-lib/hash.hpp>
-#include <pwned-lib/passwordhashandcount.hpp>
-
 #include "../uri.hpp"
 
 class HttpClientWorker
@@ -50,15 +47,12 @@ class HttpClientWorker
   boost::beast::flat_buffer mBuffer;
   boost::beast::http::request<boost::beast::http::empty_body> mReq;
   boost::beast::http::response<boost::beast::http::string_body> mRes;
-  std::string mAddress;
   std::mt19937_64 mGen;
-  std::chrono::time_point<std::chrono::steady_clock> mT0;
-  std::chrono::time_point<std::chrono::steady_clock> mT1;
   std::ifstream mInputFile;
   uint64_t mInputSize;
-  pwned::Hash mQueriedHash;
-  int mRuntimeSecs;
-  uint64_t mRequestCount;
+  std::chrono::time_point<std::chrono::steady_clock> mT0;
+  std::chrono::time_point<std::chrono::steady_clock> mT1;
+  uint64_t mRequestCount{0};
   std::chrono::time_point<std::chrono::steady_clock> mRTTt0;
   std::vector<std::chrono::nanoseconds> mRTT;
   URI mURI;
