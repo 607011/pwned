@@ -25,6 +25,7 @@
 #include <boost/beast/http.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/optional/optional.hpp>
+#include <boost/function.hpp>
 
 #include <pwned-lib/passwordinspector.hpp>
 
@@ -38,13 +39,15 @@ class HttpWorker
   using tcp = boost::asio::ip::tcp;
 
 public:
+  typedef boost::function<void(const std::string&)> log_callback_t;
   HttpWorker(HttpWorker const &) = delete;
   HttpWorker& operator=(HttpWorker const &) = delete;
   HttpWorker(
       tcp::acceptor &acceptor,
       const std::string &basePath,
       const std::string &inputFilename,
-      const std::string &indexFilename);
+      const std::string &indexFilename,
+      log_callback_t logFn);
   void start();
 
   static constexpr std::chrono::seconds Timeout{60};
@@ -61,10 +64,11 @@ private:
   boost::optional<http::response_serializer<http::string_body>> mSerializer;
   std::string mBasePath;
   pwned::PasswordInspector mInspector;
+  log_callback_t mLogCallback;
 
   void accept();
   void readRequest();
-  void sendResponse(const beast::string_view &target);
+  void sendResponse(http::request<http::string_body> const &);
   void processRequest(http::request<http::string_body> const &req);
   void sendBadResponse(http::status status, const std::string &error);
   void checkTimeout();

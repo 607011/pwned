@@ -25,6 +25,7 @@
 #include <list>
 
 #include <boost/program_options.hpp>
+#include <boost/function.hpp>
 
 #include "pwned-server.hpp"
 #include "uri.hpp"
@@ -73,12 +74,14 @@ int main(int argc, const char *argv[])
   std::string indexFilename;
   std::string address;
   int numWorkers;
+  bool quiet;
   desc.add_options()
   ("help,?", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set MD5:count input file")
   ("index,X", po::value<std::string>(&indexFilename), "set index file")
-  ("address,?", po::value<std::string>(&address)->default_value(DefaultAddress), "server address")
+  ("address,A", po::value<std::string>(&address)->default_value(DefaultAddress), "server address")
   ("workers,N", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "number of workers")
+  ("quiet,Q", po::bool_switch(&quiet)->default_value(false), "don't output anything")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -122,9 +125,17 @@ int main(int argc, const char *argv[])
     boost::asio::io_context ioc{numWorkers};
     tcp::acceptor acceptor{ioc, {boost::asio::ip::make_address(uri.host()), uri.port()}};
     std::list<webservice::HttpWorker> workers;
+
+    webservice::HttpWorker::log_callback_t logger = [quiet](const std::string &msg)
+    {
+      if (!quiet)
+      {
+        std::cout << std::chrono::high_resolution_clock::now().time_since_epoch().count() << " " << msg << std::endl;
+      }
+    };
     for (int i = 0; i < numWorkers; ++i)
     {
-      workers.emplace_back(acceptor, uri.path(), inputFilename, indexFilename);
+      workers.emplace_back(acceptor, uri.path(), inputFilename, indexFilename, logger);
       workers.back().start();
     }
     std::cout << numWorkers << " workers listening on " << uri.host() << ':' << uri.port() << " ..." << std::endl;

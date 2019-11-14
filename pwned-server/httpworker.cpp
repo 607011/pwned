@@ -39,8 +39,12 @@ HttpWorker::HttpWorker(
     tcp::acceptor &acceptor,
     const std::string &basePath,
     const std::string &inputFilename,
-    const std::string &indexFilename)
-    : mAcceptor(acceptor), mBasePath(basePath), mInspector(inputFilename, indexFilename)
+    const std::string &indexFilename,
+    log_callback_t logCallback)
+    : mAcceptor(acceptor)
+    , mBasePath(basePath)
+    , mInspector(inputFilename, indexFilename)
+    , mLogCallback(logCallback)
 {
 }
 
@@ -102,7 +106,7 @@ void HttpWorker::processRequest(http::request<http::string_body> const &req)
   switch (req.method())
   {
   case http::verb::get:
-    sendResponse(req.target());
+    sendResponse(req);
     break;
   default:
     sendBadResponse(
@@ -112,12 +116,13 @@ void HttpWorker::processRequest(http::request<http::string_body> const &req)
   }
 }
 
-void HttpWorker::sendResponse(const boost::beast::string_view &target)
+void HttpWorker::sendResponse(http::request<http::string_body> const &req)
 {
   URI uri;
-  uri.parseTarget(target.to_string());
+  uri.parseTarget(req.target().to_string());
   const std::string &lookupPath = mBasePath + "/lookup";
-  std::cout << std::chrono::high_resolution_clock::now().time_since_epoch().count() << " " << target.to_string() << std::endl;
+  const std::string &host = (req.base().find("Host") != req.base().end()) ? req.base().at("Host").to_string() : "";
+  mLogCallback(host + " " + req.target().to_string());
   if (uri.path() == lookupPath && uri.query().find("hash") != uri.query().end())
   {
     const pwned::Hash &hash = pwned::Hash::fromHex(uri.query().at("hash"));

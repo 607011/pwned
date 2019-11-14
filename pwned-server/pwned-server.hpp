@@ -18,7 +18,7 @@
 #ifndef __pwned_server_hpp__
 #define __pwned_server_hpp__
 
-#define PWNED_SERVER_VERSION "1.0.0"
+#define PWNED_SERVER_VERSION "1.0.1"
 #define PWNED_SERVER_ADDRESS "http://127.0.0.1:31337/v1/pwned/api"
 
 #endif // __pwned_server_hpp__

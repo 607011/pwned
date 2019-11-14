@@ -75,10 +75,12 @@ void usage()
 
 static constexpr std::chrono::milliseconds ProgressInterval{33};
 
-void progress(const boost::system::error_code&, boost::asio::steady_timer *t, HttpClientWorker *worker, double timeoutSecs) {
+void progress(const boost::system::error_code&, boost::asio::steady_timer *t, HttpClientWorker *worker, double timeoutSecs)
+{
   const double dt = (1e-9 * (std::chrono::steady_clock::now() - worker->t0()).count());
   constexpr int BufSize = 20;
-  char tBuf[BufSize], pctBuf[BufSize];
+  char tBuf[BufSize];
+  char pctBuf[BufSize];
   std::snprintf(tBuf, BufSize, "%.2f", dt);
   std::snprintf(pctBuf, BufSize, "%d", static_cast<int>(1e2 * dt / timeoutSecs));
   std::cout << "\r" << tBuf << "s (" << pctBuf << "%)" << std::flush;

@@ -39,26 +39,6 @@
 
 class HttpClientWorker
 {
-  boost::asio::io_context &mIoc;
-  boost::asio::ssl::context &mCtx;
-  boost::asio::ip::tcp::resolver mResolver;
-  boost::asio::ip::tcp::resolver::results_type mResolverResults;
-  boost::beast::tcp_stream mStream;
-  boost::optional<boost::beast::ssl_stream<boost::beast::tcp_stream>> mSSLStream;
-  boost::beast::flat_buffer mBuffer;
-  boost::beast::http::request<boost::beast::http::empty_body> mReq;
-  boost::beast::http::response<boost::beast::http::string_body> mRes;
-  std::mt19937_64 mGen;
-  std::ifstream mInputFile;
-  uint64_t mInputSize;
-  std::chrono::time_point<std::chrono::steady_clock> mT0;
-  std::chrono::time_point<std::chrono::steady_clock> mT1;
-  std::chrono::time_point<std::chrono::steady_clock> mTStop;
-  uint64_t mRequestCount{0};
-  std::chrono::time_point<std::chrono::steady_clock> mRTTt0;
-  std::vector<std::chrono::nanoseconds> mRTT;
-  URI mURI;
-
 public:
   HttpClientWorker() = delete;
   HttpClientWorker(
@@ -85,6 +65,27 @@ public:
   const std::chrono::time_point<std::chrono::steady_clock> &tStop() const;
 
   static const int ExpiresAfterSecs = 30;
+
+private:
+  boost::asio::io_context &mIoc;
+  boost::asio::ssl::context &mCtx;
+  boost::asio::ip::tcp::resolver mResolver;
+  boost::asio::ip::tcp::resolver::results_type mResolverResults;
+  boost::beast::tcp_stream mStream;
+  boost::optional<boost::beast::ssl_stream<boost::beast::tcp_stream>> mSSLStream;
+  boost::beast::flat_buffer mBuffer;
+  boost::beast::http::request<boost::beast::http::empty_body> mReq;
+  boost::beast::http::response<boost::beast::http::string_body> mRes;
+  std::mt19937_64 mGen;
+  std::ifstream mInputFile;
+  uint64_t mInputSize;
+  std::chrono::time_point<std::chrono::steady_clock> mT0;
+  std::chrono::time_point<std::chrono::steady_clock> mT1;
+  std::chrono::time_point<std::chrono::steady_clock> mTStop;
+  uint64_t mRequestCount{0};
+  std::chrono::time_point<std::chrono::steady_clock> mRTTt0;
+  std::vector<std::chrono::nanoseconds> mRTT;
+  URI mURI;
 };
 
 #endif // __httpclientworker_hpp__
