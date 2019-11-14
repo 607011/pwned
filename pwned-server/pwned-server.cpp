@@ -135,7 +135,7 @@ int main(int argc, const char *argv[])
     };
     for (int i = 0; i < numWorkers; ++i)
     {
-      workers.emplace_back(acceptor, uri.path(), inputFilename, indexFilename, logger);
+      workers.emplace_back(acceptor, uri.path(), inputFilename, indexFilename, &logger);
       workers.back().start();
     }
     std::cout << numWorkers << " workers listening on " << uri.host() << ':' << uri.port() << " ..." << std::endl;

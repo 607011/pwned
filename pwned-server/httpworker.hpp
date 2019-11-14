@@ -47,7 +47,7 @@ public:
       const std::string &basePath,
       const std::string &inputFilename,
       const std::string &indexFilename,
-      log_callback_t logFn);
+      log_callback_t *logFn = nullptr);
   void start();
 
   static constexpr std::chrono::seconds Timeout{60};
@@ -64,7 +64,7 @@ private:
   boost::optional<http::response_serializer<http::string_body>> mSerializer;
   std::string mBasePath;
   pwned::PasswordInspector mInspector;
-  log_callback_t mLogCallback;
+  log_callback_t *mLogCallback;
 
   void accept();
   void readRequest();

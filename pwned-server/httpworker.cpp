@@ -40,7 +40,7 @@ HttpWorker::HttpWorker(
     const std::string &basePath,
     const std::string &inputFilename,
     const std::string &indexFilename,
-    log_callback_t logCallback)
+    log_callback_t *logCallback)
     : mAcceptor(acceptor)
     , mBasePath(basePath)
     , mInspector(inputFilename, indexFilename)
@@ -121,8 +121,10 @@ void HttpWorker::sendResponse(http::request<http::string_body> const &req)
   URI uri;
   uri.parseTarget(req.target().to_string());
   const std::string &lookupPath = mBasePath + "/lookup";
-  const std::string &host = (req.base().find("Host") != req.base().end()) ? req.base().at("Host").to_string() : "";
-  mLogCallback(host + " " + req.target().to_string());
+  if (mLogCallback != nullptr)
+  {
+    mLogCallback->operator()(mSocket.remote_endpoint().address().to_string() + " " + req.target().to_string());
+  }
   if (uri.path() == lookupPath && uri.query().find("hash") != uri.query().end())
   {
     const pwned::Hash &hash = pwned::Hash::fromHex(uri.query().at("hash"));
