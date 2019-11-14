@@ -42,6 +42,7 @@ class HttpClientWorker
   boost::asio::io_context &mIoc;
   boost::asio::ssl::context &mCtx;
   boost::asio::ip::tcp::resolver mResolver;
+  boost::asio::ip::tcp::resolver::results_type mResolverResults;
   boost::beast::tcp_stream mStream;
   boost::optional<boost::beast::ssl_stream<boost::beast::tcp_stream>> mSSLStream;
   boost::beast::flat_buffer mBuffer;
@@ -68,6 +69,7 @@ public:
     int id);
   void start();
   void onResolve(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type results);
+  void connect();
   void onConnect(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type::endpoint_type);
   void onWrite(boost::beast::error_code ec, std::size_t /*bytes_transferred*/);
   void onRead(boost::beast::error_code ec, std::size_t /*bytes_transferred*/);

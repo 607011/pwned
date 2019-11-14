@@ -110,27 +110,40 @@ void HttpClientWorker::start()
   mReq.set(http::field::host, mURI.host());
   mReq.set(http::field::user_agent, "#pwned load test");
   mRTTt0 = std::chrono::steady_clock::now();
-  mResolver.async_resolve(
-      mURI.host(),
-      std::to_string(mURI.port()),
-      beast::bind_front_handler(&HttpClientWorker::onResolve, this));
+  if (mResolverResults.size() > 0)
+  {
+    connect();
+  }
+  else
+  {
+    mResolver.async_resolve(
+        mURI.host(),
+        std::to_string(mURI.port()),
+        beast::bind_front_handler(&HttpClientWorker::onResolve, this));
+  }
 }
 
 void HttpClientWorker::onResolve(beast::error_code ec, tcp::resolver::results_type results)
 {
   if (ec)
     return fail(ec, "resolve");
+  mResolverResults = results;
+  connect();
+}
+
+void HttpClientWorker::connect()
+{
   if (mSSLStream)
   {
     beast::get_lowest_layer(*mSSLStream).expires_after(std::chrono::seconds(ExpiresAfterSecs));
     beast::get_lowest_layer(*mSSLStream).async_connect(
-        results,
+        mResolverResults,
         beast::bind_front_handler(&HttpClientWorker::onConnect, this));
   }
   else
   {
     mStream.expires_after(std::chrono::seconds(ExpiresAfterSecs));
-    mStream.async_connect(results, beast::bind_front_handler(&HttpClientWorker::onConnect, this));
+    mStream.async_connect(mResolverResults, beast::bind_front_handler(&HttpClientWorker::onConnect, this));
   }
 }
 
