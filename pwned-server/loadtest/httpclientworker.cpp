@@ -31,7 +31,6 @@
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
-#include <boost/asio/strand.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
@@ -63,8 +62,8 @@ HttpClientWorker::HttpClientWorker(
   int id)
     : mIoc(ioc)
     , mCtx(ctx)
-    , mResolver(net::make_strand(ioc))
-    , mStream(net::make_strand(ioc))
+    , mResolver(ioc)
+    , mStream(ioc)
     , mGen(static_cast<uint64_t>(id))
     , mInputFile(inputFilename, std::ios::binary)
     , mInputSize(boost::filesystem::file_size(inputFilename))
@@ -83,7 +82,7 @@ void HttpClientWorker::start()
   }
   if (mURI.scheme() == "https")
   {
-    mSSLStream = beast::ssl_stream<beast::tcp_stream>(net::make_strand(mIoc), mCtx);
+    mSSLStream = beast::ssl_stream<beast::tcp_stream>(mIoc, mCtx);
     if (!mSSLStream.is_initialized())
     {
       std::cerr << "ERROR: Could not initialize ssl_stream." << std::endl;
