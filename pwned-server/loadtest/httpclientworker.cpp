@@ -252,14 +252,11 @@ void HttpClientWorker::restart()
   mRes.clear();
   mRes.body().clear();
   const auto now = std::chrono::steady_clock::now();
+  mTStop = now;
   if (now < mT1)
   {
     mSSLStream.reset();
     start();
-  }
-  else
-  {
-    mT1 = now;
   }
 }
 
@@ -275,5 +272,20 @@ std::vector<std::chrono::nanoseconds> HttpClientWorker::rtts() const
 
 std::chrono::nanoseconds HttpClientWorker::dt() const
 {
-  return mT1 - mT0;
+  return mTStop - mT0;
+}
+
+const std::chrono::time_point<std::chrono::steady_clock> &HttpClientWorker::t0() const
+{
+  return mT0;
+}
+
+const std::chrono::time_point<std::chrono::steady_clock> &HttpClientWorker::t1() const
+{
+  return mT1;
+}
+
+const std::chrono::time_point<std::chrono::steady_clock> &HttpClientWorker::tStop() const
+{
+  return mTStop;
 }

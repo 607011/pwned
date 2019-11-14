@@ -15,6 +15,7 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cstdio>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -26,8 +27,12 @@
 #include <numeric>
 
 #include <boost/program_options.hpp>
-#include <pwned-lib/util.hpp>
 #include <boost/asio/ssl.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/placeholders.hpp>
+#include <boost/asio/detail/chrono.hpp>
+#include <boost/bind.hpp>
+#include <pwned-lib/util.hpp>
 
 #include "httpclientworker.hpp"
 #include "root_certificates.hpp"
@@ -38,7 +43,7 @@ namespace ssl = boost::asio::ssl;
 
 void hello()
 {
-  std::cout << "#pwned server load test - Copyright (c) 2019 Oliver Lau" << std::endl;
+  std::cout << "#pwned server load test - Copyright (c) 2019 Oliver Lau" << std::endl << std::endl;
 }
 
 void license()
@@ -68,22 +73,38 @@ void usage()
   std::cout << desc << std::endl;
 }
 
+static constexpr std::chrono::milliseconds ProgressInterval{33};
+
+void progress(const boost::system::error_code&, boost::asio::steady_timer *t, HttpClientWorker *worker, double timeoutSecs) {
+  const double dt = (1e-9 * (std::chrono::steady_clock::now() - worker->t0()).count());
+  constexpr int BufSize = 20;
+  char tBuf[BufSize], pctBuf[BufSize];
+  std::snprintf(tBuf, BufSize, "%.2f", dt);
+  std::snprintf(pctBuf, BufSize, "%d", static_cast<int>(1e2 * dt / timeoutSecs));
+  std::cout << "\r" << tBuf << "s (" << pctBuf << "%)" << std::flush;
+  if (dt < timeoutSecs)
+  {
+    t->expires_at(t->expiry() + ProgressInterval);
+    t->async_wait(boost::bind(progress, boost::asio::placeholders::error, t, worker, timeoutSecs));
+  }
+}
+
 int main(int argc, const char *argv[])
 {
   static const std::string DefaultAddress = "http://127.0.0.1:31337/v1/pwned/api/lookup";
-  static const int DefaultNumWorkers = 4;
+  static const int DefaultNumWorkers = 64;
   static const int DefaultRuntimeSecs = 10;
   std::string inputFilename;
   std::string indexFilename;
   std::string address;
-  int runtimeSecs = DefaultRuntimeSecs;
-  int numWorkers = 4;
+  int runtimeSecs;
+  int numWorkers;
   desc.add_options()
-  ("help", "produce help message")
+  ("help,?", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set MD5:count input file")
-  ("address", po::value<std::string>(&address)->default_value(DefaultAddress), "server address")
-  ("secs", po::value<int>(&runtimeSecs)->default_value(DefaultRuntimeSecs), "run load test for so many seconds")
-  ("threads", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "number of worker threads")
+  ("address,A", po::value<std::string>(&address)->default_value(DefaultAddress), "server address")
+  ("secs,T", po::value<int>(&runtimeSecs)->default_value(DefaultRuntimeSecs), "run load test for so many seconds")
+  ("workers,N", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "run load test in so many workers")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -99,14 +120,20 @@ int main(int argc, const char *argv[])
     return EXIT_FAILURE;
   }
   po::notify(vm);
+
+  hello();
+
+  if (vm.count("help") > 0)
+  {
+    usage();
+    return EXIT_SUCCESS;
+  }
   if (inputFilename.empty())
   {
     std::cerr << "ERROR: input file not given." << std::endl;
     usage();
     return EXIT_FAILURE;
   }
-
-  hello();
 
   if (numWorkers < 1)
   {
@@ -119,7 +146,7 @@ int main(int argc, const char *argv[])
     runtimeSecs = DefaultRuntimeSecs;
   }
 
-  std::cout << "Running load test on " << address << " in " << numWorkers << " worker thread(s) for " << runtimeSecs << " seconds ... " << std::flush;
+  std::cout << "Running load test on " << address << " in " << numWorkers << " worker" << (numWorkers == 1 ? "" : "s") << " for " << runtimeSecs << " seconds ... " << std::endl;
   try
   {
     URI uri(address);
@@ -138,14 +165,18 @@ int main(int argc, const char *argv[])
       workers.emplace_back(ioc, ctx, address, inputFilename, runtimeSecs, id);
       workers.back().start();
     }
+
+    boost::asio::steady_timer timer(ioc, ProgressInterval);
+    timer.async_wait(boost::bind(progress, boost::asio::placeholders::error, &timer, &workers.front(), static_cast<double>(runtimeSecs)));
     ioc.run();
+
     int64_t totalRequests = 0;
+    std::chrono::nanoseconds totalRuntime{0};
     std::vector<std::chrono::nanoseconds> rtts;
-    std::chrono::nanoseconds totalRuntime;
     for (const auto &worker : workers)
     {
       totalRequests += worker.requestCount();
-      const std::vector<std::chrono::nanoseconds> &r = worker.rtts();
+      const auto &r = worker.rtts();
       rtts.insert(rtts.end(), r.begin(), r.end());
       if (worker.dt() > totalRuntime)
       {
@@ -158,7 +189,7 @@ int main(int argc, const char *argv[])
     {
       totalRTT += rtt.count();
     }
-    std::cout << std::endl
+    std::cout << "\r"
               << totalRequests << " requests in " << 1e-9 * totalRuntime.count() << " seconds (" << (1e9 * totalRequests / totalRuntime.count()) << " reqs/sec)"
               << std::endl;
     if (rtts.size() > 0)
@@ -175,7 +206,7 @@ int main(int argc, const char *argv[])
   }
   catch (const std::exception &e)
   {
-    std::cerr << "Error: " << e.what() << std::endl;
+    std::cerr << "ERROR: " << e.what() << std::endl;
     return EXIT_FAILURE;
   }
 

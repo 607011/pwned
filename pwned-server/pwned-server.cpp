@@ -35,7 +35,7 @@ using tcp = boost::asio::ip::tcp;
 
 void hello()
 {
-  std::cout << "#pwned server " << PWNED_SERVER_VERSION << " - Copyright (c) 2019 Oliver Lau" << std::endl;
+  std::cout << "#pwned server " << PWNED_SERVER_VERSION << " - Copyright (c) 2019 Oliver Lau" << std::endl << std::endl;
 }
 
 void license()
@@ -68,17 +68,17 @@ void usage()
 int main(int argc, const char *argv[])
 {
   static const std::string DefaultAddress = "http://127.0.0.1:31337/v1/pwned/api";
-  static const int DefaultNumWorkers = 4;
+  static const int DefaultNumWorkers = 64;
   std::string inputFilename;
   std::string indexFilename;
   std::string address;
-  int numWorkers = 4;
+  int numWorkers;
   desc.add_options()
-  ("help", "produce help message")
+  ("help,?", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set MD5:count input file")
   ("index,X", po::value<std::string>(&indexFilename), "set index file")
-  ("address", po::value<std::string>(&address)->default_value(DefaultAddress), "server address")
-  ("threads", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "number of worker threads")
+  ("address,?", po::value<std::string>(&address)->default_value(DefaultAddress), "server address")
+  ("workers,N", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "number of workers")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -94,14 +94,21 @@ int main(int argc, const char *argv[])
     return EXIT_FAILURE;
   }
   po::notify(vm);
+
+  hello();
+
+  if (vm.count("help") > 0)
+  {
+    usage();
+    return EXIT_SUCCESS;
+  }
+
   if (inputFilename.empty())
   {
     std::cerr << "ERROR: input file not given." << std::endl;
     usage();
     return EXIT_FAILURE;
   }
-
-  hello();
 
   if (numWorkers < 1)
   {

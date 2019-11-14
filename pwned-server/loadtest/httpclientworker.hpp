@@ -53,6 +53,7 @@ class HttpClientWorker
   uint64_t mInputSize;
   std::chrono::time_point<std::chrono::steady_clock> mT0;
   std::chrono::time_point<std::chrono::steady_clock> mT1;
+  std::chrono::time_point<std::chrono::steady_clock> mTStop;
   uint64_t mRequestCount{0};
   std::chrono::time_point<std::chrono::steady_clock> mRTTt0;
   std::vector<std::chrono::nanoseconds> mRTT;
@@ -79,6 +80,9 @@ public:
   uint64_t requestCount() const;
   std::vector<std::chrono::nanoseconds> rtts() const;
   std::chrono::nanoseconds dt() const;
+  const std::chrono::time_point<std::chrono::steady_clock> &t0() const;
+  const std::chrono::time_point<std::chrono::steady_clock> &t1() const;
+  const std::chrono::time_point<std::chrono::steady_clock> &tStop() const;
 
   static const int ExpiresAfterSecs = 30;
 };
