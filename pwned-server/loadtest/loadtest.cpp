@@ -25,6 +25,7 @@
 #include <exception>
 #include <list>
 #include <numeric>
+#include <thread>
 
 #include <boost/program_options.hpp>
 #include <boost/asio/ssl.hpp>
@@ -101,12 +102,14 @@ int main(int argc, const char *argv[])
   std::string address;
   int runtimeSecs;
   int numWorkers;
+  int numThreads;
   desc.add_options()
   ("help,?", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set MD5:count input file")
   ("address,A", po::value<std::string>(&address)->default_value(DefaultAddress), "server address")
-  ("secs,T", po::value<int>(&runtimeSecs)->default_value(DefaultRuntimeSecs), "run load test for so many seconds")
+  ("secs", po::value<int>(&runtimeSecs)->default_value(DefaultRuntimeSecs), "run load test for so many seconds")
   ("workers,N", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "run load test in so many workers")
+  ("threads,T", po::value<int>(&numThreads)->default_value(std::thread::hardware_concurrency()), "number of threads")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -170,7 +173,22 @@ int main(int argc, const char *argv[])
 
     boost::asio::steady_timer timer(ioc, ProgressInterval);
     timer.async_wait(boost::bind(progress, boost::asio::placeholders::error, &timer, &workers.front(), static_cast<double>(runtimeSecs)));
+
+    std::vector<std::thread> threads;
+    threads.reserve(numThreads - 1);
+    for (auto i = 0; i < numThreads - 1; ++i)
+    {
+      threads.emplace_back(
+      [&ioc]
+      {
+          ioc.run();
+      });
+    }
     ioc.run();
+    for (auto &t : threads)
+    {
+      t.join();
+    }
 
     int64_t totalRequests = 0;
     std::chrono::nanoseconds totalRuntime{0};
