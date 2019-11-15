@@ -144,7 +144,7 @@ void HttpWorker::sendResponse(http::request<http::string_body> const &req)
     ss << std::chrono::system_clock::now() << ' '
        << mSocket.remote_endpoint().address().to_string() << ' '
        << req.target().to_string();
-    mLogCallback->operator()(ss.str());
+    (*mLogCallback)(ss.str());
   }
   if (uri.path() == lookupPath && uri.query().find("hash") != uri.query().end())
   {
