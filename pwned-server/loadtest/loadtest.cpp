@@ -100,14 +100,14 @@ int main(int argc, const char *argv[])
   static const int DefaultRuntimeSecs = 10;
   std::string inputFilename;
   std::string indexFilename;
-  std::string address;
+  std::string serverAddress;
   int runtimeSecs;
   int numWorkers;
   int numThreads;
   desc.add_options()
   ("help,?", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set MD5:count input file")
-  ("address,A", po::value<std::string>(&address)->default_value(DefaultAddress), "server address")
+  ("address,A", po::value<std::string>(&serverAddress)->default_value(DefaultAddress), "server address")
   ("secs", po::value<int>(&runtimeSecs)->default_value(DefaultRuntimeSecs), "run load test for so many seconds")
   ("workers,W", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "number of workers")
   ("threads,T", po::value<int>(&numThreads)->default_value(DefaultNumThreads), "number of threads")
@@ -154,14 +154,14 @@ int main(int argc, const char *argv[])
     runtimeSecs = DefaultRuntimeSecs;
   }
 
-  std::cout << "Running load test on " << address
+  std::cout << "Running load test on " << serverAddress
             << " in " << numWorkers << " worker" << (numWorkers == 1 ? "" : "s")
             << " in " << numThreads << " thread" << (numThreads == 1 ? "" : "s")
             << " for " << runtimeSecs << " seconds ... "
             << std::endl;
   try
   {
-    URI uri(address);
+    URI uri(serverAddress);
     boost::asio::io_context ioc{numWorkers};
     ssl::context ctx{ssl::context::tlsv12_client};
     boost::system::error_code ec;
@@ -174,7 +174,7 @@ int main(int argc, const char *argv[])
     std::list<HttpClientWorker> workers;
     for (int id = 0; id < numWorkers; ++id)
     {
-      workers.emplace_back(ioc, ctx, address, inputFilename, runtimeSecs, id);
+      workers.emplace_back(ioc, ctx, serverAddress, inputFilename, runtimeSecs, id);
       workers.back().start();
     }
 
