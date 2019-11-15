@@ -44,7 +44,7 @@ namespace ssl = boost::asio::ssl;
 
 void hello()
 {
-  std::cout << "#pwned server load test - Copyright (c) 2019 Oliver Lau" << std::endl << std::endl;
+  std::cout << "#pwned server load test 1.0 - Copyright (c) 2019 Oliver Lau" << std::endl << std::endl;
 }
 
 void license()
