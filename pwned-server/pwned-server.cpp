@@ -71,6 +71,7 @@ void usage()
 int main(int argc, const char *argv[])
 {
   static const std::string DefaultAddress = "http://127.0.0.1:31337/v1/pwned/api";
+  static const int DefaultNumThreads = std::thread::hardware_concurrency();
   static const int DefaultNumWorkers = 64;
   std::string inputFilename;
   std::string indexFilename;
@@ -83,9 +84,9 @@ int main(int argc, const char *argv[])
   ("input,I", po::value<std::string>(&inputFilename), "set MD5:count input file")
   ("index,X", po::value<std::string>(&indexFilename), "set index file")
   ("address,A", po::value<std::string>(&address)->default_value(DefaultAddress), "server address")
-  ("workers,N", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "number of workers")
-  ("threads,T", po::value<int>(&numThreads)->default_value(std::thread::hardware_concurrency()), "number of threads")
-  ("quiet,Q", po::bool_switch(&quiet)->default_value(false), "don't output anything")
+  ("workers,W", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "number of workers")
+  ("threads,T", po::value<int>(&numThreads)->default_value(DefaultNumThreads), "number of threads")
+  ("quiet,Q", po::bool_switch(&quiet)->default_value(false), "disable logging")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;

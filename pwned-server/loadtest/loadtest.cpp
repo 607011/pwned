@@ -95,6 +95,7 @@ void progress(const boost::system::error_code&, boost::asio::steady_timer *t, Ht
 int main(int argc, const char *argv[])
 {
   static const std::string DefaultAddress = "http://127.0.0.1:31337/v1/pwned/api/lookup";
+  static const int DefaultNumThreads = std::thread::hardware_concurrency();
   static const int DefaultNumWorkers = 64;
   static const int DefaultRuntimeSecs = 10;
   std::string inputFilename;
@@ -108,8 +109,8 @@ int main(int argc, const char *argv[])
   ("input,I", po::value<std::string>(&inputFilename), "set MD5:count input file")
   ("address,A", po::value<std::string>(&address)->default_value(DefaultAddress), "server address")
   ("secs", po::value<int>(&runtimeSecs)->default_value(DefaultRuntimeSecs), "run load test for so many seconds")
-  ("workers,N", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "run load test in so many workers")
-  ("threads,T", po::value<int>(&numThreads)->default_value(std::thread::hardware_concurrency()), "number of threads")
+  ("workers,W", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "number of workers")
+  ("threads,T", po::value<int>(&numThreads)->default_value(DefaultNumThreads), "number of threads")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -142,16 +143,22 @@ int main(int argc, const char *argv[])
 
   if (numWorkers < 1)
   {
-    std::cout << "WARNING: Illegal number of workers given. Defaulting to " << DefaultNumWorkers << "." << std::endl;
+    std::cout << "WARNING: Illegal number of workers given. "
+              << "Defaulting to " << DefaultNumWorkers << "." << std::endl;
     numWorkers = DefaultNumWorkers;
   }
   if (runtimeSecs < 1)
   {
-    std::cout << "WARNING: Illegal runtime given. Defaulting to " << DefaultRuntimeSecs << " seconds." << std::endl;
+    std::cout << "WARNING: Illegal runtime given. "
+              << "Defaulting to " << DefaultRuntimeSecs << " seconds." << std::endl;
     runtimeSecs = DefaultRuntimeSecs;
   }
 
-  std::cout << "Running load test on " << address << " in " << numWorkers << " worker" << (numWorkers == 1 ? "" : "s") << " in " << numThreads << " threads for " << runtimeSecs << " seconds ... " << std::endl;
+  std::cout << "Running load test on " << address
+            << " in " << numWorkers << " worker" << (numWorkers == 1 ? "" : "s")
+            << " in " << numThreads << " thread" << (numThreads == 1 ? "" : "s")
+            << " for " << runtimeSecs << " seconds ... "
+            << std::endl;
   try
   {
     URI uri(address);
