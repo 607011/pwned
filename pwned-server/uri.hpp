@@ -26,8 +26,7 @@ class URI
 {
 public:
   URI();
-  URI(const std::string &uri);
-  ~URI() = default;
+  explicit URI(const std::string &uri);
   bool isValid() const { return isValid_; }
   const std::string &host() const { return host_; } 
   const std::string &scheme() const { return scheme_; }
