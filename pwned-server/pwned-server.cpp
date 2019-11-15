@@ -153,23 +153,13 @@ int main(int argc, const char *argv[])
       threads.emplace_back(
       [&ioc]
       {
-        boost::system::error_code ec;
-        ioc.run(ec);
-        if (ec)
-        {
-          std::cerr << "Error: " << ec.message() << std::endl;
-        }
+        ioc.run();
       });
     }
     std::cout << numWorkers << " workers in " << numThreads << " threads"
               << " listening on " << uri.host() << ':' << uri.port() << " ..."
               << std::endl;
-    boost::system::error_code ec;
-    ioc.run(ec);
-    if (ec)
-    {
-      std::cerr << "Error: " << ec.message() << std::endl;
-    }
+    ioc.run();
     for (auto &t : threads)
     {
       t.join();
