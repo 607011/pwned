@@ -119,7 +119,8 @@ int main(int argc, const char *argv[])
 
   if (numWorkers < 1)
   {
-    std::cout << "WARNING: Illegal number of workers given. Defaulting to " << DefaultNumWorkers << std::endl;
+    std::cout << "WARNING: Illegal number of workers given. Defaulting to "
+              << DefaultNumWorkers << std::endl;
     numWorkers = DefaultNumWorkers;
   }
 
@@ -145,16 +146,23 @@ int main(int argc, const char *argv[])
       workers.back().start();
     }
     std::vector<std::thread> threads;
-    threads.reserve(numThreads - 1);
-    for (auto i = 0; i < numThreads - 1; ++i)
+    threads.reserve(numThreads);
+    for (auto i = 0; i < numThreads; ++i)
     {
       threads.emplace_back(
       [&ioc]
       {
-          ioc.run();
+        boost::system::error_code ec;
+        ioc.run(ec);
+        if (ec)
+        {
+          std::cerr << "Error: " << ec.message() << std::endl;
+        }
       });
     }
-    std::cout << numWorkers << " workers in " << numThreads << " threads listening on " << uri.host() << ':' << uri.port() << " ..." << std::endl;
+    std::cout << numWorkers << " workers in " << numThreads << " threads"
+              << " listening on " << uri.host() << ':' << uri.port() << " ..."
+              << std::endl;
     boost::system::error_code ec;
     ioc.run(ec);
     if (ec)

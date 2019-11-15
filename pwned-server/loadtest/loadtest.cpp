@@ -151,7 +151,7 @@ int main(int argc, const char *argv[])
     runtimeSecs = DefaultRuntimeSecs;
   }
 
-  std::cout << "Running load test on " << address << " in " << numWorkers << " worker" << (numWorkers == 1 ? "" : "s") << " for " << runtimeSecs << " seconds ... " << std::endl;
+  std::cout << "Running load test on " << address << " in " << numWorkers << " worker" << (numWorkers == 1 ? "" : "s") << " in " << numThreads << " threads for " << runtimeSecs << " seconds ... " << std::endl;
   try
   {
     URI uri(address);
@@ -210,7 +210,8 @@ int main(int argc, const char *argv[])
       totalRTT += rtt.count();
     }
     std::cout << "\r"
-              << totalRequests << " requests in " << 1e-9 * totalRuntime.count() << " seconds (" << (1e9 * totalRequests / totalRuntime.count()) << " reqs/sec)"
+              << totalRequests << " requests in " << 1e-9 * totalRuntime.count() << " seconds"
+              << " (" << (1e9 * totalRequests / totalRuntime.count()) << " reqs/sec)"
               << std::endl;
     if (rtts.size() > 0)
     {
