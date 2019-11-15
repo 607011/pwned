@@ -42,6 +42,7 @@ public:
 
 private:
   static const std::regex RE;
+  static const std::map<std::string, unsigned short> schemeToPort;
 
   bool isValid_;
   std::string scheme_;
@@ -52,7 +53,6 @@ private:
   std::string fragment_;
   unsigned short port_;
   std::map<std::string, std::string> query_;
-  static const std::map<std::string, unsigned short> schemeToPort; 
 };
 
 #endif // __URI_HPP__
