@@ -175,16 +175,25 @@ int main(int argc, const char *argv[])
     timer.async_wait(boost::bind(progress, boost::asio::placeholders::error, &timer, &workers.front(), static_cast<double>(runtimeSecs)));
 
     std::vector<std::thread> threads;
-    threads.reserve(numThreads - 1);
-    for (auto i = 0; i < numThreads - 1; ++i)
+    threads.reserve(numThreads);
+    for (auto i = 0; i < numThreads; ++i)
     {
       threads.emplace_back(
       [&ioc]
       {
-          ioc.run();
+        boost::system::error_code ec;
+        ioc.run(ec);
+        if (ec)
+        {
+          std::cerr << "Error: " << ec.message() << std::endl;
+        }
       });
     }
-    ioc.run();
+    ioc.run(ec);
+    if (ec)
+    {
+      std::cerr << "Error: " << ec.message() << std::endl;
+    }
     for (auto &t : threads)
     {
       t.join();
