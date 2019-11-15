@@ -116,6 +116,23 @@ void HttpWorker::processRequest(http::request<http::string_body> const &req)
   }
 }
 
+#include <ctime>
+template<typename Clock, typename Duration>
+std::ostream &operator<<(std::ostream &stream, const std::chrono::time_point<Clock, Duration> &time_point)
+{
+  const time_t time = Clock::to_time_t(time_point);
+#if __GNUC__ > 4 || ((__GNUC__ == 4) && __GNUC_MINOR__ > 8 && __GNUC_REVISION__ > 1)
+  struct tm tm;
+  localtime_r(&time, &tm);
+  return stream << std::put_time(&tm, "%c");
+#else
+  char buffer[26];
+  ctime_r(&time, buffer);
+  buffer[24] = '\0';
+  return stream << buffer;
+#endif
+}
+
 void HttpWorker::sendResponse(http::request<http::string_body> const &req)
 {
   URI uri;
@@ -123,7 +140,11 @@ void HttpWorker::sendResponse(http::request<http::string_body> const &req)
   const std::string &lookupPath = mBasePath + "/lookup";
   if (mLogCallback != nullptr)
   {
-    mLogCallback->operator()(mSocket.remote_endpoint().address().to_string() + " " + req.target().to_string());
+    std::ostringstream ss;
+    ss << std::chrono::system_clock::now() << ' '
+       << mSocket.remote_endpoint().address().to_string() << ' '
+       << req.target().to_string();
+    mLogCallback->operator()(ss.str());
   }
   if (uri.path() == lookupPath && uri.query().find("hash") != uri.query().end())
   {

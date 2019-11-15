@@ -24,6 +24,7 @@
 #include <sstream>
 #include <list>
 #include <thread>
+#include <mutex>
 
 #include <boost/program_options.hpp>
 #include <boost/function.hpp>
@@ -129,11 +130,13 @@ int main(int argc, const char *argv[])
     tcp::acceptor acceptor{ioc, {boost::asio::ip::make_address(uri.host()), uri.port()}};
     std::list<webservice::HttpWorker> workers;
 
-    webservice::HttpWorker::log_callback_t logger = [quiet](const std::string &msg)
+    std::mutex logMtx;
+    webservice::HttpWorker::log_callback_t logger = [quiet, &logMtx](const std::string &msg)
     {
       if (!quiet)
       {
-        std::cout << std::chrono::high_resolution_clock::now().time_since_epoch().count() << " " << msg << std::endl;
+        std::lock_guard<std::mutex> lock(logMtx);
+        std::cout << msg << std::endl;
       }
     };
     for (int i = 0; i < numWorkers; ++i)
