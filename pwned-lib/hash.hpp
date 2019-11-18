@@ -90,12 +90,12 @@ struct Hash
 
 inline bool operator==(const Hash &lhs, const Hash &rhs)
 {
-  return lhs.upper == rhs.upper && lhs.lower == rhs.lower;
+  return lhs.upper == rhs.upper && lhs.lower == rhs.lower && lhs.isValid == rhs.isValid;
 }
 
 inline bool operator!=(const Hash &lhs, const Hash &rhs)
 {
-  return lhs.upper != rhs.upper || lhs.lower != rhs.lower;
+  return lhs.upper != rhs.upper || lhs.lower != rhs.lower ||  lhs.isValid == rhs.isValid;
 }
 
 inline bool operator<(const Hash &lhs, const Hash &rhs)
