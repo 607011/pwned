@@ -20,39 +20,37 @@
 
 #include <string>
 #include <map>
-#include <regex>
 
 class URI
 {
 public:
   URI();
+  URI(URI &&) = delete;
   explicit URI(const std::string &uri);
-  bool isValid() const { return isValid_; }
-  const std::string &host() const { return host_; } 
-  const std::string &scheme() const { return scheme_; }
-  const std::string &path() const { return path_; }
-  const std::string &fragment() const { return fragment_; }
-  const std::string &username() const { return username_; }
-  const std::string &password() const { return password_; }
-  unsigned short port() const { return port_; } 
-  const std::map<std::string, std::string> &query() { return query_; }
-
+  bool isValid() const;
   void parse(const std::string &uri);
   void parseTarget(const std::string &target);
+  const std::string &host() const;
+  const std::string &scheme() const;
+  const std::string &path() const;
+  const std::string &fragment() const;
+  const std::string &username() const;
+  const std::string &password() const;
+  unsigned short port() const;
+  const std::map<std::string, std::string> &query();
 
 private:
-  static const std::regex RE;
-  static const std::map<std::string, unsigned short> schemeToPort;
+  static const std::map<std::string, unsigned short> SchemeToPort;
 
-  bool isValid_;
-  std::string scheme_;
-  std::string host_;
-  std::string username_;
-  std::string password_;
-  std::string path_;
-  std::string fragment_;
-  unsigned short port_;
-  std::map<std::string, std::string> query_;
+  bool mIsValid;
+  std::string mScheme;
+  std::string mHost;
+  std::string mUsername;
+  std::string mPassword;
+  std::string mPath;
+  std::string mFragment;
+  unsigned short mPort;
+  std::map<std::string, std::string> mQuery;
 };
 
 #endif // __URI_HPP__

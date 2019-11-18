@@ -17,19 +17,21 @@
 
 #include <iostream>
 #include <vector>
+#include <regex>
 #include <boost/algorithm/string.hpp>
 
 #include "uri.hpp"
 
-const std::regex URI::RE("^([a-z0-9+.-]+):(?:\\/\\/(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(\\/(?:[a-z0-9-._~!$&'()*+,;=:@\\/]|%[0-9A-F]{2})*)?|(\\/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@\\/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:\\/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:\\/?@]|%[0-9A-F]{2})*))?$");
-const std::map<std::string, unsigned short> URI::schemeToPort = {
+static const std::regex RE("^([a-z0-9+.-]+):(?:\\/\\/(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(\\/(?:[a-z0-9-._~!$&'()*+,;=:@\\/]|%[0-9A-F]{2})*)?|(\\/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@\\/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:\\/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:\\/?@]|%[0-9A-F]{2})*))?$");
+
+const std::map<std::string, unsigned short> URI::SchemeToPort = {
   { "http", 80 },
   { "https", 443 }
 };
 
 URI::URI()
-    : isValid_(true)
-    , port_(0)
+    : mIsValid(false)
+    , mPort(0)
 {
 }
 
@@ -42,11 +44,12 @@ URI::URI(const std::string &uri)
 void URI::parse(const std::string &uri)
 {
   std::smatch m;
+  mIsValid = true;
   if (std::regex_search(uri, m, RE))
   {
     if (m.size() > 1)
     {
-      scheme_ = m[1].str();
+      mScheme = m[1].str();
     }
     if (m.size() > 2)
     {
@@ -55,29 +58,29 @@ void URI::parse(const std::string &uri)
       boost::split(kv, credentials, boost::is_any_of(":"));
       if (kv.size() == 2)
       {
-        username_ = kv[0];
-        password_ = kv[1];
+        mUsername = kv[0];
+        mPassword = kv[1];
       }
       else
       {
-        isValid_ = false;
+        mIsValid = false;
       }
     }
     if (m.size() > 3)
     {
-      host_ = m[3].str();
+      mHost = m[3].str();
     }
     if (m.size() > 4 && m[4].str().size() > 0)
     {
-      port_ = std::stoi(m[4].str());
+      mPort = std::stoi(m[4].str());
     }
-    else if (schemeToPort.find(scheme_) != schemeToPort.end())
+    else if (SchemeToPort.find(mScheme) != SchemeToPort.end())
     {
-      port_ = schemeToPort.at(scheme_);
+      mPort = SchemeToPort.at(mScheme);
     }
     if (m.size() > 5)
     {
-      path_ = m[5].str();
+      mPath = m[5].str();
     }
     if (m.size() > 7)
     {
@@ -90,17 +93,17 @@ void URI::parse(const std::string &uri)
         boost::split(pair, param, boost::is_any_of("="));
         if (pair.size() == 2)
         {
-          query_[pair.at(0)] = pair.at(1);
+          mQuery[pair.at(0)] = pair.at(1);
         }
         else
         {
-          isValid_ = false;
+          mIsValid = false;
         }
       }
     }
     if (m.size() > 8)
     {
-      fragment_ = m[8].str();
+      mFragment = m[8].str();
     }
   }
 }
@@ -111,7 +114,7 @@ void URI::parseTarget(const std::string &target)
   boost::split(pathAndQuery, target, boost::is_any_of("?"));
   if (pathAndQuery.size() > 0)
   {
-    path_ = pathAndQuery.at(0);
+    mPath = pathAndQuery.at(0);
   }
   if (pathAndQuery.size() > 1)
   {
@@ -127,14 +130,23 @@ void URI::parseTarget(const std::string &target)
         boost::split(pair, param, boost::is_any_of("="));
         if (pair.size() == 2)
         {
-          query_[pair.at(0)] = pair.at(1);
+          mQuery[pair.at(0)] = pair.at(1);
         }
       }
     }
     if (queryAndFragment.size() > 1)
     {
-      fragment_ = queryAndFragment.at(1);
+      mFragment = queryAndFragment.at(1);
     }
   }
 }
 
+bool URI::isValid() const { return mIsValid; }
+const std::string &URI::host() const { return mHost; } 
+const std::string &URI::scheme() const { return mScheme; }
+const std::string &URI::path() const { return mPath; }
+const std::string &URI::fragment() const { return mFragment; }
+const std::string &URI::username() const { return mUsername; }
+const std::string &URI::password() const { return mPassword; }
+unsigned short URI::port() const { return mPort; } 
+const std::map<std::string, std::string> &URI::query() { return mQuery; }
