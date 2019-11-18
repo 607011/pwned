@@ -48,7 +48,7 @@ public:
   {
   }
 
-  inline bool read(std::ifstream &f)
+  inline bool read(std::istream &f)
   {
     f.read((char *)hash.data, Hash::size);
     if (f.gcount() != Hash::size)
@@ -57,7 +57,7 @@ public:
     return f.gcount() == sizeof(count);
   }
 
-  inline bool read(std::ifstream &f, uint64_t pos)
+  inline bool read(std::istream &f, uint64_t pos)
   {
     f.seekg(pos);
     return read(f);
