@@ -125,7 +125,7 @@ PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCou
   PasswordHashAndCount phc;
   while (lo <= hi)
   {
-    int64_t pos = (lo + hi) / 2;
+    int64_t pos = ((uint64_t)lo + (uint64_t)hi) / 2;
     pos -= pos % PasswordHashAndCount::size;
     pos = std::max<int64_t>(0, pos);
     phc.read(inputFile, pos);
