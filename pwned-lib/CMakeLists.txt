@@ -14,3 +14,5 @@ target_include_directories(pnwed
   PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 
 set_target_properties(pnwed PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
+
+add_subdirectory(test)
