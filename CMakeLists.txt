@@ -25,7 +25,7 @@ message(STATUS "OpenSSL crypto lib: ${OPENSSL_CRYPTO_LIBRARY}")
 message(STATUS "OpenSSL ssl lib: ${OPENSSL_SSL_LIBRARY}")
 
 set(BOOST_ROOT $ENV{BOOST_ROOT})
-find_package(Boost 1.69.0 COMPONENTS program_options chrono date_time filesystem system thread REQUIRED)
+find_package(Boost 1.71.0 COMPONENTS program_options chrono date_time filesystem system thread REQUIRED)
 message(STATUS "Boost include dirs: ${Boost_INCLUDE_DIRS}")
 message(STATUS "Boost lib dirs: ${Boost_LIBRARY_DIRS}")
 message(STATUS "Boost libs: ${Boost_LIBRARIES}")
