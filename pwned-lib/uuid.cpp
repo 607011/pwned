@@ -15,7 +15,9 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <sstream>
 #include <iomanip>
+#include <chrono>
 
 #include "uuid.hpp"
 
@@ -24,13 +26,13 @@ namespace pwned
 
 std::ostream &operator<<(std::ostream &os, UUID const &uuid)
 {
+  const uint32_t a = (uuid.uuid[0] >> 32) & 0xffffffff;
+  const uint16_t b = (uuid.uuid[0] >> 16) & 0xffff;
+  const uint16_t c = uuid.uuid[0] & 0xffff;
+  const uint16_t d = (uuid.uuid[0] >> 48) & 0xffff;
+  const uint16_t e = (uuid.uuid[0] >> 32) & 0xffff;
+  const uint32_t f = uuid.uuid[0] & 0xffffffff;
   std::ostringstream ss;
-  uint32_t a = (uuid.uuid[0] >> 32) & 0xffffffff;
-  uint16_t b = (uuid.uuid[0] >> 16) & 0xffff;
-  uint16_t c = uuid.uuid[0] & 0xffff;
-  uint16_t d = (uuid.uuid[0] >> 48) & 0xffff;
-  uint16_t e = (uuid.uuid[0] >> 32) & 0xffff;
-  uint32_t f = uuid.uuid[0] & 0xffffffff;
   ss << std::hex << std::uppercase << std::setfill('0')
      << std::setw(8) << a << '-'
      << std::setw(4) << b << '-'
@@ -41,8 +43,6 @@ std::ostream &operator<<(std::ostream &os, UUID const &uuid)
   return os << ss.str();
 }
 
-static std::random_device rd;
-std::mt19937_64 UUID::random_uint64(rd());
-UUID::_init UUID::_initializer;
+std::mt19937_64 UUID::rng{static_cast<uint64_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count())};
 
 } // namespace pwned

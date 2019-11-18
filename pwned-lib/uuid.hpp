@@ -18,10 +18,8 @@
 #ifndef __uuid_hpp__
 #define __uuid_hpp__
 
-#include <sstream>
 #include <ostream>
 #include <random>
-#include <chrono>
 #include <cstdint>
 
 
@@ -30,20 +28,12 @@ namespace pwned
 
 struct UUID
 {
-  static std::mt19937_64 random_uint64;
-  static struct _init
-  {
-    _init()
-    {
-      const long long _seed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-      random_uint64.seed(_seed);
-    }
-  } _initializer;
+  static std::mt19937_64 rng;
   uint64_t uuid[2];
   UUID()
   {
-    uuid[0] = random_uint64();
-    uuid[1] = random_uint64();
+    uuid[0] = rng();
+    uuid[1] = rng();
   }
   bool operator==(const UUID &o) const
   {
