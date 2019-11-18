@@ -33,3 +33,4 @@ target_link_libraries(pwned-server
 )
 
 add_subdirectory(loadtest)
+add_subdirectory(test)

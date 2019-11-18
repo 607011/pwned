@@ -26,7 +26,7 @@ class URI
 public:
   URI();
   URI(URI &&) = delete;
-  explicit URI(const std::string &uri);
+  URI(const std::string &uri);
   bool isValid() const;
   void parse(const std::string &uri);
   void parseTarget(const std::string &target);
