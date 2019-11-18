@@ -17,7 +17,6 @@
 
 #include <sstream>
 #include <iomanip>
-#include <chrono>
 
 #include "uuid.hpp"
 
@@ -43,6 +42,7 @@ std::ostream &operator<<(std::ostream &os, UUID const &uuid)
   return os << ss.str();
 }
 
-std::mt19937_64 UUID::rng{static_cast<uint64_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count())};
+std::random_device rd;
+std::mt19937_64 UUID::rng{static_cast<uint64_t>(rd()) * static_cast<uint64_t>(rd())};
 
 } // namespace pwned
