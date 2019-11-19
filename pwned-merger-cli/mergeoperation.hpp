@@ -30,6 +30,9 @@
 #include "inputfile.hpp"
 #include "mergerinput.hpp"
 
+namespace merger
+{
+
 class MergeOperationPrivate;
 
 class MergeOperation : public pwned::Operation
@@ -43,5 +46,7 @@ public:
   void execute() noexcept(false) override;
   pwned::PasswordHashAndCount next();
 };
+
+} // namespace merger
 
 #endif // __mergeoperation_hpp__

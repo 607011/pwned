@@ -27,6 +27,9 @@
 
 #include "inputfile.hpp"
 
+namespace merger
+{
+
 class MergerInput : public InputFile
 {
 public:
@@ -67,5 +70,7 @@ public:
     boost::filesystem::remove(path);
   }
 };
+
+}
 
 #endif // __mergerinput_hpp__

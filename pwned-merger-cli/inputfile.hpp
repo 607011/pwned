@@ -24,6 +24,8 @@
 
 #include "lazy.hpp"
 
+namespace merger {
+
 namespace fs = boost::filesystem;
 
 struct InputFile

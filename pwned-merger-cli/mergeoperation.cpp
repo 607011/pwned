@@ -34,6 +34,9 @@
 
 namespace fs = boost::filesystem;
 
+namespace merger
+{
+
 struct SmallestHashFirst
 {
   bool operator()(const MergerInput *lhs, const MergerInput *rhs)
@@ -199,3 +202,5 @@ pwned::PasswordHashAndCount MergeOperation::next()
   }
   return result;
 }
+
+} // namespace merger

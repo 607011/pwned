@@ -163,15 +163,15 @@ int main(int argc, const char *argv[])
   std::cout << "Destination file: " << dstFile << std::endl
             << std::endl;
   high_resolution_clock::time_point t0 = high_resolution_clock::now();
-  std::vector<InputFile> inputFiles;
+  std::vector<merger::InputFile> inputFiles;
   for (const auto &filename : filenames)
   {
-    inputFiles.push_back(InputFile(filename));
+    inputFiles.push_back(merger::InputFile(filename));
   }
-  std::sort(inputFiles.begin(), inputFiles.end(), InputFileLess);
+  std::sort(inputFiles.begin(), inputFiles.end(), merger::InputFileLess);
   std::vector<std::string> intermediateFilenames;
   ProgressBar progressBar(32);
-  pwned::OperationQueue<MergeOperation> opQueue;
+  pwned::OperationQueue<merger::MergeOperation> opQueue;
   pwned::TermIO termIO;
   std::thread keyThread = pwned::runAsync([&opQueue, &termIO] {
     char ch;
@@ -204,7 +204,7 @@ int main(int argc, const char *argv[])
   while (inputFiles.size() > 0 && !opQueue.isCancelled())
   {
     const auto b = std::min(inputFiles.end(), inputFiles.begin() + maxFilesAtOnce);
-    const std::vector<InputFile> inputFileSlice(inputFiles.begin(), b);
+    const std::vector<merger::InputFile> inputFileSlice(inputFiles.begin(), b);
     const bool isLastChunk = inputFileSlice.size() == inputFiles.size();
     const std::string &targetFilename = isLastChunk
                                             ? dstFile
@@ -216,20 +216,20 @@ int main(int argc, const char *argv[])
     const uint64_t chunkInputSize = std::accumulate(inputFileSlice.begin(),
                                                     inputFileSlice.end(),
                                                     0ULL,
-                                                    [](uint64_t sum, const InputFile &file) {
+                                                    [](uint64_t sum, const merger::InputFile &file) {
                                                       return sum + file.inputSize.value();
                                                     });
     progressBar.setHi(chunkInputSize / pwned::PasswordHashAndCount::size);
-    MergeOperation *const op = new MergeOperation(inputFileSlice, targetFilename, false, &progressBar);
+    merger::MergeOperation *const op = new merger::MergeOperation(inputFileSlice, targetFilename, false, &progressBar);
     opQueue.add(op);
     opQueue.execute(true);
     opQueue.waitForFinished();
     if (!opQueue.isCancelled())
     {
-      inputFiles = std::vector<InputFile>(b, inputFiles.end());
+      inputFiles = std::vector<merger::InputFile>(b, inputFiles.end());
       if (!isLastChunk)
       {
-        inputFiles.push_back(InputFile(targetFilename));
+        inputFiles.push_back(merger::InputFile(targetFilename));
       }
       std::cout << inputFiles.size() << " files left." << std::endl;
     }
