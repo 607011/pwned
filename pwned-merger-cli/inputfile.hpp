@@ -63,6 +63,9 @@ struct InputFile
   }
 };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 struct
 {
   bool operator()(const InputFile &a, const InputFile &b)
@@ -70,5 +73,9 @@ struct
     return a.inputSize.value() > b.inputSize.value();
   }
 } InputFileLess;
+
+#pragma GCC diagnostic pop
+
+}
 
 #endif // __inputfile_hpp__
