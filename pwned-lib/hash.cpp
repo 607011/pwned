@@ -44,17 +44,18 @@ static inline int decodeHex(const char c)
 }
 
 Hash::Hash()
-    : upper(0), lower(0), isValid(false)
+    : quad({0, 0})
+    , isValid(false)
 {
 }
 
 Hash::Hash(const Hash &o)
-    : upper(o.upper), lower(o.lower), isValid(o.isValid)
+    : quad(o.quad), isValid(o.isValid)
 {
 }
 
 Hash::Hash(uint64_t upper, uint64_t lower)
-    : upper(upper), lower(lower), isValid(true)
+    : quad({upper, lower}), isValid(true)
 {
 }
 
@@ -70,11 +71,11 @@ std::string Hash::toString(bool uppercase) const
   std::ostringstream ss;
   if (uppercase)
   {
-    ss << std::setw(16) << std::setfill('0') << std::hex << std::uppercase << upper << std::setw(16) << std::setfill('0') << std::uppercase << lower;
+    ss << std::setw(16) << std::setfill('0') << std::hex << std::uppercase << quad.upper << std::setw(16) << std::setfill('0') << std::uppercase << quad.lower;
   }
   else
   {
-    ss << std::setw(16) << std::setfill('0') << std::hex << upper << std::setw(16) << std::setfill('0') << lower;
+    ss << std::setw(16) << std::setfill('0') << std::hex << quad.upper << std::setw(16) << std::setfill('0') << quad.lower;
   }
   return ss.str();
 }

@@ -103,7 +103,7 @@ PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCou
   int64_t hi = size;
   if (indexFile.is_open())
   {
-    const uint64_t hashMSB = hash.upper >> shift;
+    const uint64_t hashMSB = hash.quad.upper >> shift;
     const uint64_t idx = hashMSB * sizeof(index_key_t);
     uint64_t loIdx = idx;
     do {
@@ -154,7 +154,7 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *r
   static constexpr float MaxUInt64 = float(std::numeric_limits<uint64_t>::max());
   int nReads = 0;
   static constexpr int64_t OffsetMultiplicator = 2;
-  int64_t potentialHitIdx = int64_t(float(size) * float(hash.upper) / MaxUInt64);
+  int64_t potentialHitIdx = int64_t(float(size) * float(hash.quad.upper) / MaxUInt64);
   potentialHitIdx -= potentialHitIdx % PasswordHashAndCount::size;
   int64_t offset = std::max<int64_t>(int64_t(size >> 12), PasswordHashAndCount::size);
   offset -= offset % PasswordHashAndCount::size;

@@ -120,7 +120,7 @@ int main(int argc, const char *argv[])
     return EXIT_FAILURE;
   }
 
-  const unsigned int shift = static_cast<unsigned int>(sizeof(pwned::index_key_t) * 8UL - bits);
+  const unsigned int shift = static_cast<unsigned int>(sizeof(pwned::index_key_t) * 8 - bits);
   const pwned::index_key_t maxidx = static_cast<pwned::index_key_t>(1) + (std::numeric_limits<pwned::index_key_t>::max() >> shift);
 
   std::cout << "Scanning ..." << std::endl;
@@ -129,14 +129,14 @@ int main(int argc, const char *argv[])
   pwned::index_key_t *indexes = new pwned::index_key_t[maxidx];
   memset(indexes, 0xff, maxidx * sizeof(pwned::index_key_t));
   phc.read(input);
-  pwned::index_key_t lastIdx = static_cast<pwned::index_key_t>(phc.hash.upper >> shift);
+  pwned::index_key_t lastIdx = static_cast<pwned::index_key_t>(phc.hash.quad.upper >> shift);
   *(indexes + lastIdx) = 0;
   pwned::index_key_t idx = 0;
   uint64_t pos = 0;
   while (!input.eof())
   {
     phc.read(input);
-    idx = static_cast<pwned::index_key_t>(phc.hash.upper >> shift);
+    idx = static_cast<pwned::index_key_t>(phc.hash.quad.upper >> shift);
     if (idx > lastIdx)
     {
       pos = static_cast<uint64_t>(input.tellg()) - pwned::PasswordHashAndCount::size;

@@ -61,6 +61,6 @@ public:
   void disableBreak();
   void enableBreak();
 };
-}; // namespace pwned
+} // namespace pwned
 
 #endif // __util_hpp__

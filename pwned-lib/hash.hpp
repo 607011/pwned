@@ -51,7 +51,7 @@ struct Hash
     {
       uint64_t upper;
       uint64_t lower;
-    };
+    } quad;
   };
   bool isValid;
   Hash();
@@ -61,8 +61,8 @@ struct Hash
 
   inline void toHostByteOrder()
   {
-    upper = ntohll(upper);
-    lower = ntohll(lower);
+    quad.upper = ntohll(quad.upper);
+    quad.lower = ntohll(quad.lower);
   }
 
   inline bool read(std::istream &f)
@@ -82,29 +82,29 @@ struct Hash
 
   inline Hash &operator=(const Hash &rhs)
   {
-    upper = rhs.upper;
-    lower = rhs.lower;
+    quad.upper = rhs.quad.upper;
+    quad.lower = rhs.quad.lower;
     return *this;
   }
 };
 
 inline bool operator==(const Hash &lhs, const Hash &rhs)
 {
-  return lhs.upper == rhs.upper && lhs.lower == rhs.lower && lhs.isValid == rhs.isValid;
+  return lhs.quad.upper == rhs.quad.upper && lhs.quad.lower == rhs.quad.lower && lhs.isValid == rhs.isValid;
 }
 
 inline bool operator!=(const Hash &lhs, const Hash &rhs)
 {
-  return lhs.upper != rhs.upper || lhs.lower != rhs.lower ||  lhs.isValid == rhs.isValid;
+  return lhs.quad.upper != rhs.quad.upper || lhs.quad.lower != rhs.quad.lower ||  lhs.isValid == rhs.isValid;
 }
 
 inline bool operator<(const Hash &lhs, const Hash &rhs)
 {
-  if (lhs.upper == rhs.upper)
+  if (lhs.quad.upper == rhs.quad.upper)
   {
-    return lhs.lower < rhs.lower;
+    return lhs.quad.lower < rhs.quad.lower;
   }
-  return lhs.upper < rhs.upper;
+  return lhs.quad.upper < rhs.quad.upper;
 }
 
 inline bool operator<=(const Hash &lhs, const Hash &rhs)
@@ -114,11 +114,11 @@ inline bool operator<=(const Hash &lhs, const Hash &rhs)
 
 inline bool operator>(const Hash &lhs, const Hash &rhs)
 {
-  if (lhs.upper == rhs.upper)
+  if (lhs.quad.upper == rhs.quad.upper)
   {
-    return lhs.lower > rhs.lower;
+    return lhs.quad.lower > rhs.quad.lower;
   }
-  return lhs.upper > rhs.upper;
+  return lhs.quad.upper > rhs.quad.upper;
 }
 
 inline bool operator>=(const Hash &lhs, const Hash &rhs)

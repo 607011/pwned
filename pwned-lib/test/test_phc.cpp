@@ -51,8 +51,8 @@ BOOST_AUTO_TEST_CASE(test_phc_read)
   }
   BOOST_TEST(phc.read(ss) == true);
   BOOST_TEST(std::memcmp(phc.hash.data, data, pwned::Hash::size) == 0);
-  BOOST_TEST(phc.hash.upper == 0xffeeddccbbaa9988ULL);
-  BOOST_TEST(phc.hash.lower == 0x7766554433221100ULL);
+  BOOST_TEST(phc.hash.quad.upper == 0xffeeddccbbaa9988ULL);
+  BOOST_TEST(phc.hash.quad.lower == 0x7766554433221100ULL);
   BOOST_TEST(phc.count == 0xdeadbeef);
   BOOST_TEST(phc.read(ss) == false);
 }
@@ -61,8 +61,8 @@ BOOST_AUTO_TEST_CASE(test_phc_misc)
 {
   pwned::Hash hash = pwned::Hash::fromHex("ffeeddccbbaa99887766554433221100");
   pwned::PasswordHashAndCount phc(hash, 2U<<31);
-  BOOST_TEST(phc.hash.upper == 0xffeeddccbbaa9988ULL);
-  BOOST_TEST(phc.hash.lower == 0x7766554433221100ULL);
+  BOOST_TEST(phc.hash.quad.upper == 0xffeeddccbbaa9988ULL);
+  BOOST_TEST(phc.hash.quad.lower == 0x7766554433221100ULL);
   BOOST_TEST(phc.count == 2U<<31);
 }
 
