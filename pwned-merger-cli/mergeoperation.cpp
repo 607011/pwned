@@ -33,7 +33,6 @@
 #include "mergerinput.hpp"
 
 namespace fs = boost::filesystem;
-using namespace std::chrono;
 
 struct SmallestHashFirst
 {
@@ -50,9 +49,8 @@ enum MergerError
   cancelled
 };
 
-class MergeOperationPrivate
+struct MergeOperationPrivate
 {
-public:
   std::priority_queue<MergerInput *, std::vector<MergerInput *>, SmallestHashFirst> pq;
   const fs::path dstFilePath;
   std::ofstream dstFile;
@@ -76,7 +74,7 @@ public:
       MergerInput *mi = new MergerInput(file);
       mi->open();
       pq.push(mi);
-      sum += uint64_t(mi->inputSize.value());
+      sum += mi->inputSize.value();
     }
     totalEntries = sum / pwned::PasswordHashAndCount::size;
   }
@@ -107,7 +105,7 @@ void MergeOperation::execute() noexcept(false)
 {
   if (isCancelled)
     return;
-  high_resolution_clock::time_point t0 = high_resolution_clock::now();
+  auto t0 = std::chrono::high_resolution_clock::now();
   if (d->pq.empty())
   {
     return;
@@ -127,7 +125,7 @@ void MergeOperation::execute() noexcept(false)
     return;
   }
   pwned::PasswordHashAndCount current = d->pq.top()->phc;
-  uint64_t updateAfterEntries = std::max(d->totalEntries / 1000, uint64_t(1));
+  uint64_t updateAfterEntries = std::max<uint64_t>(d->totalEntries / 1000, 1);
   while (!isCancelled)
   {
     const pwned::PasswordHashAndCount &p = next();
@@ -164,8 +162,8 @@ void MergeOperation::execute() noexcept(false)
   {
     (*d->progressed)(d->entriesProcessed);
   }
-  high_resolution_clock::time_point t1 = high_resolution_clock::now();
-  duration<float> time_span = duration_cast<duration<float>>(t1 - t0);
+  auto t1 = std::chrono::high_resolution_clock::now();
+  auto time_span = std::chrono::duration_cast<std::chrono::duration<float>>(t1 - t0);
   std::cout << "(" << pwned::readableTime(time_span.count()) << ")" << std::endl;
 }
 
