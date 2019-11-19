@@ -45,7 +45,7 @@ struct InputFile
   State state;
   Lazy<uint64_t> inputSize;
 
-  explicit InputFile(const fs::path &path)
+  InputFile(const fs::path &path)
       : path(path)
       , state(State::pending)
       , inputSize([path] { return uint64_t(fs::file_size(path)); })
