@@ -84,6 +84,8 @@ int getMemoryStat(MemoryStat &memoryStat)
   }
   memoryStat.virt.app = t_info.virtual_size;
   memoryStat.phys.app = t_info.resident_size;
+#else
+  (void)(memoryStat);
 #endif
   return 0;
 }
