@@ -42,12 +42,6 @@ inline void safe_assign(T *a, T b)
   }
 }
 
-PasswordInspector::PasswordInspector()
-    : size(0)
-    , shift(0)
-{
-}
-
 PasswordInspector::PasswordInspector(const std::string &inputFilename)
 {
   open(inputFilename);
@@ -57,8 +51,6 @@ PasswordInspector::PasswordInspector(const std::string &inputFilename, const std
 {
   open(inputFilename, indexFilename);
 }
-
-PasswordInspector::~PasswordInspector() = default;
 
 bool PasswordInspector::open(const std::string &filename)
 {
@@ -72,9 +64,9 @@ bool PasswordInspector::open(const std::string &inputFilename, const std::string
   bool ok = open(inputFilename);
   if (!indexFilename.empty())
   {
-    const uint64_t nKeys = static_cast<uint64_t>(fs::file_size(indexFilename)) / sizeof(index_key_t);
+    const uint64_t nKeys = uint64_t(fs::file_size(indexFilename)) / sizeof(index_key_t);
 #ifndef NO_POPCNT
-    shift = sizeof(index_key_t) * 8 - static_cast<unsigned int>(_mm_popcnt_u64(nKeys - 1));
+    shift = sizeof(index_key_t) * 8 - (unsigned int)(_mm_popcnt_u64(nKeys - 1));
 #else
     // legacy code to calculate the shift count
     shift = sizeof(index_key_t) * 8;
@@ -112,7 +104,7 @@ PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCou
       ++nReads;
       loIdx -= sizeof(index_key_t);
     }
-    while (lo == static_cast<int64_t>(std::numeric_limits<index_key_t>::max()));
+    while (lo == int64_t(std::numeric_limits<index_key_t>::max()));
     uint64_t hiIdx = idx + sizeof(index_key_t);
     do {
       indexFile.seekg(hiIdx);
@@ -120,12 +112,12 @@ PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCou
       ++nReads;
       hiIdx += sizeof(index_key_t);
     }
-    while (hi == static_cast<int64_t>(std::numeric_limits<index_key_t>::max()));
+    while (hi == int64_t(std::numeric_limits<index_key_t>::max()));
   }
   PasswordHashAndCount phc;
   while (lo <= hi)
   {
-    int64_t pos = ((uint64_t)lo + (uint64_t)hi) / 2;
+    int64_t pos = (uint64_t(lo) + uint64_t(hi)) / 2;
     pos -= pos % PasswordHashAndCount::size;
     pos = std::max<int64_t>(0, pos);
     phc.read(inputFile, pos);
@@ -184,7 +176,7 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *r
     throw("[PasswordInspector] Cannot read @ hi = " + std::to_string(hi));
   }
   int64_t hiOffset = offset;
-  while (hash > h1 && hi <= size - hiOffset - static_cast<int64_t>(PasswordHashAndCount::size))
+  while (hash > h1 && hi <= size - hiOffset - int64_t(PasswordHashAndCount::size))
   {
     hi += hiOffset;
     h1.read(inputFile, hi);

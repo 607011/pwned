@@ -120,26 +120,26 @@ int main(int argc, const char *argv[])
     return EXIT_FAILURE;
   }
 
-  const unsigned int shift = static_cast<unsigned int>(sizeof(pwned::index_key_t) * 8 - bits);
-  const pwned::index_key_t maxidx = static_cast<pwned::index_key_t>(1) + (std::numeric_limits<pwned::index_key_t>::max() >> shift);
+  const unsigned int shift = (unsigned int)(sizeof(pwned::index_key_t) * 8 - bits);
+  const pwned::index_key_t maxIdx = pwned::index_key_t(1) + (std::numeric_limits<pwned::index_key_t>::max() >> shift);
 
   std::cout << "Scanning ..." << std::endl;
   std::ifstream input(inputFilename, std::ios::binary);
   pwned::PasswordHashAndCount phc;
-  pwned::index_key_t *indexes = new pwned::index_key_t[maxidx];
-  memset(indexes, 0xff, maxidx * sizeof(pwned::index_key_t));
+  pwned::index_key_t *indexes = new pwned::index_key_t[maxIdx];
+  memset(indexes, 0xff, maxIdx * sizeof(pwned::index_key_t));
   phc.read(input);
-  pwned::index_key_t lastIdx = static_cast<pwned::index_key_t>(phc.hash.quad.upper >> shift);
+  pwned::index_key_t lastIdx = pwned::index_key_t(phc.hash.quad.upper >> shift);
   *(indexes + lastIdx) = 0;
   pwned::index_key_t idx = 0;
   uint64_t pos = 0;
   while (!input.eof())
   {
     phc.read(input);
-    idx = static_cast<pwned::index_key_t>(phc.hash.quad.upper >> shift);
+    idx = pwned::index_key_t(phc.hash.quad.upper >> shift);
     if (idx > lastIdx)
     {
-      pos = static_cast<uint64_t>(input.tellg()) - pwned::PasswordHashAndCount::size;
+      pos = uint64_t(input.tellg()) - pwned::PasswordHashAndCount::size;
       *(indexes + idx) = pos;
       std::cout << "\rMSB 0x" << std::hex << idx << " @ " << std::dec << pos << std::flush;
       lastIdx = idx;
@@ -151,7 +151,7 @@ int main(int argc, const char *argv[])
   std::cout << std::endl
             << "Writing ... " << std::flush;
   std::ofstream output(outputFilename, std::ios::trunc | std::ios::binary);
-  output.write((const char *)indexes, maxidx * sizeof(pwned::index_key_t));
+  output.write((const char *)indexes, maxIdx * sizeof(pwned::index_key_t));
   output.close();
   delete[] indexes;
   std::cout << "Ready." << std::endl

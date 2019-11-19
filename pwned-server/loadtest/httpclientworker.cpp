@@ -66,7 +66,7 @@ HttpClientWorker::HttpClientWorker(
     , mCtx(ctx)
     , mResolver(ioc)
     , mStream(ioc)
-    , mGen(static_cast<uint64_t>(id))
+    , mGen(uint64_t(id))
     , mInputFile(inputFilename, std::ios::binary)
     , mInputSize(boost::filesystem::file_size(inputFilename))
     , mT0(std::chrono::steady_clock::now())
@@ -92,7 +92,7 @@ void HttpClientWorker::start()
     }
     if (!SSL_set_tlsext_host_name(mSSLStream->native_handle(), mURI.host().c_str()))
     {
-      beast::error_code ec{static_cast<int>(::ERR_get_error()), net::error::get_ssl_category()};
+      beast::error_code ec{int(::ERR_get_error()), net::error::get_ssl_category()};
       std::cerr << "ERROR: " << ec.message() << std::endl;
       return;
     }

@@ -32,16 +32,14 @@ class PasswordInspector
 private:
   std::ifstream inputFile;
   std::ifstream indexFile;
-  int64_t size;
-  unsigned int shift;
+  int64_t size{0};
+  unsigned int shift{0};
   pwned::PasswordHashAndCount phc;
 
 public:
   typedef uint64_t index_key_t;
-  PasswordInspector();
   PasswordInspector(const std::string &inputFilename);
   PasswordInspector(const std::string &inputFilename, const std::string &indexFilename);
-  ~PasswordInspector();
   bool open(const std::string &inputFilename);
   bool open(const std::string &inputFilename, const std::string &indexFilename);
   bool isOpen() const;

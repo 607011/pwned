@@ -180,7 +180,7 @@ void benchmarkWithoutIndex(
               << "Not found: " << notFound
               << std::endl
               << "Lookup time: " << pwned::readableTime(time_span.count())
-              << " (" << std::setprecision(3) << (1e3 * time_span.count() / static_cast<double>(phcs.size())) << "ms per lookup)" << std::endl
+              << " (" << std::setprecision(3) << (1e3 * time_span.count() / double(phcs.size())) << "ms per lookup)" << std::endl
               << std::endl;
   }
 }
@@ -232,7 +232,7 @@ void benchmarkWithIndex(
               << "Not found: " << notFound
               << std::endl
               << "Lookup time: " << pwned::readableTime(time_span.count())
-              << " (" << std::setprecision(3) << (1e3 * time_span.count() / static_cast<double>(phcs.size())) << "ms per lookup)" << std::endl
+              << " (" << std::setprecision(3) << (1e3 * time_span.count() / double(phcs.size())) << "ms per lookup)" << std::endl
               << std::endl;
   }
 }

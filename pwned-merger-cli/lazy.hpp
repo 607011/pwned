@@ -34,7 +34,7 @@ public:
 
   explicit operator bool() const
   {
-    return static_cast<bool>(state->value);
+    return bool(state->value);
   }
 
   T &value()
