@@ -1,0 +1,69 @@
+/*
+ Copyright © 2019 Oliver Lau <ola@ct.de>, Heise Medien GmbH & Co. KG - Redaktion c't
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#define BOOST_TEST_MODULE test inspector
+#define BOOST_TEST_MODULE_HASH
+
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <cstring>
+#include <boost/test/unit_test.hpp>
+#include <boost/filesystem.hpp>
+
+#include "pwned-lib/hash.hpp"
+#include "pwned-lib/passwordhashandcount.hpp"
+#include "pwned-lib/passwordinspector.hpp"
+
+BOOST_AUTO_TEST_SUITE(test_inspector)
+
+BOOST_AUTO_TEST_CASE(test_existent)
+{
+  const std::string inputFilename = "../../../../pwned-lib/test/testset-10000-existent-collection1+2+3+4+5.md5";
+  const uint64_t size = boost::filesystem::file_size(inputFilename) / pwned::PHC::size;
+  std::vector<pwned::PHC> phcs;
+  phcs.reserve(size / pwned::PHC::size);
+  std::ifstream testset(inputFilename, std::ios::binary);
+  pwned::PasswordInspector inspector(inputFilename);
+  pwned::PHC phc;
+  while (phc.read(testset))
+  {
+    const pwned::PHC &found = inspector.binsearch(phc.hash);
+    BOOST_TEST(found.count > 0);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(test_nonexistent)
+{
+  const std::string inputFilename = "../../../../pwned-lib/test/testset-10000-existent-collection1+2+3+4+5.md5";
+  const std::string nonExistentInputFilename = "../../../../pwned-lib/test/testset-10000-nonexistent-collection1+2+3+4+5.md5";
+  const uint64_t size = boost::filesystem::file_size(nonExistentInputFilename) / pwned::PHC::size;
+  std::vector<pwned::PHC> phcs;
+  phcs.reserve(size / pwned::PHC::size);
+  std::ifstream testset(nonExistentInputFilename, std::ios::binary);
+  pwned::PasswordInspector inspector(inputFilename);
+  pwned::PHC phc;
+  while (phc.read(testset))
+  {
+    const pwned::PHC &found = inspector.binsearch(phc.hash);
+    BOOST_TEST(found.count == 0);
+  }
+}
+
+BOOST_AUTO_TEST_SUITE_END()
