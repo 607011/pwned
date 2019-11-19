@@ -40,6 +40,7 @@
 class HttpClientWorker
 {
 public:
+  typedef std::chrono::time_point<std::chrono::steady_clock> clock_type;
   HttpClientWorker() = delete;
   HttpClientWorker(
     boost::asio::io_context& ioc,
@@ -52,17 +53,17 @@ public:
   void onResolve(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type results);
   void connect();
   void onConnect(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type::endpoint_type);
-  void onWrite(boost::beast::error_code ec, std::size_t /*bytes_transferred*/);
-  void onRead(boost::beast::error_code ec, std::size_t /*bytes_transferred*/);
+  void onWrite(boost::beast::error_code ec, size_t bytesTransferred);
+  void onRead(boost::beast::error_code ec, size_t bytesTransferred);
   void onHandshake(boost::beast::error_code ec);
   void onShutdown(boost::beast::error_code ec);
   void restart();
   uint64_t requestCount() const;
   std::vector<std::chrono::nanoseconds> rtts() const;
   std::chrono::nanoseconds dt() const;
-  const std::chrono::time_point<std::chrono::steady_clock> &t0() const;
-  const std::chrono::time_point<std::chrono::steady_clock> &t1() const;
-  const std::chrono::time_point<std::chrono::steady_clock> &tStop() const;
+  const clock_type &t0() const;
+  const clock_type &t1() const;
+  const clock_type &tStop() const;
 
   static const int ExpiresAfterSecs;
 
@@ -79,11 +80,11 @@ private:
   std::mt19937_64 mGen;
   std::ifstream mInputFile;
   uint64_t mInputSize;
-  std::chrono::time_point<std::chrono::steady_clock> mT0;
-  std::chrono::time_point<std::chrono::steady_clock> mT1;
-  std::chrono::time_point<std::chrono::steady_clock> mTStop;
+  clock_type mT0;
+  clock_type mT1;
+  clock_type mTStop;
   uint64_t mRequestCount{0};
-  std::chrono::time_point<std::chrono::steady_clock> mRTTt0;
+  clock_type mRTTt0;
   std::vector<std::chrono::nanoseconds> mRTT;
   URI mURI;
 };

@@ -47,13 +47,14 @@ namespace net = boost::asio;
 namespace pt = boost::property_tree;
 namespace ssl = boost::asio::ssl;
 using tcp = boost::asio::ip::tcp;
+using clock_type = HttpClientWorker::clock_type;
+
+const int HttpClientWorker::ExpiresAfterSecs = 30;
 
 static void fail(const beast::error_code &ec, char const *what)
 {
   std::cerr << what << ": " << ec.message() << " #" << ec.value() << std::endl;
 }
-
-const int HttpClientWorker::ExpiresAfterSecs = 30;
 
 HttpClientWorker::HttpClientWorker(
   net::io_context &ioc,
@@ -277,17 +278,17 @@ std::chrono::nanoseconds HttpClientWorker::dt() const
   return mTStop - mT0;
 }
 
-const std::chrono::time_point<std::chrono::steady_clock> &HttpClientWorker::t0() const
+const clock_type &HttpClientWorker::t0() const
 {
   return mT0;
 }
 
-const std::chrono::time_point<std::chrono::steady_clock> &HttpClientWorker::t1() const
+const clock_type &HttpClientWorker::t1() const
 {
   return mT1;
 }
 
-const std::chrono::time_point<std::chrono::steady_clock> &HttpClientWorker::tStop() const
+const clock_type &HttpClientWorker::tStop() const
 {
   return mTStop;
 }

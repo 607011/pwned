@@ -23,20 +23,12 @@
 #include "uri.hpp"
 
 static const std::regex RE("^([a-z0-9+.-]+):(?:\\/\\/(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(\\/(?:[a-z0-9-._~!$&'()*+,;=:@\\/]|%[0-9A-F]{2})*)?|(\\/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@\\/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:\\/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:\\/?@]|%[0-9A-F]{2})*))?$");
-
-const std::map<std::string, unsigned short> URI::SchemeToPort = {
+static const std::map<std::string, URI::port_type> SchemeToPort = {
   { "http", 80 },
   { "https", 443 }
 };
 
-URI::URI()
-    : mIsValid(false)
-    , mPort(0)
-{
-}
-
 URI::URI(const std::string &uri)
-    : URI()
 {
   parse(uri);
 }
@@ -141,12 +133,47 @@ void URI::parseTarget(const std::string &target)
   }
 }
 
-bool URI::isValid() const { return mIsValid; }
-const std::string &URI::host() const { return mHost; } 
-const std::string &URI::scheme() const { return mScheme; }
-const std::string &URI::path() const { return mPath; }
-const std::string &URI::fragment() const { return mFragment; }
-const std::string &URI::username() const { return mUsername; }
-const std::string &URI::password() const { return mPassword; }
-unsigned short URI::port() const { return mPort; } 
-const std::map<std::string, std::string> &URI::query() { return mQuery; }
+bool URI::isValid() const
+{
+  return mIsValid;
+}
+
+const std::string &URI::scheme() const
+{
+  return mScheme;
+}
+
+const std::string &URI::username() const
+{
+  return mUsername;
+}
+
+const std::string &URI::password() const
+{
+  return mPassword;
+}
+
+const std::string &URI::host() const
+{
+  return mHost;
+} 
+
+URI::port_type URI::port() const
+{
+  return mPort;
+} 
+
+const std::string &URI::path() const
+{
+  return mPath;
+}
+
+const std::map<std::string, std::string> &URI::query()
+{
+  return mQuery;
+}
+
+const std::string &URI::fragment() const
+{
+  return mFragment;
+}

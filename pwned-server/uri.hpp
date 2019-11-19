@@ -25,33 +25,32 @@
 class URI
 {
 public:
-  URI();
+  typedef uint16_t port_type;
+  URI() = default;
   URI(URI &&) = delete;
   URI(const std::string &uri);
-  bool isValid() const;
   void parse(const std::string &uri);
   void parseTarget(const std::string &target);
-  const std::string &host() const;
+  bool isValid() const;
   const std::string &scheme() const;
-  const std::string &path() const;
-  const std::string &fragment() const;
   const std::string &username() const;
   const std::string &password() const;
-  uint16_t port() const;
+  const std::string &host() const;
+  port_type port() const;
+  const std::string &path() const;
   const std::map<std::string, std::string> &query();
+  const std::string &fragment() const;
 
 private:
-  static const std::map<std::string, uint16_t> SchemeToPort;
-
-  bool mIsValid;
+  bool mIsValid{false};
   std::string mScheme;
-  std::string mHost;
   std::string mUsername;
   std::string mPassword;
+  std::string mHost;
+  port_type mPort{0};
   std::string mPath;
-  std::string mFragment;
-  uint16_t mPort;
   std::map<std::string, std::string> mQuery;
+  std::string mFragment;
 };
 
 #endif // __URI_HPP__
