@@ -207,7 +207,6 @@ void HttpWorker::checkTimeout()
 {
   if (mReqTimeout.expiry() <= std::chrono::steady_clock::now())
   {
-    beast::error_code ec;
     mSocket.close();
     mReqTimeout.expires_at(std::chrono::steady_clock::time_point::max());
   }
