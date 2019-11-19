@@ -78,7 +78,7 @@ static constexpr std::chrono::milliseconds ProgressInterval{33};
 
 void progress(const boost::system::error_code&, boost::asio::steady_timer *t, HttpClientWorker *worker, double timeoutSecs)
 {
-  const double dt = 1e-9 * (std::chrono::steady_clock::now() - worker->t0()).count();
+  const double dt = 1e-9 * static_cast<double>((std::chrono::steady_clock::now() - worker->t0()).count());
   constexpr int BufSize = 20;
   char tBuf[BufSize];
   char pctBuf[BufSize];
@@ -217,8 +217,8 @@ int main(int argc, const char *argv[])
       totalRTT += rtt.count();
     }
     std::cout << "\r"
-              << totalRequests << " requests in " << 1e-9 * totalRuntime.count() << " seconds"
-              << " (" << (1e9 * totalRequests / totalRuntime.count()) << " reqs/sec)"
+              << totalRequests << " requests in " << 1e-9 * double(totalRuntime.count()) << " seconds"
+              << " (" << (1e9 * double(totalRequests) / double(totalRuntime.count())) << " reqs/sec)"
               << std::endl;
     if (rtts.size() > 0)
     {
@@ -227,7 +227,7 @@ int main(int argc, const char *argv[])
                 << "max RTT   : " << std::setw(8) << std::setprecision(6) << std::setfill(' ')
                 << 1e-6 * double(rtts.back().count()) << " ms" << std::endl
                 << "avg RTT   : " << std::setw(8) << std::setprecision(6) << std::setfill(' ')
-                << 1e-6 * double(totalRTT) / rtts.size() << " ms" << std::endl
+                << 1e-6 * double(totalRTT) / double(rtts.size()) << " ms" << std::endl
                 << "median RTT: " << std::setw(8) << std::setprecision(6) << std::setfill(' ')
                 << 1e-6 * double(rtts[rtts.size() / 2].count()) << " ms" << std::endl;
     }

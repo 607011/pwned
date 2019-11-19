@@ -20,6 +20,7 @@
 
 #include <string>
 #include <map>
+#include <cstdint>
 
 class URI
 {
@@ -36,11 +37,11 @@ public:
   const std::string &fragment() const;
   const std::string &username() const;
   const std::string &password() const;
-  unsigned short port() const;
+  uint16_t port() const;
   const std::map<std::string, std::string> &query();
 
 private:
-  static const std::map<std::string, unsigned short> SchemeToPort;
+  static const std::map<std::string, uint16_t> SchemeToPort;
 
   bool mIsValid;
   std::string mScheme;
@@ -49,7 +50,7 @@ private:
   std::string mPassword;
   std::string mPath;
   std::string mFragment;
-  unsigned short mPort;
+  uint16_t mPort;
   std::map<std::string, std::string> mQuery;
 };
 

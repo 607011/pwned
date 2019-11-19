@@ -72,7 +72,7 @@ void URI::parse(const std::string &uri)
     }
     if (m.size() > 4 && m[4].str().size() > 0)
     {
-      mPort = std::stoi(m[4].str());
+      mPort = static_cast<uint16_t>(std::stoi(m[4].str()));
     }
     else if (SchemeToPort.find(mScheme) != SchemeToPort.end())
     {

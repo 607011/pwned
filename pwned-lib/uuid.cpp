@@ -25,12 +25,12 @@ namespace pwned
 
 std::ostream &operator<<(std::ostream &os, UUID const &uuid)
 {
-  const uint32_t a = (uuid.uuid[0] >> 32) & 0xffffffff;
-  const uint16_t b = (uuid.uuid[0] >> 16) & 0xffff;
-  const uint16_t c = uuid.uuid[0] & 0xffff;
-  const uint16_t d = (uuid.uuid[0] >> 48) & 0xffff;
-  const uint16_t e = (uuid.uuid[0] >> 32) & 0xffff;
-  const uint32_t f = uuid.uuid[0] & 0xffffffff;
+  const uint32_t a = static_cast<uint32_t>(uuid.uuid[0] >> 32);
+  const uint16_t b = static_cast<uint32_t>(uuid.uuid[0] >> 16) & 0xffff;
+  const uint16_t c = static_cast<uint32_t>(uuid.uuid[0]) & 0xffffU;
+  const uint16_t d = static_cast<uint32_t>(uuid.uuid[0] >> 48) & 0xffff;
+  const uint16_t e = static_cast<uint32_t>(uuid.uuid[0] >> 32) & 0xffff;
+  const uint32_t f = static_cast<uint32_t>(uuid.uuid[0]) & 0xffffffff;
   std::ostringstream ss;
   ss << std::hex << std::uppercase << std::setfill('0')
      << std::setw(8) << a << '-'

@@ -120,7 +120,7 @@ int main(int argc, const char *argv[])
     return EXIT_FAILURE;
   }
 
-  const unsigned int shift = sizeof(pwned::index_key_t) * 8 - bits;
+  const unsigned int shift = static_cast<unsigned int>(sizeof(pwned::index_key_t) * 8UL - bits);
   const pwned::index_key_t maxidx = static_cast<pwned::index_key_t>(1) + (std::numeric_limits<pwned::index_key_t>::max() >> shift);
 
   std::cout << "Scanning ..." << std::endl;

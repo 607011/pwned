@@ -7,8 +7,8 @@ enable_testing()
 cmake_policy(SET CMP0054 NEW)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -g3 -ggdb -DDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wno-#pragma-messages")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -g3 -ggdb -DDEBUG -Wconversion -Wpedantic")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wno-#pragma-messages -Wconversion")
 
 if($ENV{USE_POPCNT})
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mpopcnt -DUSE_POPCNT")
