@@ -7,8 +7,8 @@ enable_testing()
 cmake_policy(SET CMP0054 NEW)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -ggdb -DDEBUG -Wall -Wextra -Wconversion -Wnoexcept -Wreorder -Wmaybe-uninitialized")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wno-#pragma-messages -Wconversion")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -ggdb -DDEBUG -Wall -Wextra -Wconversion -Wnoexcept -Wreorder -Wmaybe-uninitialized -Wunknown-pragmas")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wconversion -Wno-pragmas")
 
 if($ENV{USE_POPCNT})
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mpopcnt -DUSE_POPCNT")
@@ -38,4 +38,3 @@ add_subdirectory(pwned-lookup-cli)
 add_subdirectory(pwned-server)
 add_subdirectory(extras)
 add_subdirectory(deprecated)
-
