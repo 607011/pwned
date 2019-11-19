@@ -53,6 +53,8 @@ static void fail(const beast::error_code &ec, char const *what)
   std::cerr << what << ": " << ec.message() << " #" << ec.value() << std::endl;
 }
 
+const int HttpClientWorker::ExpiresAfterSecs = 30;
+
 HttpClientWorker::HttpClientWorker(
   net::io_context &ioc,
   ssl::context &ctx,

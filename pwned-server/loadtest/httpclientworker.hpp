@@ -64,7 +64,7 @@ public:
   const std::chrono::time_point<std::chrono::steady_clock> &t1() const;
   const std::chrono::time_point<std::chrono::steady_clock> &tStop() const;
 
-  static const int ExpiresAfterSecs = 30;
+  static const int ExpiresAfterSecs;
 
 private:
   boost::asio::io_context &mIoc;
