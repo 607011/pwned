@@ -33,7 +33,7 @@ target_include_directories(loadtest
 	PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 
 target_link_libraries(loadtest
-	pnwed
+	pwned
 	${OPENSSL_CRYPTO_LIBRARY}
 	${OPENSSL_SSL_LIBRARY}
 	${Boost_LIBRARIES}

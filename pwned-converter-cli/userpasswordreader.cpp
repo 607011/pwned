@@ -182,7 +182,7 @@ static void hexToCharSeq(const std::string &seq, std::string &result)
       if (lo >= 0 && hi >= 0)
       {
         const int b = hi * 16 + lo;
-        result.push_back(static_cast<char>(b));
+        result.push_back(char(b));
       }
       else
       {

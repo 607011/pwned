@@ -8,4 +8,4 @@ set_target_properties(test-set-extractor PROPERTIES LINK_FLAGS_RELEASE "-dead_st
 target_include_directories(test-set-extractor
 	PRIVATE ${PROJECT_INCLUDE_DIRS}
 	PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
-target_link_libraries(test-set-extractor pnwed ${OPENSSL_CRYPTO_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(test-set-extractor pwned ${OPENSSL_CRYPTO_LIBRARY} ${Boost_LIBRARIES})

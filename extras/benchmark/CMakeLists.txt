@@ -17,7 +17,7 @@ else()
 endif()
 
 target_link_libraries(benchmark
-  pnwed
+  pwned
   ${PLATFORM_DEPENDENT_LIBRARIES}
   ${OPENSSL_CRYPTO_LIBRARY}
   ${Boost_LIBRARIES}

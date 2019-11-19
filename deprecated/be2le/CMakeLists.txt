@@ -8,4 +8,4 @@ set_target_properties(be2le PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
 target_include_directories(be2le
 	PRIVATE ${PROJECT_INCLUDE_DIRS}
 	PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
-target_link_libraries(be2le pnwed ${OPENSSL_CRYPTO_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(be2le pwned ${OPENSSL_CRYPTO_LIBRARY} ${Boost_LIBRARIES})

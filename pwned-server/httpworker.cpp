@@ -162,7 +162,7 @@ void HttpWorker::sendResponse(http::request<http::string_body> const &req)
     response.put<char *>("lookup-time-ms", buf);
     mResponse.emplace();
     mResponse->result(http::status::ok);
-    mResponse->set(http::field::server, std::string("#pnwed server ") + PWNED_SERVER_VERSION);
+    mResponse->set(http::field::server, std::string("#pwned server ") + PWNED_SERVER_VERSION);
     mResponse->set(http::field::content_type, "application/json");
     mResponse->body() = toJson(response);
     mResponse->prepare_payload();
@@ -187,7 +187,7 @@ void HttpWorker::sendBadResponse(http::status status, const std::string &error)
 {
   mResponse.emplace();
   mResponse->result(status);
-  mResponse->set(http::field::server, std::string("#pnwed server ") + PWNED_SERVER_VERSION);
+  mResponse->set(http::field::server, std::string("#pwned server ") + PWNED_SERVER_VERSION);
   mResponse->set(http::field::content_type, "text/plain");
   mResponse->body() = error;
   mResponse->prepare_payload();

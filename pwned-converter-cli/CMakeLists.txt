@@ -17,4 +17,4 @@ else()
   set(PLATFORM_DEPENDENT_LIBRARIES, "")
 endif()
 
-target_link_libraries(pwned-converter-cli pnwed ${PLATFORM_DEPENDENT_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(pwned-converter-cli pwned ${PLATFORM_DEPENDENT_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARY} ${Boost_LIBRARIES})

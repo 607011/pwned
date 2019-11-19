@@ -10,7 +10,7 @@ target_include_directories(pwned-lookup-cli
 	PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 
 target_link_libraries(pwned-lookup-cli
-	pnwed
+	pwned
 	${OPENSSL_CRYPTO_LIBRARY}
 	${Boost_LIBRARIES}
 )

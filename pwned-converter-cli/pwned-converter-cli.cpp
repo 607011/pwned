@@ -183,7 +183,7 @@ int main(int argc, const char *argv[])
     char ch;
     do
     {
-      ch = static_cast<char>(getchar());
+      ch = char(getchar());
       switch (ch)
       {
       case ' ':
