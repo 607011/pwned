@@ -64,9 +64,9 @@ bool PasswordInspector::open(const std::string &inputFilename, const std::string
   bool ok = open(inputFilename);
   if (!indexFilename.empty())
   {
-    const uint64_t nKeys = uint64_t(fs::file_size(indexFilename)) / sizeof(index_key_t);
+    const uint64_t nKeys = uint64_t(fs::file_size(indexFilename) / sizeof(index_key_t));
 #ifndef NO_POPCNT
-    shift = sizeof(index_key_t) * 8 - (unsigned int)(_mm_popcnt_u64(nKeys - 1));
+    shift = (unsigned int)(sizeof(index_key_t) * 8 - (_mm_popcnt_u64(nKeys - 1)));
 #else
     // legacy code to calculate the shift count
     shift = sizeof(index_key_t) * 8;
