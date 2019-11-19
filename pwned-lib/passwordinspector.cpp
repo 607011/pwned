@@ -23,7 +23,10 @@
 #include <popcntintrin.h>
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
 #include <boost/filesystem.hpp>
+#pragma GCC diagnostic pop
 
 #include "passwordinspector.hpp"
 #include "util.hpp"
