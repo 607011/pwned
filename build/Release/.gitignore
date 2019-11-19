@@ -1,10 +1,14 @@
 CMakeCache.txt
+CTestTestfile.cmake
+Testing/
 CMakeFiles/
 Makefile
 be2le/
 benchmark/
 bswap.s
 cmake_install.cmake
+deprecated/
+extras/
 experiments/
 pwned-converter-cli/
 pwned-lib/
