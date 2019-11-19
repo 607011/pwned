@@ -7,7 +7,7 @@ enable_testing()
 cmake_policy(SET CMP0054 NEW)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -ggdb -DDEBUG -Wall -Wextra -Wconversion -Wnoexcept -Wreorder -Wmaybe-uninitialized -Wunknown-pragmas")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -ggdb -DDEBUG -Wall -Wextra -Wconversion -Wnoexcept -Wreorder -Wmaybe-uninitialized -Wno-pragmas")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wconversion -Wno-pragmas")
 
 if($ENV{USE_POPCNT})
