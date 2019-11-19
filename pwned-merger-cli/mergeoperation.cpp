@@ -65,7 +65,10 @@ public:
                         const std::string &dstFilename,
                         bool removeInputFilesAfterMerge,
                         ProgressCallback *progressCallback)
-      : dstFilePath(dstFilename), entriesProcessed(0), removeInputFilesAfterMerge(false), progressed(progressCallback)
+      : dstFilePath(dstFilename)
+      , entriesProcessed(0)
+      , removeInputFilesAfterMerge(removeInputFilesAfterMerge)
+      , progressed(progressCallback)
   {
     uint64_t sum = 0;
     for (auto file : srcFiles)
