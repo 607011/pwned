@@ -46,8 +46,7 @@ BOOST_AUTO_TEST_CASE(test_existent)
   uint32_t nFound = 0;
   while (phc.read(testset))
   {
-    const pwned::PHC &found = inspector.binsearch(phc.hash);
-    if(found.count > 0)
+    if (inspector.binsearch(phc.hash).count > 0)
     {
       ++nFound;
     }
@@ -69,8 +68,7 @@ BOOST_AUTO_TEST_CASE(test_nonexistent)
   uint32_t nNotFound = 0;
   while (phc.read(testset))
   {
-    const pwned::PHC &found = inspector.binsearch(phc.hash);
-    if (found.count == 0)
+    if (inspector.binsearch(phc.hash).count == 0)
     {
       ++nNotFound;
     }
