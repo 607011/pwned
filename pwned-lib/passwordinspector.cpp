@@ -150,7 +150,7 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *r
   static constexpr float MaxUInt64 = float(std::numeric_limits<uint64_t>::max());
   int nReads = 0;
   static constexpr int64_t OffsetMultiplicator = 2;
-  std::streampos potentialHitIdx = (std::streampos)std::round(float(size) * float(hash.quad.upper) / MaxUInt64);
+  std::streampos potentialHitIdx = std::llround(float(size) * float(hash.quad.upper) / MaxUInt64);
   potentialHitIdx -= potentialHitIdx % (std::streampos)PasswordHashAndCount::size;
   std::streampos offset = std::max<std::streampos>(std::streampos(size >> 12), (std::streampos)PasswordHashAndCount::size);
   offset -= offset % (std::streampos)PasswordHashAndCount::size;
