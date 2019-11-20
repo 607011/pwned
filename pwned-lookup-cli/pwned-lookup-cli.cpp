@@ -53,11 +53,11 @@ void setStdinEcho(bool enable)
   tcgetattr(STDIN_FILENO, &tty);
   if (!enable)
   {
-    tty.c_lflag &= ~ECHO;
+    tty.c_lflag &= tcflag_t(~ECHO);
   }
   else
   {
-    tty.c_lflag |= ECHO;
+    tty.c_lflag |= tcflag_t(ECHO);
   }
   (void)tcsetattr(STDIN_FILENO, TCSANOW, &tty);
 #endif

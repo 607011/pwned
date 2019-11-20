@@ -71,7 +71,7 @@ struct Hash
     return f.gcount() == Hash::size;
   }
 
-  inline bool read(std::istream &f, uint64_t pos)
+  inline bool read(std::istream &f, std::streampos pos)
   {
     f.seekg(pos);
     return read(f);

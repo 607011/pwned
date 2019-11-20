@@ -51,7 +51,7 @@ public:
     }
   }
 
-  inline int capacity() const
+  inline unsigned int capacity() const
   {
     return _capacity;
   }

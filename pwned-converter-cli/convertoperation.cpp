@@ -69,7 +69,7 @@ void ConvertOperation::execute() noexcept(false)
     output << uuid << " "
            << "Converting " << d->srcFilePath.string()
            << " into directory " << d->dstPath.string()
-           << " (" << pwned::readableSize(priority) << "/" << pwned::readableSize(d->maxMem) << ") ..."
+           << " (" << pwned::readableSize((uint64_t)priority) << "/" << pwned::readableSize(d->maxMem) << ") ..."
            << std::endl;
     std::cout << output.str();
   }

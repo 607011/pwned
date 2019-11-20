@@ -172,8 +172,7 @@ int main(int argc, const char *argv[])
   std::vector<std::string> intermediateFilenames;
   ProgressBar progressBar(32);
   pwned::OperationQueue<merger::MergeOperation> opQueue;
-  pwned::TermIO termIO;
-  std::thread keyThread = pwned::runAsync([&opQueue, &termIO] {
+  std::thread keyThread = pwned::runAsync([&opQueue] {
     char ch;
     do
     {

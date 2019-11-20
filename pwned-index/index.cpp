@@ -151,7 +151,7 @@ int main(int argc, const char *argv[])
   std::cout << std::endl
             << "Writing ... " << std::flush;
   std::ofstream output(outputFilename, std::ios::trunc | std::ios::binary);
-  output.write((const char *)indexes, maxIdx * sizeof(pwned::index_key_t));
+  output.write((const char *)indexes, std::streamsize(maxIdx * sizeof(pwned::index_key_t)));
   output.close();
   delete[] indexes;
   std::cout << "Ready." << std::endl

@@ -71,7 +71,7 @@ void usage()
 int main(int argc, const char *argv[])
 {
   static const std::string DefaultAddress = "http://127.0.0.1:31337/v1/pwned/api";
-  static const int DefaultNumThreads = std::thread::hardware_concurrency();
+  static const int DefaultNumThreads = int(std::thread::hardware_concurrency());
   static const int DefaultNumWorkers = 64;
   std::string inputFilename;
   std::string indexFilename;
@@ -147,7 +147,7 @@ int main(int argc, const char *argv[])
       workers.back().start();
     }
     std::vector<std::thread> threads;
-    threads.reserve(numThreads);
+    threads.reserve(size_t(numThreads));
     for (auto i = 0; i < numThreads; ++i)
     {
       threads.emplace_back(

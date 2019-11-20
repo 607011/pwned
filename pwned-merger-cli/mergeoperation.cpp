@@ -52,8 +52,9 @@ enum MergerError
   cancelled
 };
 
-struct MergeOperationPrivate
+class MergeOperationPrivate
 {
+public:
   std::priority_queue<MergerInput *, std::vector<MergerInput *>, SmallestHashFirst> pq;
   const fs::path dstFilePath;
   std::ofstream dstFile;

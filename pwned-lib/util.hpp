@@ -43,10 +43,10 @@ struct MemoryStat
   } phys;
 };
 
-extern int getMemoryStat(MemoryStat &memoryStat);
-extern std::string string_format(const std::string fmt_str, ...);
-extern std::string readableSize(long long size);
-extern std::string readableTime(double t);
+int getMemoryStat(MemoryStat &memoryStat);
+std::string string_format(const std::string fmt_str, ...);
+std::string readableSize(uint64_t size);
+std::string readableTime(double t);
 
 class TermIO
 {

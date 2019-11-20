@@ -30,12 +30,13 @@
 #include <string>
 #include <memory>
 #include <cstring>
-
+#include <cstdint>
+#include <cstdlib>
 #include <stdarg.h>
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
-#include <math.h>
+#include <cmath>
 
 namespace pwned
 {
@@ -44,7 +45,7 @@ namespace pwned
 int getMemoryStat(MemoryStat &memoryStat)
 {
 #if defined(__APPLE__)
-  xsw_usage vmusage = {0};
+  xsw_usage vmusage = {0, 0, 0, 0, 0};
   size_t size = sizeof(vmusage);
   if (sysctlbyname("vm.swapusage", &vmusage, &size, NULL, 0) != 0)
   {
@@ -66,11 +67,8 @@ int getMemoryStat(MemoryStat &memoryStat)
   {
     return -2;
   }
-  memoryStat.phys.avail = (int64_t)vmstat.free_count * (int64_t)vmusage.xsu_pagesize;
-  memoryStat.phys.used = ((int64_t)vmstat.active_count +
-                          (int64_t)vmstat.inactive_count +
-                          (int64_t)vmstat.wire_count) *
-                         (int64_t)vmusage.xsu_pagesize;
+  memoryStat.phys.avail = vmstat.free_count * vmusage.xsu_pagesize;
+  memoryStat.phys.used = (vmstat.active_count + vmstat.inactive_count + vmstat.wire_count) * vmusage.xsu_pagesize;
 
   // Get App Memory Stats
   struct task_basic_info t_info;
@@ -93,19 +91,19 @@ int getMemoryStat(MemoryStat &memoryStat)
 // see https://stackoverflow.com/a/8098080
 std::string string_format(const std::string fmt_str, ...)
 {
-  int final_n, n = ((int)fmt_str.size()) * 2;
+  size_t n = 2 * fmt_str.size();
   std::unique_ptr<char[]> formatted;
   va_list ap;
   while (true)
   {
-    formatted.reset(new char[n]);
+    formatted.reset(new char[size_t(n)]);
     strcpy(&formatted[0], fmt_str.c_str());
     va_start(ap, fmt_str);
-    final_n = vsnprintf(&formatted[0], n, fmt_str.c_str(), ap);
+    size_t final_n = size_t(vsnprintf(&formatted[0], n, fmt_str.c_str(), ap));
     va_end(ap);
     if (final_n < 0 || final_n >= n)
     {
-      n += abs(final_n - n + 1);
+      n += size_t(abs((long long)final_n - (long long)n + 1LL));
     }
     else
     {
@@ -181,8 +179,8 @@ void TermIO::disableEcho()
 {
   struct termios t;
   tcgetattr(STDIN_FILENO, &t);
-  t.c_lflag &= ~ICANON;
-  t.c_lflag &= ~ECHO;
+  t.c_lflag &= tcflag_t(~ICANON);
+  t.c_lflag &= tcflag_t(~ECHO);
   tcsetattr(STDIN_FILENO, TCSANOW, &t);
 }
 
@@ -190,8 +188,8 @@ void TermIO::enableEcho()
 {
   struct termios t;
   tcgetattr(STDIN_FILENO, &t);
-  t.c_lflag |= ICANON;
-  t.c_lflag |= ~ECHO;
+  t.c_lflag |= tcflag_t(ICANON);
+  t.c_lflag |= tcflag_t(~ECHO);
   tcsetattr(STDIN_FILENO, TCSANOW, &t);
 }
 
@@ -199,7 +197,7 @@ void TermIO::disableBreak()
 {
   struct termios t;
   tcgetattr(STDIN_FILENO, &t);
-  t.c_lflag &= ~ISIG;
+  t.c_lflag &= tcflag_t(~ISIG);
   tcsetattr(STDIN_FILENO, TCSANOW, &t);
 }
 
@@ -207,7 +205,7 @@ void TermIO::enableBreak()
 {
   struct termios t;
   tcgetattr(STDIN_FILENO, &t);
-  t.c_lflag |= ISIG;
+  t.c_lflag |= tcflag_t(ISIG);
   tcsetattr(STDIN_FILENO, TCSANOW, &t);
 }
 

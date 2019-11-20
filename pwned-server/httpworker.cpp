@@ -155,7 +155,7 @@ void HttpWorker::sendResponse(http::request<http::string_body> const &req)
     const double duration = 1e3 * std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0).count();
     pt::ptree response;
     response.put<std::string>("hash", hash.toString());
-    response.put<int>("found", phc.count);
+    response.put<uint32_t>("found", phc.count);
     constexpr int BufSize = 20;
     char buf[BufSize];
     std::snprintf(buf, BufSize, "%.5f", duration);
