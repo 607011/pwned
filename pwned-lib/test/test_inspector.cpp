@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(test_existent)
   std::ifstream testset(inputFilename, std::ios::binary);
   pwned::PasswordInspector inspector(inputFilename);
   pwned::PHC phc;
-  uint32_t nFound = 0;
+  uint64_t nFound = 0;
   while (phc.read(testset))
   {
     if (inspector.binsearch(phc.hash).count > 0)
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(test_nonexistent)
   std::ifstream testset(nonExistentInputFilename, std::ios::binary);
   pwned::PasswordInspector inspector(inputFilename);
   pwned::PHC phc;
-  uint32_t nNotFound = 0;
+  uint64_t nNotFound = 0;
   while (phc.read(testset))
   {
     if (inspector.binsearch(phc.hash).count == 0)
