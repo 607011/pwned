@@ -15,7 +15,7 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#define BOOST_TEST_MODULE test inspector
+#define BOOST_TEST_MODULE test inspector default
 #define BOOST_TEST_MODULE_HASH
 
 #include <iostream>
@@ -31,9 +31,9 @@
 #include "pwned-lib/passwordhashandcount.hpp"
 #include "pwned-lib/passwordinspector.hpp"
 
-BOOST_AUTO_TEST_SUITE(test_inspector)
+BOOST_AUTO_TEST_SUITE(test_inspector_default)
 
-BOOST_AUTO_TEST_CASE(test_existent)
+BOOST_AUTO_TEST_CASE(test_existent_default)
 {
   const std::string inputFilename = "../../../../pwned-lib/test/testset-10000-existent-collection1+2+3+4+5.md5";
   const uint64_t size = boost::filesystem::file_size(inputFilename);
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(test_existent)
   BOOST_TEST(nFound == hashCount);
 }
 
-BOOST_AUTO_TEST_CASE(test_nonexistent)
+BOOST_AUTO_TEST_CASE(test_nonexistent_default)
 {
   const std::string inputFilename = "../../../../pwned-lib/test/testset-10000-existent-collection1+2+3+4+5.md5";
   const std::string nonExistentInputFilename = "../../../../pwned-lib/test/testset-10000-nonexistent-collection1+2+3+4+5.md5";

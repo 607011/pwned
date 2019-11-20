@@ -31,16 +31,28 @@ target_link_libraries(test_phc_executable
 target_compile_definitions(test_phc_executable PRIVATE "BOOST_TEST_DYN_LINK=1")
 add_test(NAME test_phc COMMAND test_phc_executable)
 
-add_executable(test_inspector_executable test_inspector.cpp)
-target_include_directories(test_inspector_executable
+add_executable(test_inspector_default_executable test_inspector_default.cpp)
+target_include_directories(test_inspector_default_executable
   PRIVATE ${BOOST_INCLUDE_DIRS}
   ${PROJECT_INCLUDE_DIRS})
-target_link_libraries(test_inspector_executable
+target_link_libraries(test_inspector_default_executable
   pwned
 	${OPENSSL_CRYPTO_LIBRARY}
 	${Boost_LIBRARIES}
   ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
 )
+target_compile_definitions(test_inspector_default_executable PRIVATE "BOOST_TEST_DYN_LINK=1")
+add_test(NAME test_inspector_default COMMAND test_inspector_default_executable)
 
-target_compile_definitions(test_inspector_executable PRIVATE "BOOST_TEST_DYN_LINK=1")
-add_test(NAME test_inspector COMMAND test_inspector_executable)
+add_executable(test_inspector_smart_executable test_inspector_smart.cpp)
+target_include_directories(test_inspector_smart_executable
+  PRIVATE ${BOOST_INCLUDE_DIRS}
+  ${PROJECT_INCLUDE_DIRS})
+target_link_libraries(test_inspector_smart_executable
+  pwned
+	${OPENSSL_CRYPTO_LIBRARY}
+	${Boost_LIBRARIES}
+  ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+)
+target_compile_definitions(test_inspector_smart_executable PRIVATE "BOOST_TEST_DYN_LINK=1")
+add_test(NAME test_inspector_smart COMMAND test_inspector_smart_executable)
