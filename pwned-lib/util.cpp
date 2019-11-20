@@ -91,7 +91,7 @@ int getMemoryStat(MemoryStat &memoryStat)
 // see https://stackoverflow.com/a/8098080
 std::string string_format(const std::string fmt_str, ...)
 {
-  size_t n = 2 * fmt_str.size();
+  int n = (int)(2 * fmt_str.size());
   std::unique_ptr<char[]> formatted;
   va_list ap;
   while (true)
@@ -99,11 +99,11 @@ std::string string_format(const std::string fmt_str, ...)
     formatted.reset(new char[size_t(n)]);
     strcpy(&formatted[0], fmt_str.c_str());
     va_start(ap, fmt_str);
-    size_t final_n = size_t(vsnprintf(&formatted[0], n, fmt_str.c_str(), ap));
+    int final_n = vsnprintf(&formatted[0], (size_t)n, fmt_str.c_str(), ap);
     va_end(ap);
     if (final_n < 0 || final_n >= n)
     {
-      n += size_t(abs((long long)final_n - (long long)n + 1LL));
+      n += abs(final_n - n + 1);
     }
     else
     {
@@ -113,7 +113,7 @@ std::string string_format(const std::string fmt_str, ...)
   return std::string(formatted.get());
 }
 
-std::string readableSize(long long size)
+std::string readableSize(uint64_t size)
 {
   double sz = (double)size;
   if (sz > 1024LL * 1024LL * 1024LL * 1024LL)
