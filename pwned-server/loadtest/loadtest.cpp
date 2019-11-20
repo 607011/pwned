@@ -31,7 +31,6 @@
 #include <boost/program_options.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/steady_timer.hpp>
-#include <boost/asio/placeholders.hpp>
 #include <boost/asio/detail/chrono.hpp>
 #include <boost/bind.hpp>
 #include <pwned-lib/util.hpp>
@@ -77,7 +76,7 @@ void usage()
 
 static constexpr std::chrono::milliseconds ProgressInterval{33};
 
-void progress(const boost::system::error_code&, boost::asio::steady_timer *t, HttpClientWorker *worker, double timeoutSecs)
+void progress(boost::asio::steady_timer *t, HttpClientWorker *worker, double timeoutSecs)
 {
   const double dt = 1e-9 * double((std::chrono::steady_clock::now() - worker->t0()).count());
   constexpr int BufSize = 20;
@@ -89,7 +88,7 @@ void progress(const boost::system::error_code&, boost::asio::steady_timer *t, Ht
   if (dt < timeoutSecs)
   {
     t->expires_at(t->expiry() + ProgressInterval);
-    t->async_wait(boost::bind(progress, boost::asio::placeholders::error, t, worker, timeoutSecs));
+    t->async_wait(boost::bind(progress, t, worker, timeoutSecs));
   }
 }
 
@@ -180,7 +179,7 @@ int main(int argc, const char *argv[])
     }
 
     boost::asio::steady_timer timer(ioc, ProgressInterval);
-    timer.async_wait(boost::bind(progress, boost::asio::placeholders::error, &timer, &workers.front(), double(runtimeSecs)));
+    timer.async_wait(boost::bind(progress, &timer, &workers.front(), double(runtimeSecs)));
 
     std::vector<std::thread> threads;
     threads.reserve(size_t(numThreads));
