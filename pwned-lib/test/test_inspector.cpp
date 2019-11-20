@@ -36,34 +36,46 @@ BOOST_AUTO_TEST_SUITE(test_inspector)
 BOOST_AUTO_TEST_CASE(test_existent)
 {
   const std::string inputFilename = "../../../../pwned-lib/test/testset-10000-existent-collection1+2+3+4+5.md5";
-  const uint64_t size = boost::filesystem::file_size(inputFilename) / pwned::PHC::size;
+  const uint64_t size = boost::filesystem::file_size(inputFilename);
+  const uint64_t hashCount = size / pwned::PHC::size;
   std::vector<pwned::PHC> phcs;
-  phcs.reserve(size / pwned::PHC::size);
+  phcs.reserve(hashCount);
   std::ifstream testset(inputFilename, std::ios::binary);
   pwned::PasswordInspector inspector(inputFilename);
   pwned::PHC phc;
+  uint32_t nFound = 0;
   while (phc.read(testset))
   {
     const pwned::PHC &found = inspector.binsearch(phc.hash);
-    BOOST_TEST(found.count > 0);
+    if(found.count > 0)
+    {
+      ++nFound;
+    }
   }
+  BOOST_TEST(nFound == hashCount);
 }
 
 BOOST_AUTO_TEST_CASE(test_nonexistent)
 {
   const std::string inputFilename = "../../../../pwned-lib/test/testset-10000-existent-collection1+2+3+4+5.md5";
   const std::string nonExistentInputFilename = "../../../../pwned-lib/test/testset-10000-nonexistent-collection1+2+3+4+5.md5";
-  const uint64_t size = boost::filesystem::file_size(nonExistentInputFilename) / pwned::PHC::size;
+  const uint64_t size = boost::filesystem::file_size(nonExistentInputFilename);
+  const uint64_t hashCount = size / pwned::PHC::size;
   std::vector<pwned::PHC> phcs;
-  phcs.reserve(size / pwned::PHC::size);
+  phcs.reserve(hashCount);
   std::ifstream testset(nonExistentInputFilename, std::ios::binary);
   pwned::PasswordInspector inspector(inputFilename);
   pwned::PHC phc;
+  uint32_t nNotFound = 0;
   while (phc.read(testset))
   {
     const pwned::PHC &found = inspector.binsearch(phc.hash);
-    BOOST_TEST(found.count == 0);
+    if (found.count == 0)
+    {
+      ++nNotFound;
+    }
   }
+  BOOST_TEST(nNotFound == hashCount);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
