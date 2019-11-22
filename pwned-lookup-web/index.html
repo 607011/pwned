@@ -88,6 +88,12 @@
       }
       const main = () => {
         pwdEl = document.getElementById('pwd')
+        pwdEl.addEventListener('input', () => {
+          if (document.getElementById('on-every-keypress').checked) {
+            lookup()
+          }
+        })
+        pwdEl.addEventListener('focusout', e => e.preventDefault())
         document.getElementById('submit').addEventListener('click', lookup)
         hashEl = document.getElementById('hash')
         foundEl = document.getElementById('found')
@@ -103,6 +109,7 @@
     <h1>#pwned lookup</h1>
     <div>Password to look up<sup>*</sup></div>
     <div><input type="password" id="pwd"/></div>
+    <div><label for="on-every-keypress"><input type="checkbox" id="on-every-keypress" name="on-every-keypress" checked/>Look up on every keypress</label></div>
     <div><input type="submit" id="submit" value="look up"/></div>
     <table id="result-container" class="invisible">
       <tr>
@@ -119,6 +126,6 @@
       </tr>
     </table>
     <div id="error-container"></div>
-    <div class="disclaimer">*) Your password won't be transmitted to the #pwned server, only its MD5 hash</div>
+    <div class="disclaimer">*) Your password doesn't leave the browser, instead its MD5 hash is transmitted to the #pwned server.</div>
   </body>
 </html>
