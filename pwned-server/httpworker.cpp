@@ -164,6 +164,7 @@ void HttpWorker::sendResponse(http::request<http::string_body> const &req)
     mResponse->result(http::status::ok);
     mResponse->set(http::field::server, std::string("#pwned server ") + PWNED_SERVER_VERSION);
     mResponse->set(http::field::content_type, "application/json");
+    mResponse->set("Access-Control-Allow-Origin", "*");
     mResponse->body() = toJson(response);
     mResponse->prepare_payload();
     mSerializer.emplace(*mResponse);
