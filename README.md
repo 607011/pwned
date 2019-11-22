@@ -22,7 +22,7 @@ _A collection of tools to convert pwned password files to searchable MD5 files, 
 
 **pwned-server/loadttest**: a load tester for the RESTful web service
 
-
+**pwned-lookup-web**: a simple web interface to query hashes via pwned-server
 
 ### Auxiliary programs
 
