@@ -43,63 +43,64 @@
         margin-top: 2ex;
         padding-top: 1ex;
       }
+      #hash {
+        font-family: 'Courier New', Courier, monospace;
+      }
     </style>
     <script type="text/javascript" src="JavaScript-MD5/js/md5.min.js"></script>
     <script type="text/javascript">
     (function(window) {
       'use strict';
       const LookupURL = 'https://ersatzworld.net/v1/pwned/api/lookup?hash='
-      let pwdEl = null
-      let hashEl = null
-      let foundEl = null
-      let lookupTimeMsEl = null
-      let resultContainerEl = null
-      let errorContainerEl = null
+      let el = {}
       const displayError = err => {
-        resultContainerEl.classList.add('invisible')
-        errorContainerEl.classList.remove('invisible')
-        errorContainerEl.innerText = err
+        el.resultContainer.classList.add('invisible')
+        el.errorContainer.classList.remove('invisible')
+        el.errorContainer.innerText = err
       }
       const lookup = () => {
-        const hash = md5(pwdEl.value)
-        hashEl.innerText = hash
-        foundEl.innerText = ''
-        lookupTimeMsEl.innerText = ''
-        foundEl.classList.remove('found')
-        foundEl.classList.remove('notfound')
+        const hash = md5(el.password.value)
+        el.hash.innerText = hash
+        el.found.innerText = ''
+        el.found.classList.remove('found')
+        el.found.classList.remove('notfound')
+        el.lookupTimeMs.innerText = ''
         fetch(`${LookupURL}${hash}`)
         .then(response => {
           response.json().then(data => {
             if (data['found'] > 0) {
-              foundEl.classList.add('found')
-              foundEl.innerText = `${data['found']} times`
+              el.found.classList.add('found')
+              el.found.innerText = `${data['found']} times`
             }
             else {
-              foundEl.classList.add('notfound')
-              foundEl.innerText = 'not found'
+              el.found.classList.add('notfound')
+              el.found.innerText = 'not found'
             }
-            lookupTimeMsEl.innerText = `${data['lookup-time-ms']} ms`
-            resultContainerEl.classList.remove('invisible')
-            errorContainerEl.classList.add('invisible')
+            el.lookupTimeMs.innerText = `${data['lookup-time-ms']} ms`
+            el.resultContainer.classList.remove('invisible')
+            el.errorContainer.classList.add('invisible')
           })
           .catch(err => displayError(err))
         })
         .catch(err => displayError(err))
       }
       const main = () => {
-        pwdEl = document.getElementById('pwd')
-        pwdEl.addEventListener('input', () => {
-          if (document.getElementById('on-every-keypress').checked) {
+        el = {
+          password: document.getElementById('password'),
+          hash: document.getElementById('hash'),
+          found: document.getElementById('found'),
+          lookupTimeMs: document.getElementById('lookup-time-ms'),
+          resultContainer: document.getElementById('result-container'),
+          errorContainer: document.getElementById('error-container'),
+          onEveryKeypress: document.getElementById('on-every-keypress'),
+        }
+        el.password.addEventListener('input', () => {
+          if (el.onEveryKeypress.checked) {
             lookup()
           }
         })
-        pwdEl.addEventListener('focusout', e => e.preventDefault())
+        el.password.addEventListener('focusout', e => e.preventDefault())
         document.getElementById('submit').addEventListener('click', lookup)
-        hashEl = document.getElementById('hash')
-        foundEl = document.getElementById('found')
-        lookupTimeMsEl = document.getElementById('lookup-time-ms')
-        resultContainerEl = document.getElementById('result-container')
-        errorContainerEl = document.getElementById('error-container')
       }
       window.addEventListener('load', main)
     })(window);
@@ -108,9 +109,9 @@
   <body>
     <h1>#pwned lookup</h1>
     <div>Password to look up<sup>*</sup></div>
-    <div><input type="password" id="pwd"/></div>
-    <div><label for="on-every-keypress"><input type="checkbox" id="on-every-keypress" name="on-every-keypress" checked/>Look up on every keypress</label></div>
+    <div><input type="password" id="password"/></div>
     <div><input type="submit" id="submit" value="look up"/></div>
+    <div><label for="on-every-keypress"><input type="checkbox" id="on-every-keypress" name="on-every-keypress" checked/>Look up on every keypress</label></div>
     <table id="result-container" class="invisible">
       <tr>
         <td>Hash</td>
