@@ -60,7 +60,7 @@
         errorContainerEl.classList.remove('invisible')
         errorContainerEl.innerText = err
       }
-      const lookup = async () => {
+      const lookup = () => {
         const hash = md5(pwdEl.value)
         hashEl.innerText = hash
         foundEl.innerText = ''
