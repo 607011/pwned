@@ -2,8 +2,23 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="language" content="DE">
+    <meta name="description" content="#pwned lookup client">
+    <meta name="keywords" content="pwned haveibeenpwned md5 passwords">
+    <meta name="author" content="Oliver Lau, ola@ct.de">
+    <meta name="copyright" content="Oliver Lau, Heise Medien GmbH & Co. KG, Redaktion c't">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>#pwned lookup</title>
     <style>
+      *, html {
+        margin: .2ex .1em;
+        padding: 0;
+        font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+      }
+      html {
+        background-color: #222;
+        color: #eee;
+      }
       .found {
         font-weight: bold;
         color: red;
@@ -12,15 +27,39 @@
         font-weight: bold;
         color: green;
       }
+      .invisible {
+        display: none !important;
+      }
+      td {
+        padding: .2ex .1em;
+      }
+      #error-container {
+        font-weight: bold;
+        color: red;
+      }
+      .disclaimer {
+        border-top: 1px solid #ccc;
+        font-size: smaller;
+        margin-top: 2ex;
+        padding-top: 1ex;
+      }
     </style>
     <script type="text/javascript" src="JavaScript-MD5/js/md5.min.js"></script>
     <script type="text/javascript">
     (function(window) {
       'use strict';
+      const LookupURL = 'https://ersatzworld.net/v1/pwned/api/lookup?hash='
       let pwdEl = null
       let hashEl = null
       let foundEl = null
       let lookupTimeMsEl = null
+      let resultContainerEl = null
+      let errorContainerEl = null
+      const displayError = err => {
+        resultContainerEl.classList.add('invisible')
+        errorContainerEl.classList.remove('invisible')
+        errorContainerEl.innerText = err
+      }
       const lookup = async () => {
         const hash = md5(pwdEl.value)
         hashEl.innerText = hash
@@ -28,17 +67,24 @@
         lookupTimeMsEl.innerText = ''
         foundEl.classList.remove('found')
         foundEl.classList.remove('notfound')
-        const response = await fetch(`https://ersatzworld.net/v1/pwned/api/lookup?hash=${hash}`)
-        const json = await response.json()
-        const found = json['found'] > 0
-        if (found) {
-          foundEl.classList.add('found')
-        }
-        else {
-          foundEl.classList.add('notfound')
-        }
-        foundEl.innerText = found ? `${json['found']} times` : 'not found'
-        lookupTimeMsEl.innerText = `${json['lookup-time-ms']} ms`
+        fetch(`${LookupURL}${hash}`)
+        .then(response => {
+          response.json().then(data => {
+            if (data['found'] > 0) {
+              foundEl.classList.add('found')
+              foundEl.innerText = `${data['found']} times`
+            }
+            else {
+              foundEl.classList.add('notfound')
+              foundEl.innerText = 'not found'
+            }
+            lookupTimeMsEl.innerText = `${data['lookup-time-ms']} ms`
+            resultContainerEl.classList.remove('invisible')
+            errorContainerEl.classList.add('invisible')
+          })
+          .catch(err => displayError(err))
+        })
+        .catch(err => displayError(err))
       }
       const main = () => {
         pwdEl = document.getElementById('pwd')
@@ -46,6 +92,8 @@
         hashEl = document.getElementById('hash')
         foundEl = document.getElementById('found')
         lookupTimeMsEl = document.getElementById('lookup-time-ms')
+        resultContainerEl = document.getElementById('result-container')
+        errorContainerEl = document.getElementById('error-container')
       }
       window.addEventListener('load', main)
     })(window);
@@ -53,18 +101,24 @@
   </head>
   <body>
     <h1>#pwned lookup</h1>
-    <p>Password to look up</p>
-    <p><input type="password" id="pwd"/></p>
-    <p><input type="submit" id="submit" value="look up"/></p>
-    <div>
-      <div style="display: grid; grid-gap: 1em; grid-template-columns: 15% 20%;">
-          <div>Hash</div>
-          <div id="hash"></div>
-          <div>Found</div>
-          <div id="found"></div>
-          <div>Lookup time</div>
-          <div id="lookup-time-ms"></div>
-        </div>
-    </div>
+    <div>Password to look up<sup>*</sup></div>
+    <div><input type="password" id="pwd"/></div>
+    <div><input type="submit" id="submit" value="look up"/></div>
+    <table id="result-container" class="invisible">
+      <tr>
+        <td>Hash</td>
+        <td id="hash"></td>
+      </tr>
+      <tr>
+        <td>Found</td>
+        <td id="found"></td>
+      </tr>
+      <tr>
+        <td>Lookup time</td>
+        <td id="lookup-time-ms"></td>
+      </tr>
+    </table>
+    <div id="error-container"></div>
+    <div class="disclaimer">*) Your password won't be transmitted to the #pwned server, only its MD5 hash</div>
   </body>
 </html>
