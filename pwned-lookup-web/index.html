@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>#pwned lookup</title>
+    <style>
+      .found {
+        font-weight: bold;
+        color: red;
+      }
+      .notfound {
+        font-weight: bold;
+        color: green;
+      }
+    </style>
+    <script type="text/javascript" src="JavaScript-MD5/js/md5.min.js"></script>
+    <script type="text/javascript">
+    (function(window) {
+      'use strict';
+      let pwdEl = null
+      let hashEl = null
+      let foundEl = null
+      let lookupTimeMsEl = null
+      const lookup = async () => {
+        const hash = md5(pwdEl.value)
+        hashEl.innerText = hash
+        foundEl.innerText = ''
+        lookupTimeMsEl.innerText = ''
+        foundEl.classList.remove('found')
+        foundEl.classList.remove('notfound')
+        const response = await fetch(`https://ersatzworld.net/v1/pwned/api/lookup?hash=${hash}`)
+        const json = await response.json()
+        const found = json['found'] > 0
+        if (found) {
+          foundEl.classList.add('found')
+        }
+        else {
+          foundEl.classList.add('notfound')
+        }
+        foundEl.innerText = found ? `${json['found']} times` : 'not found'
+        lookupTimeMsEl.innerText = `${json['lookup-time-ms']} ms`
+      }
+      const main = () => {
+        pwdEl = document.getElementById('pwd')
+        document.getElementById('submit').addEventListener('click', lookup)
+        hashEl = document.getElementById('hash')
+        foundEl = document.getElementById('found')
+        lookupTimeMsEl = document.getElementById('lookup-time-ms')
+      }
+      window.addEventListener('load', main)
+    })(window);
+    </script>
+  </head>
+  <body>
+    <h1>#pwned lookup</h1>
+    <p>Password to look up</p>
+    <p><input type="password" id="pwd"/></p>
+    <p><input type="submit" id="submit" value="look up"/></p>
+    <div>
+      <div style="display: grid; grid-gap: 1em; grid-template-columns: 15% 20%;">
+          <div>Hash</div>
+          <div id="hash"></div>
+          <div>Found</div>
+          <div id="found"></div>
+          <div>Lookup time</div>
+          <div id="lookup-time-ms"></div>
+        </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,3 @@
+[submodule "pwned-lookup-web/JavaScript-MD5"]
+	path = pwned-lookup-web/JavaScript-MD5
+	url = https://github.com/blueimp/JavaScript-MD5.git
