@@ -52,7 +52,7 @@
     (function(window) {
       'use strict';
       const LookupURL = 'https://ersatzworld.net/v1/pwned/api/lookup?hash='
-      let el = {}
+      let el
       const displayError = err => {
         el.resultContainer.classList.add('invisible')
         el.errorContainer.classList.remove('invisible')
@@ -62,25 +62,22 @@
         const hash = md5(el.password.value)
         el.hash.innerText = hash
         el.found.innerText = ''
-        el.found.classList.remove('found')
-        el.found.classList.remove('notfound')
+        el.found.classList.remove('found', 'notfound')
         el.lookupTimeMs.innerText = ''
         fetch(`${LookupURL}${hash}`)
-        .then(response => {
-          response.json().then(data => {
-            if (data['found'] > 0) {
-              el.found.classList.add('found')
-              el.found.innerText = `${data['found']} times`
-            }
-            else {
-              el.found.classList.add('notfound')
-              el.found.innerText = 'not found'
-            }
-            el.lookupTimeMs.innerText = `${data['lookup-time-ms']} ms`
-            el.resultContainer.classList.remove('invisible')
-            el.errorContainer.classList.add('invisible')
-          })
-          .catch(err => displayError(err))
+        .then(response => response.json())
+        .then(data => {
+          if (data['found'] > 0) {
+            el.found.classList.add('found')
+            el.found.innerText = `${data['found']} times`
+          }
+          else {
+            el.found.classList.add('notfound')
+            el.found.innerText = 'not found'
+          }
+          el.lookupTimeMs.innerText = `${data['lookup-time-ms']} ms`
+          el.resultContainer.classList.remove('invisible')
+          el.errorContainer.classList.add('invisible')
         })
         .catch(err => displayError(err))
       }
@@ -110,8 +107,12 @@
     <h1>#pwned lookup</h1>
     <div>Password to look up<sup>*</sup></div>
     <div><input type="password" id="password"/></div>
-    <div><input type="submit" id="submit" value="look up"/></div>
-    <div><label for="on-every-keypress"><input type="checkbox" id="on-every-keypress" name="on-every-keypress" checked/>Look up on every keypress</label></div>
+    <div><input type="submit" id="submit" value="look up"/>
+      <label for="on-every-keypress">
+        <input type="checkbox" id="on-every-keypress" name="on-every-keypress" checked/>
+        on every keypress
+      </label>
+    </div>
     <table id="result-container" class="invisible">
       <tr>
         <td>Hash</td>
