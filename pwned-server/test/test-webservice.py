@@ -3,10 +3,11 @@
 import subprocess
 import urllib.request
 import json
-import struct
+from struct import unpack
+from time import sleep
 
 def uint64_to_string(x):
-  return '{:0>16}'.format(hex(struct.unpack('<Q', x)[0]).lstrip('0x'))
+  return '{:0>16}'.format(hex(unpack('<Q', x)[0]).lstrip('0x'))
 
 def run_test():
   N = 10000
@@ -15,9 +16,9 @@ def run_test():
     '../../pwned-server/pwned-server',
     '-I', testsetFilename,
     '-W', '16',
-    '-T', '2',
-    '-Q'
+    '-T', '2'
   ])
+  sleep(1)
   rc = 0
   with open(testsetFilename, 'rb') as f:
     found = 0
@@ -27,8 +28,17 @@ def run_test():
         break
       lower = f.read(8)
       hash = uint64_to_string(upper) + uint64_to_string(lower)
-      count, = struct.unpack('<i', f.read(4))
-      url_ctx = urllib.request.urlopen('http://localhost:31337/v1/pwned/api/lookup?hash=' + hash)
+      count, = unpack('<i', f.read(4))
+      try:
+        url_ctx = urllib.request.urlopen('http://localhost:31337/v1/pwned/api/lookup?hash=' + hash)
+      except urllib.error.URLError as err:
+        print(err)
+        rc = 1
+        break
+      if url_ctx.getcode() != 200:
+        print('Invalid HTTP response code: {} (should be 200)'.format(url_ctx.getcode()))
+        rc = 1
+        break
       response = url_ctx.read().decode('utf-8')
       url_ctx.close()
       data = None
