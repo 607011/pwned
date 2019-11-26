@@ -16,10 +16,10 @@
  */
 
 #include <iostream>
-#include <regex>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 #include <pwned-lib/hash.hpp>
 
@@ -93,14 +93,6 @@ void HttpWorker::readRequest()
       });
 }
 
-static std::string toJson(const pt::ptree &pt)
-{
-  std::ostringstream ss;
-  pt::write_json(ss, pt);
-  const std::regex re("\\\"([0-9]+\\.{0,1}[0-9]*)\\\"");
-  return std::regex_replace(ss.str(), re, "$1");
-}
-
 void HttpWorker::processRequest(http::request<http::string_body> const &req)
 {
   switch (req.method())
@@ -155,17 +147,19 @@ void HttpWorker::sendResponse(http::request<http::string_body> const &req)
     const double duration = 1e3 * std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0).count();
     pt::ptree response;
     response.put<std::string>("hash", hash.toString());
-    response.put<uint32_t>("found", phc.count);
-    constexpr int BufSize = 20;
-    char buf[BufSize];
-    std::snprintf(buf, BufSize, "%.5f", duration);
-    response.put<char *>("lookup-time-ms", buf);
+    response.put<std::string>("found", "[found]");
+    response.put<std::string>("lookup-time-ms", "[lookup-time-ms]");
     mResponse.emplace();
     mResponse->result(http::status::ok);
     mResponse->set(http::field::server, std::string("#pwned server ") + PWNED_SERVER_VERSION);
     mResponse->set(http::field::content_type, "application/json");
     mResponse->set("Access-Control-Allow-Origin", "*");
-    mResponse->body() = toJson(response);
+    std::ostringstream ss;
+    pt::write_json(ss, response, false);
+    std::string responseStr = ss.str();
+    boost::replace_all<std::string>(responseStr, std::string("\"[found]\""), std::to_string(phc.count));
+    boost::replace_all<std::string>(responseStr, std::string("\"[lookup-time-ms]\""), std::to_string(duration));
+    mResponse->body() = responseStr;
     mResponse->prepare_payload();
     mSerializer.emplace(*mResponse);
     http::async_write(
