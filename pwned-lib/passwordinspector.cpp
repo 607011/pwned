@@ -160,10 +160,6 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *r
   Hash h0;
   ok = h0.read(inputFile, lo);
   ++nReads;
-  if (!ok)
-  {
-    throw("[PasswordInspector] Cannot read @ lo = " + std::to_string(lo));
-  }
   int64_t loOffset = offset;
   while (hash < h0 && lo >= loOffset)
   {
@@ -175,10 +171,6 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *r
   Hash h1;
   ok = h1.read(inputFile, hi);
   ++nReads;
-  if (!ok)
-  {
-    throw("[PasswordInspector] Cannot read @ hi = " + std::to_string(hi));
-  }
   int64_t hiOffset = offset;
   while (hash > h1 && hi <= size - hiOffset - int64_t(PasswordHashAndCount::size))
   {
@@ -186,11 +178,6 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *r
     h1.read(inputFile, hi);
     ++nReads;
     hiOffset *= OffsetMultiplicator;
-  }
-  // sanity check
-  if (!(h0 <= hash && hash <= h1))
-  {
-    throw("[PasswordInspector] Hash out of bounds: !(" + h0.toString() + " < " + hash.toString() + " < " + h1.toString() + ")");
   }
   int nBinSearchReads = 0;
   const PasswordHashAndCount &phc = binsearch(hash, &nBinSearchReads);
