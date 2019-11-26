@@ -15,3 +15,9 @@ target_link_libraries(test_uri_executable pwned
 )
 target_compile_definitions(test_uri_executable PRIVATE "BOOST_TEST_DYN_LINK=1")
 add_test(NAME test_uri COMMAND test_uri_executable)
+
+find_program (PYTHON python3)
+
+if (PYTHON)
+  add_test(test_webservice ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/test-webservice.py)
+endif (PYTHON)
