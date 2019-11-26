@@ -68,6 +68,21 @@ void usage()
   std::cout << desc << std::endl;
 }
 
+struct Counter { int level = 0; };
+
+void validate(boost::any &v, std::vector<std::string> const &xs, Counter*, long)
+{
+    if (v.empty())
+    {
+      v = Counter{1};
+    }
+    else
+    {
+      ++boost::any_cast<Counter&>(v).level;
+    }
+}
+
+
 int main(int argc, const char *argv[])
 {
   static const std::string DefaultAddress = "http://127.0.0.1:31337/v1/pwned/api";
@@ -78,7 +93,7 @@ int main(int argc, const char *argv[])
   std::string address;
   int numWorkers;
   int numThreads;
-  bool quiet;
+  Counter verbosity;
   desc.add_options()
   ("help,?", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set MD5:count input file")
@@ -86,7 +101,7 @@ int main(int argc, const char *argv[])
   ("address,A", po::value<std::string>(&address)->default_value(DefaultAddress), "server address")
   ("workers,W", po::value<int>(&numWorkers)->default_value(DefaultNumWorkers), "number of workers")
   ("threads,T", po::value<int>(&numThreads)->default_value(DefaultNumThreads), "number of threads")
-  ("quiet,Q", po::bool_switch(&quiet)->default_value(false), "disable logging")
+  ("verbose,v", po::value(&verbosity)->zero_tokens(), "increase verbosity")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -94,7 +109,7 @@ int main(int argc, const char *argv[])
   {
     po::store(po::parse_command_line(argc, argv, desc), vm);
   }
-  catch (po::error &e)
+  catch (const po::error &e)
   {
     std::cerr << "ERROR: " << e.what() << std::endl
               << std::endl;
@@ -103,7 +118,10 @@ int main(int argc, const char *argv[])
   }
   po::notify(vm);
 
-  hello();
+  if (verbosity.level > 0)
+  {
+    hello();
+  }
 
   if (vm.count("help") > 0)
   {
@@ -133,9 +151,9 @@ int main(int argc, const char *argv[])
     std::list<webservice::HttpWorker> workers;
 
     std::mutex logMtx;
-    webservice::HttpWorker::log_callback_t logger = [quiet, &logMtx](const std::string &msg)
+    webservice::HttpWorker::log_callback_t logger = [verbosity, &logMtx](const std::string &msg)
     {
-      if (!quiet)
+      if (verbosity.level > 1)
       {
         std::lock_guard<std::mutex> lock(logMtx);
         std::cout << msg << std::endl;
@@ -156,9 +174,12 @@ int main(int argc, const char *argv[])
         ioc.run();
       });
     }
-    std::cout << numWorkers << " workers in " << numThreads << " threads"
-              << " listening on " << uri.host() << ':' << uri.port() << " ..."
-              << std::endl;
+    if (verbosity.level > 0)
+    {
+      std::cout << numWorkers << " workers in " << numThreads << " threads"
+                << " listening on " << uri.host() << ':' << uri.port() << " ..."
+                << std::endl;
+    }
     ioc.run();
     for (auto &t : threads)
     {
