@@ -4,13 +4,12 @@ import subprocess
 import urllib.request
 import json
 import struct
-from binascii import hexlify
 
 def uint64_to_string(x):
   result, = struct.unpack('<Q', x)
   return ('0000000000000000' + hex(result).lstrip('0x'))[-16:]
 
-def main():
+def run_test():
   N = 10000
   testsetFilename = '../../../../pwned-lib/test/testset-{}-existent-collection1+2+3+4+5.md5'.format(N)
   webservice = subprocess.Popen([
@@ -60,5 +59,5 @@ def main():
   return rc
 
 if __name__ == '__main__':
-  rc = main()
+  rc = run_test()
   exit(rc)
