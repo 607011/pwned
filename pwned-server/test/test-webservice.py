@@ -39,18 +39,17 @@ def run_test():
         print(err)
         rc = 1
         break
-      else:
-        if not isinstance(data['lookup-time-ms'], float):
-          rc = 1
-          break
-        if not isinstance(data['found'], int):
-          rc = 1
-          break
-        if not isinstance(data['hash'], str):
-          rc = 1
-          break
-        if (data['hash'] == hash and data['found'] == count):
-          found += 1
+      if not isinstance(data, dict) \
+          or 'lookup-time-ms' not in data \
+          or not isinstance(data['lookup-time-ms'], float) \
+          or 'found' not in data \
+          or not isinstance(data['found'], int) \
+          or 'hash' not in data \
+          or not isinstance(data['hash'], str):
+        rc = 1
+        break
+      if (data['hash'] == hash and data['found'] == count):
+        found += 1
     if found != N:
       rc = 1
 
