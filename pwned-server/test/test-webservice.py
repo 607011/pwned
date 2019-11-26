@@ -6,8 +6,7 @@ import json
 import struct
 
 def uint64_to_string(x):
-  result, = struct.unpack('<Q', x)
-  return ('0000000000000000' + hex(result).lstrip('0x'))[-16:]
+  return '{:0>16}'.format(hex(struct.unpack('<Q', x)[0]).lstrip('0x'))
 
 def run_test():
   N = 10000
