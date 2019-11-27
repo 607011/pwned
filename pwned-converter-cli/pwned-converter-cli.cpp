@@ -62,6 +62,7 @@ void usage()
 }
 
 static const std::string DefaultOutputExt = ".md5";
+static const unsigned int DefaultNumThreads = 4;
 
 int main(int argc, const char *argv[])
 {
@@ -84,12 +85,14 @@ int main(int argc, const char *argv[])
   bool autoMD5 = false;
   bool forceHex = false;
   bool autoHex = false;
+  unsigned int numThreads;
   desc.add_options()("help", "produce help message")
   ("input,I", po::value<std::vector<std::string>>(), "set user:pass input file(s)")
   ("src,S", po::value<std::string>(&srcDirectory), "set user:pass input directory")
   ("dst,D", po::value<std::string>(&dstDirectory), "set user:pass output directory")
   ("ext", po::value<std::string>(&outputExt)->default_value(DefaultOutputExt), "set extension for output files")
   ("ram", po::value<uint64_t>(&memFreeAssumedMBytes)->default_value(memStat.phys.avail / 1024 / 1024), "program can use as many as the given MB of RAM (overrides automatic free memory detection)")
+  ("threads,T", po::value<unsigned int>(&numThreads)->default_value(DefaultNumThreads), "run in this many threads")
   ("force-md5", po::bool_switch(&forceMD5), "convert MD5 encoded passwords")
   ("auto-md5", po::bool_switch(&autoMD5), "convert MD5 encoded passwords if some are found")
   ("force-hex", po::bool_switch(&forceHex), "convert hex encoded passwords")
@@ -111,16 +114,11 @@ int main(int argc, const char *argv[])
     usage();
     return EXIT_SUCCESS;
   }
-  if (vm.count("ram") > 0)
+  if (numThreads == 0)
   {
-    memFreeAssumedMBytes = vm["ram"].as<uint64_t>();
-    memStat.phys.avail = memFreeAssumedMBytes * 1024 * 1024;
+    numThreads = DefaultNumThreads;
   }
-  if (vm.count("input") > 0)
-  {
-    filenames = vm["input"].as<std::vector<std::string>>();
-  }
-  else if (srcDirectory.size() > 0)
+  if (srcDirectory.size() > 0)
   {
     std::cout << "Scanning " << srcDirectory << " for files ..." << std::flush;
     fs::recursive_directory_iterator fileTreeIterator(srcDirectory);
@@ -134,12 +132,12 @@ int main(int argc, const char *argv[])
     }
     std::cout << std::endl;
   }
-  else
+  if (filenames.empty())
   {
     usage();
     return EXIT_FAILURE;
   }
-  if (dstDirectory.size() == 0)
+  if (dstDirectory.empty())
   {
     usage();
     return EXIT_FAILURE;
