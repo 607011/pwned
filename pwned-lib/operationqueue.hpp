@@ -99,10 +99,10 @@ public:
 
   void operationWait()
   {
-    std::cout << "operationWait()" << std::endl;
+    //std::cout << "operationWait()" << std::endl;
     std::unique_lock<std::mutex> lock(pauseMtx);
     pauseCondition.wait(lock);
-    std::cout << "operationWait() resuming ... " << std::endl;
+    //std::cout << "operationWait() resuming ... " << std::endl;
   }
 
   void pause()
@@ -126,7 +126,7 @@ public:
       return;
     if (!_isRunning)
     {
-      std::cout << "OperationQueue::resume() notifying all ..." << std::endl;
+      // std::cout << "OperationQueue::resume() notifying all ..." << std::endl;
       pauseCondition.notify_all();
       _isRunning = true;
     }
