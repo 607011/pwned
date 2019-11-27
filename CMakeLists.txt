@@ -38,3 +38,11 @@ add_subdirectory(pwned-lookup-cli)
 add_subdirectory(pwned-server)
 add_subdirectory(extras)
 add_subdirectory(deprecated)
+
+install(TARGETS
+  pwned-converter-cli
+  pwned-merger-cli
+  pwned-index
+  pwned-lookup-cli
+  pwned-server
+)
