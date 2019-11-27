@@ -42,7 +42,6 @@
 namespace fs = boost::filesystem;
 namespace ba = boost::algorithm;
 namespace po = boost::program_options;
-using namespace std::chrono;
 
 static const std::string DefaultOutputExt = ".md5";
 
@@ -162,7 +161,7 @@ int main(int argc, const char *argv[])
   }
   std::cout << "Destination file: " << dstFile << std::endl
             << std::endl;
-  high_resolution_clock::time_point t0 = high_resolution_clock::now();
+  auto t0 = std::chrono::high_resolution_clock::now();
   std::vector<merger::InputFile> inputFiles;
   for (const auto &filename : filenames)
   {
@@ -233,8 +232,8 @@ int main(int argc, const char *argv[])
       std::cout << inputFiles.size() << " files left." << std::endl;
     }
   }
-  high_resolution_clock::time_point t1 = high_resolution_clock::now();
-  duration<float> time_span = duration_cast<duration<float>>(t1 - t0);
+  auto t1 = std::chrono::high_resolution_clock::now();
+  auto time_span = std::chrono::duration_cast<std::chrono::duration<float>>(t1 - t0);
   if (!opQueue.isCancelled())
   {
     std::cout << "Total time: " << pwned::readableTime(time_span.count()) << std::endl;
