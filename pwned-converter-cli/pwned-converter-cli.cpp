@@ -165,7 +165,7 @@ int main(int argc, const char *argv[])
   auto t0 = std::chrono::high_resolution_clock::now();
   std::cout << "Preparing queue ..." << std::endl;
   pwned::OperationQueue<ConvertOperation> opQueue;
-  for (auto filename : filenames)
+  for (const auto &filename : filenames)
   {
     ConvertOperation *op = new ConvertOperation(filename,
                                                 dstDirectory,
