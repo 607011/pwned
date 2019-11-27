@@ -49,25 +49,21 @@ static const auto opGreaterPriority = [](Operation *lhs, Operation *rhs) {
 template <class T>
 class OperationQueue
 {
-  std::priority_queue<T *, std::vector<T *>, decltype(opGreaterPriority)> unscheduledOps;
-  std::list<T *> runningOps;
+  std::priority_queue<T*, std::vector<T*>, decltype(opGreaterPriority)> unscheduledOps{opGreaterPriority};
+  std::list<T*> runningOps;
   std::list<std::thread> opThreads;
   std::thread exeThread;
   mutable std::mutex mtx;
   std::mutex pauseMtx;
-  Semaphore guard;
+  Semaphore guard{std::thread::hardware_concurrency()};
   int threadPriority;
-  bool _isRunning;
-  bool _isCancelled;
+  bool _isRunning{false};
+  bool _isCancelled{false};
   std::condition_variable pauseCondition;
 
 public:
   explicit OperationQueue(int threadPriority = 0)
-      : unscheduledOps(opGreaterPriority)
-      , guard(Semaphore(std::thread::hardware_concurrency()))
-      , threadPriority(threadPriority)
-      , _isRunning(false)
-      , _isCancelled(false)
+      : threadPriority(threadPriority)
   {
   }
 
