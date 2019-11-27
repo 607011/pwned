@@ -95,13 +95,13 @@ bool PasswordInspector::isOpen() const
 PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCount)
 {
   int nReads = 0;
-  std::streampos lo = 0;
-  std::streampos hi = mFileSize;
+  std::streamoff lo = 0;
+  std::streamoff hi = mFileSize;
   if (mIndexFile.is_open())
   {
     const uint64_t hashMSB = hash.quad.upper >> mShift;
-    const std::streampos idx = (std::streampos)(hashMSB * sizeof(index_key_t));
-    std::streampos loIdx = idx;
+    const std::streamoff idx = (std::streamoff)(hashMSB * sizeof(index_key_t));
+    std::streamoff loIdx = idx;
     do {
       mIndexFile.seekg(loIdx);
       mIndexFile.read(reinterpret_cast<char*>(&lo), sizeof(index_key_t));
@@ -109,7 +109,7 @@ PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCou
       loIdx -= sizeof(index_key_t);
     }
     while (lo == int64_t(std::numeric_limits<index_key_t>::max()));
-    std::streampos hiIdx = idx + (std::streampos)sizeof(index_key_t);
+    std::streamoff hiIdx = idx + (std::streamoff)sizeof(index_key_t);
     do {
       mIndexFile.seekg(hiIdx);
       mIndexFile.read(reinterpret_cast<char*>(&hi), sizeof(index_key_t));
@@ -121,18 +121,18 @@ PasswordHashAndCount PasswordInspector::binsearch(const Hash &hash, int *readCou
   PasswordHashAndCount phc;
   while (lo <= hi)
   {
-    std::streampos pos = std::streampos((uint64_t(lo) + uint64_t(hi)) / 2);
-    pos -= pos % std::streampos(PasswordHashAndCount::size);
+    std::streamoff pos = std::streamoff((uint64_t(lo) + uint64_t(hi)) / 2);
+    pos -= pos % std::streamoff(PasswordHashAndCount::size);
     pos = std::max<int64_t>(0, pos);
     phc.read(mInputFile, pos);
     ++nReads;
     if (hash > phc.hash)
     {
-      lo = pos + std::streampos(PasswordHashAndCount::size);
+      lo = pos + std::streamoff(PasswordHashAndCount::size);
     }
     else if (hash < phc.hash)
     {
-      hi = pos - std::streampos(PasswordHashAndCount::size);
+      hi = pos - std::streamoff(PasswordHashAndCount::size);
     }
     else
     {
@@ -150,12 +150,12 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *r
   static constexpr float MaxUInt64 = float(std::numeric_limits<uint64_t>::max());
   int nReads = 0;
   static constexpr int64_t OffsetMultiplicator = 2;
-  std::streampos potentialHitIdx = std::llround(float(mFileSize) * float(hash.quad.upper) / MaxUInt64);
-  potentialHitIdx -= potentialHitIdx % (std::streampos)PasswordHashAndCount::size;
-  std::streampos offset = std::max<std::streampos>(std::streampos(mFileSize >> 12), (std::streampos)PasswordHashAndCount::size);
-  offset -= offset % (std::streampos)PasswordHashAndCount::size;
-  std::streampos lo = std::max<std::streampos>(0, potentialHitIdx - offset);
-  std::streampos hi = std::min<std::streampos>(mFileSize - (std::streampos)PasswordHashAndCount::size, potentialHitIdx + offset);
+  std::streamoff potentialHitIdx = std::llround(float(mFileSize) * float(hash.quad.upper) / MaxUInt64);
+  potentialHitIdx -= potentialHitIdx % (std::streamoff)PasswordHashAndCount::size;
+  std::streamoff offset = std::max<std::streamoff>(std::streamoff(mFileSize >> 12), (std::streamoff)PasswordHashAndCount::size);
+  offset -= offset % (std::streamoff)PasswordHashAndCount::size;
+  std::streamoff lo = std::max<std::streamoff>(0, potentialHitIdx - offset);
+  std::streamoff hi = std::min<std::streamoff>(mFileSize - (std::streamoff)PasswordHashAndCount::size, potentialHitIdx + offset);
   bool ok = false;
   Hash h0;
   ok = h0.read(mInputFile, lo);

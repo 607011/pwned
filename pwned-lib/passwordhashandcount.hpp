@@ -57,7 +57,7 @@ public:
     return f.gcount() == sizeof(count);
   }
 
-  inline bool read(std::istream &f, std::streampos pos)
+  inline bool read(std::istream &f, std::streamoff pos)
   {
     f.seekg(pos);
     return read(f);

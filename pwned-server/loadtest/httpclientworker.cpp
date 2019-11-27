@@ -98,8 +98,8 @@ void HttpClientWorker::start()
       return;
     }
   }
-  const std::streampos pos = (std::streampos)(mGen() % mInputSize);
-  const std::streampos idx = pos - pos % (std::streampos)pwned::PHC::size;
+  const std::streamoff pos = (std::streamoff)(mGen() % mInputSize);
+  const std::streamoff idx = pos - pos % (std::streamoff)pwned::PHC::size;
   pwned::PasswordHashAndCount phc;
   bool ok = phc.read(mInputFile, idx);
   if (!ok)

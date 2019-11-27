@@ -118,7 +118,7 @@ int main(int argc, const char *argv[])
     return EXIT_SUCCESS;
   }
 
-  const std::streampos size = (std::streampos)boost::filesystem::file_size(inputFilename);
+  const std::streamoff size = (std::streamoff)boost::filesystem::file_size(inputFilename);
   const std::streamoff offset = size / N;
   std::ifstream in(inputFilename, std::ios::binary);
   if (!in.is_open())
@@ -166,9 +166,9 @@ int main(int argc, const char *argv[])
     std::cout << "Selecting " << N << " existent hashes ... " << std::endl;
     pwned::PHC phc;
     int i = 0;
-    for (std::streampos pos = 0; pos < std::streampos(size) && i < N; pos += offset)
+    for (std::streamoff pos = 0; pos < std::streamoff(size) && i < N; pos += offset)
     {
-      const std::streampos idx = pos - pos % std::streampos(pwned::PHC::size);
+      const std::streamoff idx = pos - pos % std::streamoff(pwned::PHC::size);
       if (phc.read(in, idx))
       {
         std::cout << phc.hash << " @ " << idx << std::endl;
