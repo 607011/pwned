@@ -202,9 +202,9 @@ Hash UserPasswordReader::nextPasswordHash()
   if (d->currentLine.size() > 200 || d->currentLine.size() < 1) // assume no user:pass line is longer than 200 characters
     return hash;
   const size_t pos = d->currentLine.find(d->guessedSeparator);
-  if (pos == std::string::npos)
-    return hash;
-  const std::string &pwd = d->currentLine.substr(pos + 1);
+  const std::string &pwd = (pos == std::string::npos)
+    ? d->currentLine
+    : d->currentLine.substr(pos + 1);
   if (pwd.size() > 0)
   {
     if (d->forceEvaluateMD5Hashes)
