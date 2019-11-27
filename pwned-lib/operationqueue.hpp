@@ -24,6 +24,7 @@
 #include <list>
 #include <queue>
 #include <cstring>
+#include <cstdint>
 
 #include "semaphore.hpp"
 #include "operation.hpp"
@@ -73,7 +74,7 @@ public:
   {
   }
 
-  size_t size() const
+  std::size_t size() const
   {
     std::lock_guard<std::mutex> lock(mtx);
     return unscheduledOps.size() + runningOps.size();
