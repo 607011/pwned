@@ -38,7 +38,6 @@
 namespace fs = boost::filesystem;
 namespace ba = boost::algorithm;
 namespace po = boost::program_options;
-using namespace std::chrono;
 
 po::options_description desc("Allowed options");
 
@@ -165,7 +164,7 @@ int main(int argc, const char *argv[])
   std::cout << "Converting " << filenames.size() << " files." << std::endl;
   std::cout << "Destination directory: " << dstDirectory << std::endl
             << std::endl;
-  high_resolution_clock::time_point t0 = high_resolution_clock::now();
+  auto t0 = std::chrono::high_resolution_clock::now();
   std::cout << "Preparing queue ..." << std::endl;
   pwned::OperationQueue<ConvertOperation> opQueue;
   for (auto filename : filenames)
@@ -214,8 +213,8 @@ int main(int argc, const char *argv[])
   std::cout << "([Space] to pause/resume, Q to quit)" << std::endl;
   opQueue.execute(true);
   opQueue.waitForFinished();
-  high_resolution_clock::time_point t1 = high_resolution_clock::now();
-  duration<float> time_span = duration_cast<duration<float>>(t1 - t0);
+  auto t1 = std::chrono::high_resolution_clock::now();
+  auto time_span = std::chrono::duration_cast<std::chrono::duration<float>>(t1 - t0);
   if (!opQueue.isCancelled())
   {
     std::cout << "Total time: " << pwned::readableTime(time_span.count()) << std::endl
