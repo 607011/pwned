@@ -84,6 +84,7 @@ struct Hash
   {
     quad.upper = rhs.quad.upper;
     quad.lower = rhs.quad.lower;
+    isValid = rhs.isValid;
     return *this;
   }
 };
