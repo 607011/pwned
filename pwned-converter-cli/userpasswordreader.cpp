@@ -121,7 +121,7 @@ void UserPasswordReader::evaluateContents()
   {
     for (i = 0; i < nTries && !eof(); ++i)
     {
-      std::getline(d->f, line, '\r');
+      std::getline(d->f, line);
       if (line.find(d->guessedSeparator) != std::string::npos)
       {
         if (std::regex_match(line, d->MD5Regex))
@@ -138,7 +138,7 @@ void UserPasswordReader::evaluateContents()
   {
     for (i = 0; i < nTries && !eof(); ++i)
     {
-      std::getline(d->f, line, '\r');
+      std::getline(d->f, line);
       if (line.find(d->guessedSeparator) != std::string::npos)
       {
         if (std::regex_match(line, d->HexRegex))
@@ -195,9 +195,9 @@ static void hexToCharSeq(const std::string &seq, std::string &result)
 Hash UserPasswordReader::nextPasswordHash()
 {
   Hash hash;
-  std::getline(d->f, d->currentLine, '\r');
   if (d->f.eof() || d->f.bad())
     return hash;
+  std::getline(d->f, d->currentLine);
   ++d->lineNo;
   if (d->currentLine.size() > 200 || d->currentLine.size() < 1) // assume no user:pass line is longer than 200 characters
     return hash;
