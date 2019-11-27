@@ -38,10 +38,7 @@ inline std::thread runAsync(F &&f, int prio, Ts &&... params)
   std::thread th(std::forward<F>(f), std::forward<Ts>(params)...);
   sched_param sch_params;
   sch_params.sched_priority = prio;
-  if (pthread_setschedparam(th.native_handle(), SCHED_RR, &sch_params))
-  {
-    std::cerr << "Failed to set thread scheduling: " << std::strerror(errno) << std::endl;
-  }
+  pthread_setschedparam(th.native_handle(), SCHED_RR, &sch_params);
   return th;
 }
 
