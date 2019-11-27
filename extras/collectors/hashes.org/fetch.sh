@@ -2,6 +2,7 @@
 
 DOWNLOAD_DIR=downloaded
 COOKIE_JAR=cookies.txt
+LATEST=.latest
 
 mkdir -p $DOWNLOAD_DIR
 
@@ -11,11 +12,12 @@ function usage() {
 }
 
 function save {
-  echo $LAST_ID > .latest
+  echo $LAST_ID > $LATEST
 }
 
 function ctrl_c()
 {
+  stty sane
   save
   exit
 }
@@ -33,7 +35,7 @@ if [[ -n $1 && -n $2 ]]; then
   FROM=$1
   TO=$2
 elif [[ -n $1 ]]; then
-  FROM=`head -1 .latest`
+  FROM=`head -1 ${LATEST}`
   TO=$1
 fi
 
