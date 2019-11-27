@@ -89,7 +89,7 @@ int main(int argc, const char *argv[])
   int maxFilesAtOnce = 50;
   desc.add_options()("help,?", "produce help message")
   ("src,S", po::value<std::string>(&srcDirectory), "set user:pass input directory")
-  ("input,I", po::value<std::vector<std::string>>(), "set MD5:count input file(s)")
+  ("input,I", po::value<std::vector<std::string>>(&filenames), "set MD5:count input file(s)")
   ("output,O", po::value<std::string>(&dstFile), "set MD5:count output file")
   ("tmp,T", po::value<std::string>(&tmpDirectory)->default_value(tmpDirectory), "set working directory")
   ("max-files-at-once,n", po::value<int>(&maxFilesAtOnce)->default_value(maxFilesAtOnce), "process max files at once")
@@ -139,15 +139,22 @@ int main(int argc, const char *argv[])
     }
     std::cout << "found " << filenames.size() << " files." << std::endl;
   }
-  if (vm.count("input") > 0)
-  {
-    const std::vector<std::string> &moreFilenames = vm["input"].as<std::vector<std::string>>();
-    filenames.insert(filenames.end(), std::make_move_iterator(moreFilenames.begin()), std::make_move_iterator(moreFilenames.end()));
-  }
   if (dstFile.empty())
   {
     usage();
     return EXIT_FAILURE;
+  }
+  if (fs::exists(dstFile))
+  {
+    std::cout << "Destination file '" << dstFile << "' already exists." << std::endl
+              << "Do you want to overwrite it? (y/n)" << std::endl;
+    char ch;
+    std::cin >> ch;
+    if (ch != 'y')
+    {
+      std::cout << "You chose not to overwrite the destination file. You may now start over." << std::endl;
+      return EXIT_SUCCESS;
+    }
   }
   if (!fs::exists(tmpDirectory))
   {
