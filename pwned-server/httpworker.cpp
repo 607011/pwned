@@ -20,6 +20,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/filesystem.hpp>
 
 #include <pwned-lib/hash.hpp>
 
@@ -27,6 +28,7 @@
 #include "uri.hpp"
 #include "httpworker.hpp"
 
+namespace fs = boost::filesystem;
 namespace pt = boost::property_tree;
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -45,6 +47,7 @@ HttpWorker::HttpWorker(
     , mBasePath(basePath)
     , mInspector(inputFilename, indexFilename)
     , mLogCallback(logCallback)
+    , mLastUpdated(fs::last_write_time(fs::path(inputFilename)))
 {
 }
 
@@ -125,11 +128,21 @@ std::ostream &operator<<(std::ostream &stream, const std::chrono::time_point<Clo
 #endif
 }
 
+void makeResponse(boost::optional<http::response<http::string_body>> &response, const std::string &msg)
+{
+  response.emplace();
+  response->result(http::status::ok);
+  response->set(http::field::server, std::string("#pwned server ") + PWNED_SERVER_VERSION);
+  response->set(http::field::content_type, "application/json");
+  response->set("Access-Control-Allow-Origin", "*");
+  response->body() = msg;
+  response->prepare_payload();
+}
+
 void HttpWorker::sendResponse(http::request<http::string_body> const &req)
 {
   URI uri;
   uri.parseTarget(req.target().to_string());
-  const std::string &lookupPath = mBasePath + "/lookup";
   if (mLogCallback != nullptr)
   {
     std::ostringstream ss;
@@ -138,7 +151,7 @@ void HttpWorker::sendResponse(http::request<http::string_body> const &req)
        << req.target().to_string();
     (*mLogCallback)(ss.str());
   }
-  if (uri.path() == lookupPath && uri.query().find("hash") != uri.query().end())
+  if (uri.path() == (mBasePath + "/lookup") && uri.query().find("hash") != uri.query().end())
   {
     const pwned::Hash &hash = pwned::Hash::fromHex(uri.query().at("hash"));
     const auto &t0 = std::chrono::high_resolution_clock::now();
@@ -149,18 +162,34 @@ void HttpWorker::sendResponse(http::request<http::string_body> const &req)
     response.put<std::string>("hash", hash.toString());
     response.put<std::string>("found", "[found]");
     response.put<std::string>("lookup-time-ms", "[lookup-time-ms]");
-    mResponse.emplace();
-    mResponse->result(http::status::ok);
-    mResponse->set(http::field::server, std::string("#pwned server ") + PWNED_SERVER_VERSION);
-    mResponse->set(http::field::content_type, "application/json");
-    mResponse->set("Access-Control-Allow-Origin", "*");
     std::ostringstream ss;
     pt::write_json(ss, response, false);
     std::string responseStr = ss.str();
     boost::replace_all<std::string>(responseStr, std::string("\"[found]\""), std::to_string(phc.count));
     boost::replace_all<std::string>(responseStr, std::string("\"[lookup-time-ms]\""), std::to_string(duration));
-    mResponse->body() = responseStr;
-    mResponse->prepare_payload();
+    makeResponse(mResponse, responseStr);
+    mSerializer.emplace(*mResponse);
+    http::async_write(
+        mSocket,
+        *mSerializer,
+        [this](boost::beast::error_code ec, std::size_t) {
+          mSocket.shutdown(tcp::socket::shutdown_send, ec);
+          mSerializer.reset();
+          mResponse.reset();
+          accept();
+        });
+  }
+  else if (uri.path() == (mBasePath + "/info"))
+  {
+    pt::ptree response;
+    response.put<std::string>("count", "[count]");
+    response.put<std::string>("last-update", "[last-update]");
+    std::ostringstream ss;
+    pt::write_json(ss, response, false);
+    std::string responseStr = ss.str();
+    boost::replace_all<std::string>(responseStr, std::string("\"[count]\""), std::to_string(mInspector.size()));
+    boost::replace_all<std::string>(responseStr, std::string("\"[last-update]\""), std::to_string(mLastUpdated));
+    makeResponse(mResponse, responseStr);
     mSerializer.emplace(*mResponse);
     http::async_write(
         mSocket,

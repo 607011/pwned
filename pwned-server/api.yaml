@@ -49,3 +49,19 @@ paths:
                   lookup-time-ms:
                     type: number
                     description: Lookup time in milliseconds
+  /info:
+    get:
+      responses:
+        '200':
+          description: A JSON object containing infos about the server
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                    description: Number of different hashes in database
+                  last-update:
+                    type: number
+                    description: Date when the database was last updated, i.e. number of seconds (not counting leap seconds) since 00:00, Jan 1 1970 UTC, corresponding to POSIX time.

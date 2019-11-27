@@ -20,6 +20,7 @@
 
 #include <string>
 #include <chrono>
+#include <ctime>
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
@@ -65,6 +66,7 @@ private:
   std::string mBasePath;
   pwned::PasswordInspector mInspector;
   log_callback_t *mLogCallback;
+  std::time_t mLastUpdated;
 
   void accept();
   void readRequest();
