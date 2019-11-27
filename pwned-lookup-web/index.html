@@ -46,12 +46,17 @@
       #hash {
         font-family: 'Courier New', Courier, monospace;
       }
+      #dbinfo {
+        margin-top: 2ex;
+        font-size: smaller;
+      }
     </style>
     <script type="text/javascript" src="JavaScript-MD5/js/md5.min.js"></script>
     <script type="text/javascript">
     (function(window) {
       'use strict';
       const LookupURL = 'https://ersatzworld.net/v1/pwned/api/lookup?hash='
+      const InfoURL = 'https://ersatzworld.net/v1/pwned/api/info'
       let el
       const displayError = err => {
         el.resultContainer.classList.add('invisible')
@@ -98,6 +103,13 @@
         })
         el.password.addEventListener('focusout', e => e.preventDefault())
         document.getElementById('submit').addEventListener('click', lookup)
+        fetch(InfoURL)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('hash-count').innerText = data['count']
+          const updated = new Date(1000 * data['last-update'])
+          document.getElementById('last-update').innerText = `${updated.toLocaleDateString()} ${updated.toLocaleTimeString()}`
+        })
       }
       window.addEventListener('load', main)
     })(window);
@@ -128,6 +140,7 @@
       </tr>
     </table>
     <div id="error-container"></div>
+    <div id="dbinfo">The database currently contains <span id="hash-count">?</span> hashes and was last updated on <span id="last-update">?</span>.</div>
     <div class="disclaimer">*) Your password doesn't leave the browser, instead its MD5 hash is transmitted to the #pwned server.</div>
   </body>
 </html>
