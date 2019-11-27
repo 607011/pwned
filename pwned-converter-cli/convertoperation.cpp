@@ -138,14 +138,14 @@ void ConvertOperation::execute() noexcept(false)
     const fs::path srcFilename = d->srcFilePath.stem();
 
     auto generatedOutputFilename = [this, &srcFilename, splitFileNum]() {
-      return (d->dstPath / (srcFilename.string() + ' ' + pwned::string_format("[%04x]", splitFileNum))).string();
+      return (d->dstPath / (srcFilename.string() + pwned::string_format("-%04x", splitFileNum))).string();
     };
 
     fs::path dstFilePath = generatedOutputFilename() + d->outputExt.string();
-    int n = 1;
+    int n = splitFileNum;
     while (fs::exists(dstFilePath) && n < 10000)
     {
-      dstFilePath = generatedOutputFilename() + pwned::string_format(" (%04x)", splitFileNum) + d->outputExt.string();
+      dstFilePath = generatedOutputFilename() + pwned::string_format("-%04x", n) + d->outputExt.string();
       ++n;
     }
     {
