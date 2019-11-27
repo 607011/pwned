@@ -35,12 +35,7 @@ class Semaphore
 public:
   Semaphore(unsigned int capacity = 0U)
       : _capacity(capacity)
-  { /* ... */
-  }
-
-  Semaphore(const Semaphore &o)
-      : Semaphore(o._capacity)
-  { /* ... */
+  {
   }
 
   inline void setCapacity(unsigned int capacity)
