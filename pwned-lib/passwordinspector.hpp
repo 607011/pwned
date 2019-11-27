@@ -34,7 +34,7 @@ private:
   std::ifstream mIndexFile;
   int64_t mFileSize{0};
   unsigned int mShift{0};
-  pwned::PasswordHashAndCount mPHC;
+  PasswordHashAndCount mPHC;
 
 public:
   typedef uint64_t index_key_t;
@@ -45,8 +45,8 @@ public:
   bool isOpen() const;
   std::size_t size() const;
   PasswordHashAndCount lookup(const std::string &pwd);
-  PasswordHashAndCount binsearch(const pwned::Hash &hash, int *readCount = nullptr);
-  PasswordHashAndCount smart_binsearch(const pwned::Hash &hash, int *readCount = nullptr);
+  PasswordHashAndCount binsearch(const Hash &hash, int *readCount = nullptr);
+  PasswordHashAndCount smart_binsearch(const Hash &hash, int *readCount = nullptr);
 };
 
 typedef PasswordInspector::index_key_t index_key_t;
