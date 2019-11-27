@@ -49,7 +49,7 @@ po::options_description desc("Allowed options");
 
 void hello()
 {
-  std::cout << "#pwned merger 0.9.1 - Copyright (c) 2019 Oliver Lau" << std::endl
+  std::cout << "#pwned merger 1.0.0 - Copyright (c) 2019 Oliver Lau" << std::endl
             << std::endl;
 }
 
