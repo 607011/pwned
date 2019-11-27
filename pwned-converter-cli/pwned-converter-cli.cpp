@@ -170,7 +170,7 @@ int main(int argc, const char *argv[])
     ConvertOperation *op = new ConvertOperation(filename,
                                                 dstDirectory,
                                                 outputExt,
-                                                memStat.phys.avail / uint64_t(std::thread::hardware_concurrency()),
+                                                memFreeAssumedMBytes * 1024 * 1024 / uint64_t(numThreads),
                                                 options);
     opQueue.add(op);
   }
