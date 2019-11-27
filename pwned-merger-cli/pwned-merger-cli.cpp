@@ -238,7 +238,7 @@ int main(int argc, const char *argv[])
   {
     std::cout << "Total time: " << pwned::readableTime(time_span.count()) << std::endl;
   }
-  for (auto intermediateFile : intermediateFilenames)
+  for (const auto &intermediateFile : intermediateFilenames)
   {
     fs::remove(intermediateFile);
   }
