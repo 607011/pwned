@@ -153,7 +153,7 @@ void ConvertOperation::execute() noexcept(false)
       output << uuid << " Writing to " << dstFilePath.string() << " ..." << std::endl;
       std::cout << output.str();
     }
-    std::ofstream f(dstFilePath.string(), std::ios::out | std::ios::binary);
+    std::ofstream f(dstFilePath.string(), std::ios::binary);
     if (f.is_open())
     {
       for (auto &phc : passwordList)
