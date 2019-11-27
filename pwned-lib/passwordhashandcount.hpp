@@ -31,20 +31,12 @@ class PasswordHashAndCount
 public:
   static constexpr uint64_t size = uint64_t(Hash::size) + sizeof(uint32_t);
   Hash hash;
-  uint32_t count;
+  uint32_t count{0};
 
-  PasswordHashAndCount()
-      : count(0)
-  {
-  }
+  PasswordHashAndCount() = default;
 
   PasswordHashAndCount(Hash hash, uint32_t count)
       : hash(hash), count(count)
-  {
-  }
-
-  PasswordHashAndCount(const PasswordHashAndCount &o)
-      : hash(o.hash), count(o.count)
   {
   }
 
