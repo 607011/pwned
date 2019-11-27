@@ -43,12 +43,6 @@ static inline int decodeHex(const char c)
   return result;
 }
 
-Hash::Hash()
-    : quad({0, 0})
-    , isValid(false)
-{
-}
-
 Hash::Hash(const Hash &o)
     : quad(o.quad), isValid(o.isValid)
 {

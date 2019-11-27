@@ -51,10 +51,10 @@ struct Hash
     {
       uint64_t upper;
       uint64_t lower;
-    } quad;
+    } quad{0, 0};
   };
-  bool isValid;
-  Hash();
+  bool isValid{false};
+  Hash() = default;
   Hash(const Hash &);
   explicit Hash(const std::string &pwd);
   Hash(uint64_t upper, uint64_t lower);
