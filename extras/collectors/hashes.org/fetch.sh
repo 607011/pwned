@@ -1,14 +1,51 @@
 #!/usr/bin/bash
 
-DOWNLOAD_DIR=downloaded
-COOKIE_JAR=cookies.txt
-LATEST=.latest
+if [ "$(uname)" = "Darwin" ]; then
+  function file_size() {
+    stat "$1" | cut -d" " -f 8
+  }
+elif [ "$(uname)" = "Linux" ]; then
+  function file_size() {
+    stat -c%s "$1"
+  }
+else
+  echo "Unsupported platform"
+fi
+
+. .fetch.config
+
+if [ "${DOWNLOAD_DIR}" = "" ]; then
+  DOWNLOAD_DIR=downloaded
+fi
+if [ "${CONVERTED_DIR}" = "" ]; then
+  CONVERTED_DIR=converted
+fi
+if [ "${COOKIE_JAR}" = "" ]; then
+  COOKIE_JAR=cookies.txt
+fi
+if [ "${LATEST}" = "" ]; then
+  LATEST=.latest
+fi
+if [ "${RAM}" = "" ]; then
+  RAM=16384
+fi
+if [ "${THREADS}" = "" ]; then
+  THREADS=4
+fi
+if [ "${MERGED_MD5}" = "" ]; then
+  MERGED_MD5=merged.md5
+fi
+if [ "${CONVERTER}" = "" ]; then
+  CONVERTER=pwned-converter-cli
+fi
+if [ "${MERGER}" = "" ]; then
+  MERGER=pwned-merger-cli
+fi
 
 mkdir -p $DOWNLOAD_DIR
 
 function usage() {
-  echo "Usage:"
-  echo "  get-all.sh [<first index>] <last index>"
+  echo "Usage: fetch.sh [<first index>] <last index>"
 }
 
 function save {
@@ -44,8 +81,9 @@ if [[ -z $FROM || -z $TO ]]; then
   exit 1
 fi
 
+echo
 echo "You're about to download plaintext password files from hashes.org."
-echo "Clean download directory before proceeding? (y/n)"
+echo "Clean download directory ('${DOWNLOAD_DIR}') before proceeding? (y/n)"
 read -s -n 1 reply
 if [[ "$reply" = "y" ]]; then
   echo "Deleting ..."
@@ -74,7 +112,7 @@ for ID in `seq ${FROM} ${TO}`; do
   elif [ "$CONTENTS" = "Hashlist is deleted!" ]; then
     echo "DELETED"
     rm "${OUTPUT_FILE}"
-  elif [ `stat -c%s ${OUTPUT_FILE}` -eq 0 ]; then
+  elif [ "$(file_size ${OUTPUT_FILE})" -eq 0 ]; then
     echo "EMPTY"
     rm "${OUTPUT_FILE}"
   else
@@ -88,3 +126,20 @@ done
 
 stty sane
 save
+
+echo
+echo "Download finished."
+echo "Do you want to convert the downloaded files to MD5:count files?"
+echo "This will delete all *.md5 files already present in ${CONVERTED_DIR}."
+echo "Okay? (y/n)"
+read -s -n 1 reply
+if [[ "$reply" = "y" ]]; then
+  rm "${CONVERTED_DIR}"/*.md5
+  ${CONVERTER} -S "${DOWNLOAD_DIR}" -D "${CONVERTED_DIR}" --threads=$THREADS --auto-md5 --auto-hex --ram=$RAM
+  echo
+  echo "Files converted. Do you want to merge them? (y/n)"
+  read -s -n 1 reply
+  if [[ "$reply" = "y" ]]; then
+    ${MERGER} -S "${CONVERTED_DIR}" -O "${MERGED_MD5}"
+  fi
+fi
