@@ -16,7 +16,7 @@
  */
 
 #define BOOST_TEST_MODULE test userpasswordreader
-#define BOOST_TEST_MODULE_HASH
+#define BOOST_TEST_MODULE_USERPASSWORDREADER
 
 #include <iostream>
 #include <string>
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(test_userpasswordreader_password_only)
 
 BOOST_AUTO_TEST_CASE(test_userpasswordreader_mail_and_password)
 {
-  BOOST_TEST(true);
+  BOOST_TEST(true); // TODO
 }
 
 BOOST_AUTO_TEST_SUITE_END()
