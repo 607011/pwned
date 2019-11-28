@@ -115,6 +115,16 @@ BOOST_AUTO_TEST_CASE(test_hash_from_string)
   BOOST_TEST(pwned::Hash("fucku").toString() == "4a621342de0b91d567690bd43e0c8894");
   BOOST_TEST(pwned::Hash("blahfasel").toString() == "0b8f59bb7e61b667bba91c780bda9f74");
   BOOST_TEST(pwned::Hash("yxcvbnm").toString() == "d9ec5f5e78aa7174e466f1ba50846627");
+  BOOST_TEST(pwned::Hash("Росси́я").toString() == "5d6e688cac4c420a7cbdb239ce137942");
+  BOOST_TEST(pwned::Hash("日本").toString() == "4dbed2e657457884e67137d3514119b3");
+  BOOST_TEST(pwned::Hash("中国").toString() == "c13dceabcb143acd6c9298265d618a9f");
+  BOOST_TEST(pwned::Hash("한국").toString() == "afd6d52f9854f4fd442136e78a027f62");
+  BOOST_TEST(pwned::Hash("ٱلْعَرَبِيَّة").toString() == "30382ccb8154718c5c40d8ad24532968");
+  // see https://www.nist.gov/itl/ssd/software-quality-group/nsrl-test-data
+  std::string one_million_a(1'000'000, 'a');
+  BOOST_TEST(pwned::Hash("abc").toString() == "900150983cd24fb0d6963f7d28e17f72");
+  BOOST_TEST(pwned::Hash("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq").toString() == "8215ef0796a20bcaaae116d3876c664a");
+  BOOST_TEST(pwned::Hash(one_million_a).toString() == "7707d6ae4e027c70eea2a935c2296f21");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
