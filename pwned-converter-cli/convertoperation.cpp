@@ -156,7 +156,7 @@ void ConvertOperation::execute() noexcept(false)
     std::ofstream f(dstFilePath.string(), std::ios::binary);
     if (f.is_open())
     {
-      for (auto &phc : passwordList)
+      for (const auto &phc : passwordList)
       {
         phc.dump(f);
       }
