@@ -217,20 +217,19 @@ std::string readableTime(double t)
 
 int decodeHex(const char c)
 {
-  int result = -1;
   if ('0' <= c && c <= '9')
   {
-    result = c - '0';
+    return c - '0';
   }
-  else if ('a' <= c && c <= 'f')
+  if ('a' <= c && c <= 'f')
   {
-    result = c - 'a' + 10;
+    return c - 'a' + 10;
   }
-  else if ('A' <= c && c <= 'F')
+  if ('A' <= c && c <= 'F')
   {
-    result = c - 'A' + 10;
+    return c - 'A' + 10;
   }
-  return result;
+  return -1;
 }
 
 TermIO::TermIO()
