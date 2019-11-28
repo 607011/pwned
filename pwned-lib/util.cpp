@@ -190,7 +190,6 @@ std::string readableSize(uint64_t size)
 std::string readableTime(double t)
 {
   double x = t;
-  std::string result;
   const int days = int(x / 60 / 60 / 24);
   x -= double(days * 60 * 60 * 24);
   const int hours = int(x / 60 / 60);
@@ -198,23 +197,20 @@ std::string readableTime(double t)
   const int mins = int(x / 60);
   x -= double(mins * 60);
   const double secs = x;
+  const int isecs = int(round(secs));
   if (t > 60 * 60 * 24)
   {
-    result = string_format("%dd %dh %dm %ds", days, hours, mins, int(round(secs)));
+    return string_format("%dd %dh %dm %ds", days, hours, mins, isecs);
   }
-  else if (t > 60 * 60)
+  if (t > 60 * 60)
   {
-    result = string_format("%dh %dm %ds", hours, mins, int(round(secs)));
+    return string_format("%dh %dm %ds", hours, mins, isecs);
   }
-  else if (t > 60)
+  if (t > 60)
   {
-    result = string_format("%dm %ds", mins, int(round(secs)));
+    return string_format("%dm %ds", mins, isecs);
   }
-  else
-  {
-    result = string_format("%.4fs", secs);
-  }
-  return result;
+  return string_format("%.4fs", secs);
 }
 
 int decodeHex(const char c)
