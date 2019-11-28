@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_SUITE(test_util)
 
 BOOST_AUTO_TEST_CASE(test_decodehex_lowercase)
 {
-  const char hexDigitsLower[16]{
+  static const char hexDigitsLower[16]{
     '0', '1', '2', '3', '4', '5', '6', '7',
     '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
   };
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(test_decodehex_lowercase)
 
 BOOST_AUTO_TEST_CASE(test_decodehex_uppercase)
 {
-  const char hexDigitsUpper[16]{
+  static const char hexDigitsUpper[16]{
     '0', '1', '2', '3', '4', '5', '6', '7',
     '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
   };
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(test_decodehex_uppercase)
 
 BOOST_AUTO_TEST_CASE(test_decodehex_illegal)
 {
-  std::vector<int>legalHexDigits{
+  static const std::vector<int>legalHexDigits{
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
     'a', 'b', 'c', 'd', 'e', 'f',
     'A', 'B', 'C', 'D', 'E', 'F'
@@ -87,7 +87,23 @@ BOOST_AUTO_TEST_CASE(test_readabletime)
 
 BOOST_AUTO_TEST_CASE(test_readablesize)
 {
-  BOOST_TEST(true);
+  static constexpr uint64_t K = 1024;
+  static constexpr uint64_t M = K * K;
+  static constexpr uint64_t G = M * K;
+  static constexpr uint64_t T = G * K;
+  BOOST_TEST(pwned::readableSize(0ULL) == "0 B");
+  BOOST_TEST(pwned::readableSize(200ULL) == "200 B");
+  BOOST_TEST(pwned::readableSize(1023ULL) == "1023 B");
+  BOOST_TEST(pwned::readableSize(1024ULL) == "1024 B");
+  BOOST_TEST(pwned::readableSize(1025ULL) == "1.0 KB");
+  BOOST_TEST(pwned::readableSize(1025ULL + 500) == "1.5 KB");
+  BOOST_TEST(pwned::readableSize(10240ULL) == "10.0 KB");
+  BOOST_TEST(pwned::readableSize(256ULL*K + 300) == "256.3 KB");
+  BOOST_TEST(pwned::readableSize(10ULL*M + 500) == "10.0 MB");
+  BOOST_TEST(pwned::readableSize(10ULL*M + 500*1024) == "10.5 MB");
+  BOOST_TEST(pwned::readableSize(99ULL*M + 513*1024) == "99.5 MB");
+  BOOST_TEST(pwned::readableSize(5ULL*G + 400*M) == "5.4 GB");
+  BOOST_TEST(pwned::readableSize(128ULL*T + 600*G) == "128.6 TB");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
