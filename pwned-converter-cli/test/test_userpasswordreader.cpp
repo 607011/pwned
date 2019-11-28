@@ -65,13 +65,11 @@ BOOST_AUTO_TEST_CASE(test_userpasswordreader_password_only)
     "f02368945726d5fc2a14eb576f7276c0",
     "712f79adead18f54eac40a84887d82f5"
   };
-  auto it = hashes.begin();
-  while (!reader.eof() && it != hashes.end())
+  for (const std::string &correctHash : hashes)
   {
-    const pwned::Hash &correctHash = pwned::Hash::fromHex(*it);
-    const pwned::Hash &foundHash = reader.nextPasswordHash();
-    ++it;
-    BOOST_TEST(correctHash == foundHash);
+    if (reader.eof())
+      break;
+    BOOST_TEST(pwned::Hash::fromHex(correctHash) == reader.nextPasswordHash());
   }
 }
 
