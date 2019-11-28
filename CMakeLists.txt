@@ -45,4 +45,5 @@ install(TARGETS
   pwned-index
   pwned-lookup-cli
   pwned-server
+  RUNTIME DESTINATION bin
 )

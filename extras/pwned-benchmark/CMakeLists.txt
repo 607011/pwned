@@ -23,4 +23,4 @@ target_link_libraries(pwned-benchmark
   ${Boost_LIBRARIES}
 )
 
-install(TARGETS pwned-benchmark)
+install(TARGETS pwned-benchmark RUNTIME DESTINATION bin)

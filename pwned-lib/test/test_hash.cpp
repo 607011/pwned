@@ -106,6 +106,11 @@ BOOST_AUTO_TEST_CASE(test_hash_outputop)
 BOOST_AUTO_TEST_CASE(test_hash_from_string)
 {
   BOOST_TEST(pwned::Hash("").toString() == "d41d8cd98f00b204e9800998ecf8427e");
+  BOOST_TEST(pwned::Hash("a").toString() == "0cc175b9c0f1b6a831c399e269772661");
+  BOOST_TEST(pwned::Hash("message digest").toString() == "f96b697d7cb7938d525a2f31aaf161d0");
+  BOOST_TEST(pwned::Hash("abcdefghijklmnopqrstuvwxyz").toString() == "c3fcd3d76192e4007dfb496cca67e13b");
+  BOOST_TEST(pwned::Hash("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").toString() == "d174ab98d277d9f5a5611c2c9f419d9f");
+  BOOST_TEST(pwned::Hash("12345678901234567890123456789012345678901234567890123456789012345678901234567890").toString() == "57edf4a22be3c955ac49da2e2107b67a");
   BOOST_TEST(pwned::Hash("1234").toString() == "81dc9bdb52d04dc20036dbd8313ed055");
   BOOST_TEST(pwned::Hash("12345").toString() == "827ccb0eea8a706c4c34a16891f84e7b");
   BOOST_TEST(pwned::Hash("qwertzuiop").toString() == "6415a104a4fb07f8b3be9a63464ebb87");
@@ -115,15 +120,16 @@ BOOST_AUTO_TEST_CASE(test_hash_from_string)
   BOOST_TEST(pwned::Hash("fucku").toString() == "4a621342de0b91d567690bd43e0c8894");
   BOOST_TEST(pwned::Hash("blahfasel").toString() == "0b8f59bb7e61b667bba91c780bda9f74");
   BOOST_TEST(pwned::Hash("yxcvbnm").toString() == "d9ec5f5e78aa7174e466f1ba50846627");
+  BOOST_TEST(pwned::Hash("The quick brown fox jumps over the lazy dog").toString() == "9e107d9d372bb6826bd81d3542a419d6");
   BOOST_TEST(pwned::Hash("Росси́я").toString() == "5d6e688cac4c420a7cbdb239ce137942");
   BOOST_TEST(pwned::Hash("日本").toString() == "4dbed2e657457884e67137d3514119b3");
   BOOST_TEST(pwned::Hash("中国").toString() == "c13dceabcb143acd6c9298265d618a9f");
   BOOST_TEST(pwned::Hash("한국").toString() == "afd6d52f9854f4fd442136e78a027f62");
   BOOST_TEST(pwned::Hash("ٱلْعَرَبِيَّة").toString() == "30382ccb8154718c5c40d8ad24532968");
   // see https://www.nist.gov/itl/ssd/software-quality-group/nsrl-test-data
-  std::string one_million_a(1'000'000, 'a');
   BOOST_TEST(pwned::Hash("abc").toString() == "900150983cd24fb0d6963f7d28e17f72");
   BOOST_TEST(pwned::Hash("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq").toString() == "8215ef0796a20bcaaae116d3876c664a");
+  std::string one_million_a(1'000'000, 'a');
   BOOST_TEST(pwned::Hash(one_million_a).toString() == "7707d6ae4e027c70eea2a935c2296f21");
 }
 
