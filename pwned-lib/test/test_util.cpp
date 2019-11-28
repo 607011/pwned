@@ -68,6 +68,7 @@ BOOST_AUTO_TEST_CASE(test_decodehex_illegal)
 BOOST_AUTO_TEST_CASE(test_readabletime)
 {
   BOOST_TEST(pwned::readableTime(0.00001) == "0.0000s");
+  BOOST_TEST(pwned::readableTime(0.000049) == "0.0000s");
   BOOST_TEST(pwned::readableTime(0.00005) == "0.0001s");
   BOOST_TEST(pwned::readableTime(0.0001) == "0.0001s");
   BOOST_TEST(pwned::readableTime(0.2) == "0.2000s");
@@ -81,6 +82,12 @@ BOOST_AUTO_TEST_CASE(test_readabletime)
   BOOST_TEST(pwned::readableTime(24*60*60 + 30*60 + 23) == "1d 0h 30m 23s");
   BOOST_TEST(pwned::readableTime(24*60*60 + 23*60*60 + 59*60 + 59) == "1d 23h 59m 59s");
   BOOST_TEST(pwned::readableTime(5*24*60*60) == "5d 0h 0m 0s");
+  BOOST_TEST(pwned::readableTime(366*24*60*60 + 23*60*60 + 59*60 + 59.000001) == "366d 23h 59m 59s");
+}
+
+BOOST_AUTO_TEST_CASE(test_readablesize)
+{
+  BOOST_TEST(true);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
