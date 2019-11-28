@@ -23,3 +23,5 @@ target_link_libraries(pwned-converter-cli
   ${OPENSSL_CRYPTO_LIBRARY}
   ${Boost_LIBRARIES}
 )
+
+add_subdirectory(test)
