@@ -200,11 +200,11 @@ std::string readableTime(double t)
   const double secs = x;
   if (t > 60 * 60 * 24)
   {
-    result = string_format("%dd %dh %dm %ds", days, hours, mins, secs);
+    result = string_format("%dd %dh %dm %ds", days, hours, mins, int(round(secs)));
   }
   else if (t > 60 * 60)
   {
-    result = string_format("%dh %dm %ds", hours, mins, secs);
+    result = string_format("%dh %dm %ds", hours, mins, int(round(secs)));
   }
   else if (t > 60)
   {
