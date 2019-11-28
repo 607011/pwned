@@ -43,7 +43,7 @@ public:
       , forceEvaluateMD5Hashes(false)
       , autoEvaluateHexEncodedPasswords(false)
       , autoEvaluateMD5Hashes(false)
-      , f(inputFilePath, std::ios::in | std::ios::binary)
+      , f(inputFilePath, std::ios::binary)
   {
   }
   const std::string &inputFilePath;
