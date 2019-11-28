@@ -37,6 +37,14 @@
 #include <termios.h>
 #include <unistd.h>
 #include <cmath>
+#include <fstream>
+#include <iostream>
+
+#if defined(__linux__)
+#include <map>
+#include <regex>
+#include <boost/algorithm/string/predicate.hpp>
+#endif
 
 namespace pwned
 {
@@ -82,8 +90,50 @@ int getMemoryStat(MemoryStat &memoryStat)
   }
   memoryStat.virt.app = t_info.virtual_size;
   memoryStat.phys.app = t_info.resident_size;
+#elif defined(__linux__)
+  std::map<std::string, uint64_t*> memTable{
+    {"MemTotal", &memoryStat.phys.total},
+    {"MemAvailable", &memoryStat.phys.avail},
+    {"VmallocTotal", &memoryStat.virt.total},
+    {"VmallocUsed", &memoryStat.virt.used}
+  };
+  std::ifstream meminfo("/proc/meminfo");
+  while (!meminfo.eof())
+  {
+    std::string line;
+    std::getline(meminfo, line);
+    for (const auto &m : memTable)
+    {
+      if (boost::starts_with(line, m.first))
+      {
+        std::smatch fields;
+        const std::regex reFields("\\w+:\\s+(\\d+)\\s+(\\w+)");
+        std::regex_match(line, fields, reFields);
+        if (fields[2] == "GB")
+        {
+          *m.second = std::stoull(fields[1]) * 1024ULL * 1024ULL * 1024ULL;
+        }
+        else if (fields[2] == "MB")
+        {
+          *m.second = std::stoull(fields[1]) * 1024ULL * 1024ULL;
+        }
+        else if (fields[2] == "kB")
+        {
+          *m.second = std::stoull(fields[1]) * 1024ULL;
+        }
+        else if (fields[2] == "B")
+        {
+          *m.second = std::stoull(fields[1]);
+        }
+      }
+    }
+    memoryStat.phys.used = memoryStat.phys.total - memoryStat.phys.avail;
+    memoryStat.virt.avail = memoryStat.virt.total - memoryStat.virt.used;
+  }
+#elif defined(WIN32)
+  #error Windows currently unsupported
 #else
-  (void)(memoryStat);
+  #error Unsupported platform
 #endif
   return 0;
 }
