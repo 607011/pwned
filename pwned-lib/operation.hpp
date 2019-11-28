@@ -43,12 +43,12 @@ public:
     QueueNotSet
   };
 
-  explicit OperationException(const char *message, int code);
-  explicit OperationException(const std::string &message, int code);
+  OperationException(const char *message, int code);
+  OperationException(const std::string &message, int code);
   const std::string &what() noexcept;
   const char *what() const noexcept;
   int code() const noexcept;
-  virtual ~OperationException() throw();
+  virtual ~OperationException() throw() = default;
 };
 
 template <class T>
@@ -57,21 +57,21 @@ class OperationQueue;
 class Operation
 {
 protected:
-  std::atomic<bool> isRunning;
-  std::atomic<bool> isFinished;
-  std::atomic<bool> isCancelled;
-  std::atomic<bool> isPaused;
+  std::atomic<bool> isRunning{false};
+  std::atomic<bool> isFinished{false};
+  std::atomic<bool> isCancelled{false};
+  std::atomic<bool> isPaused{false};
   std::mutex mtx;
   std::condition_variable finishedCondition;
-  OperationQueue<Operation> *queue;
+  OperationQueue<Operation> *queue{nullptr};
   void wait() noexcept(false);
   void waitForFinished();
 
 public:
   UUID uuid;
-  long long priority;
+  long long priority{0};
 
-  Operation();
+  Operation() = default;
   virtual ~Operation();
 
   void setQueue(OperationQueue<Operation> *queue) noexcept;

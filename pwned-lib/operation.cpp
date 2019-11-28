@@ -48,20 +48,6 @@ int OperationException::code() const noexcept
   return _code;
 }
 
-OperationException::~OperationException() throw()
-{
-}
-
-Operation::Operation()
-    : isRunning(false)
-    , isFinished(false)
-    , isCancelled(false)
-    , isPaused(false)
-    , queue(nullptr)
-    , priority(0)
-{
-}
-
 Operation::~Operation()
 {
   if (isRunning)
