@@ -165,6 +165,24 @@ std::string readableTime(double t)
   return result;
 }
 
+int decodeHex(const char c)
+{
+  int result = -1;
+  if ('0' <= c && c <= '9')
+  {
+    result = c - '0';
+  }
+  else if ('a' <= c && c <= 'f')
+  {
+    result = c - 'a' + 10;
+  }
+  else if ('A' <= c && c <= 'F')
+  {
+    result = c - 'A' + 10;
+  }
+  return result;
+}
+
 TermIO::TermIO()
 {
   tcgetattr(STDIN_FILENO, &old_t);

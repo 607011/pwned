@@ -21,27 +21,10 @@
 #include <iomanip>
 
 #include "hash.hpp"
+#include "util.hpp"
 
 namespace pwned
 {
-
-static inline int decodeHex(const char c)
-{
-  int result = -1;
-  if ('0' <= c && c <= '9')
-  {
-    result = c - '0';
-  }
-  else if ('a' <= c && c <= 'f')
-  {
-    result = c - 'a' + 10;
-  }
-  else if ('A' <= c && c <= 'F')
-  {
-    result = c - 'A' + 10;
-  }
-  return result;
-}
 
 Hash::Hash(const Hash &o)
     : quad(o.quad), isValid(o.isValid)

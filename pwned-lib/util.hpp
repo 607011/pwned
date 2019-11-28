@@ -47,6 +47,7 @@ int getMemoryStat(MemoryStat &memoryStat);
 std::string string_format(const std::string fmt_str, ...);
 std::string readableSize(uint64_t size);
 std::string readableTime(double t);
+int decodeHex(const char c);
 
 class TermIO
 {

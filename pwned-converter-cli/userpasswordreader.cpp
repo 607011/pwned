@@ -23,6 +23,7 @@
 #include <cstdint>
 
 #include "userpasswordreader.hpp"
+#include <pwned-lib/util.hpp>
 
 namespace pwned
 {
@@ -151,24 +152,6 @@ void UserPasswordReader::evaluateContents()
   }
   d->f.clear();
   d->f.seekg(0, std::ios_base::beg);
-}
-
-static int decodeHex(const char c)
-{
-  int result = -1;
-  if ('0' <= c && c <= '9')
-  {
-    result = c - '0';
-  }
-  else if ('a' <= c && c <= 'f')
-  {
-    result = c - 'a' + 10;
-  }
-  else if ('A' <= c && c <= 'A')
-  {
-    result = c - 'A' + 10;
-  }
-  return result;
 }
 
 static void hexToCharSeq(const std::string &seq, std::string &result)
