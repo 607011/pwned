@@ -34,25 +34,17 @@ class MergerInput : public InputFile
 {
 public:
   pwned::PasswordHashAndCount phc;
-  bool isValid;
+  bool isValid{false};
   std::ifstream f;
 
   explicit MergerInput(const InputFile &inputFile)
-      : InputFile(inputFile), isValid(false)
-  { /* ... */
-  }
-
-  ~MergerInput()
+      : InputFile(inputFile)
   {
-    if (f.is_open())
-    {
-      f.close();
-    }
   }
 
   void open()
   {
-    f.open(path.string(), std::ios::in | std::ios::binary);
+    f.open(path.string(), std::ios::binary);
     if (f.is_open())
     {
       read();
