@@ -22,34 +22,13 @@
 #include <mutex>
 #include <condition_variable>
 #include <sys/resource.h>
-#include <exception>
 
 #include "operation.hpp"
+#include "operationexception.hpp"
 #include "uuid.hpp"
 
 namespace pwned
 {
-
-class OperationException : public std::exception
-{
-protected:
-  std::string msg;
-  int _code;
-
-public:
-  enum
-  {
-    OK = 0,
-    QueueNotSet
-  };
-
-  OperationException(const char *message, int code);
-  OperationException(const std::string &message, int code);
-  const std::string &what() noexcept;
-  const char *what() const noexcept;
-  int code() const noexcept;
-  virtual ~OperationException() throw() = default;
-};
 
 template <class T>
 class OperationQueue;

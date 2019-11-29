@@ -15,38 +15,12 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "operationexception.hpp"
 #include "operation.hpp"
 #include "operationqueue.hpp"
 
 namespace pwned
 {
-
-OperationException::OperationException(const char *message, int code)
-    : msg(message)
-    , _code(code)
-{
-}
-
-OperationException::OperationException(const std::string &message, int code)
-    : msg(message)
-    , _code(code)
-{
-}
-
-const std::string &OperationException::what() noexcept
-{
-  return msg;
-}
-
-const char *OperationException::what() const noexcept
-{
-  return msg.c_str();
-}
-
-int OperationException::code() const noexcept
-{
-  return _code;
-}
 
 Operation::~Operation()
 {

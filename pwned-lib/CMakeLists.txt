@@ -5,6 +5,7 @@ project(pwned_lib)
 add_library(pwned STATIC
 	hash.cpp
 	operation.cpp
+	operationexception.cpp
 	passwordinspector.cpp
 	util.cpp
 	uuid.cpp)
