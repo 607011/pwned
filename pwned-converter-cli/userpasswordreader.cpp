@@ -96,7 +96,7 @@ void UserPasswordReader::evaluateContents()
       }
     }
   }
-  if (successfulSplits.size() > 0)
+  if (successfulSplits.size() > nTries / 2)
   {
     using pair_type = decltype(successfulSplits)::value_type;
     auto maxSep = std::max_element(std::begin(successfulSplits),
