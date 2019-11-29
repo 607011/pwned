@@ -20,10 +20,6 @@
 #include <limits>
 #include <cmath>
 
-#ifndef NO_POPCNT
-#include <popcntintrin.h>
-#endif
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
 #include <boost/filesystem.hpp>
@@ -69,19 +65,8 @@ bool PasswordInspector::open(const std::string &inputFilename, const std::string
   if (!indexFilename.empty())
   {
     const uint64_t nKeys = uint64_t(fs::file_size(indexFilename) / sizeof(index_key_t));
-#ifndef NO_POPCNT
-    mShift = (unsigned int)(sizeof(index_key_t) * 8 - (_mm_popcnt_u64(nKeys - 1)));
-#else
-    // legacy code to calculate the shift count
-    mShift = sizeof(index_key_t) * 8;
-    uint64_t m = nKeys - 1;
-    while ((mShift > 0) && (m & 1) == 1)
-    {
-      m >>= 1;
-      --mShift;
-    }
-#endif
-    mIndexFile.open(indexFilename, std::ios::in | std::ios::binary);
+    mShift = (unsigned int)(sizeof(index_key_t) * 8 - popcnt64(nKeys - 1));
+    mIndexFile.open(indexFilename, std::ios::binary);
     ok = ok && mIndexFile.is_open();
   }
   return ok;

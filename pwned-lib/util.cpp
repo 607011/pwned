@@ -40,6 +40,10 @@
 #include <fstream>
 #include <iostream>
 
+#ifndef NO_POPCNT
+#include <popcntintrin.h>
+#endif
+
 #if defined(__linux__)
 #include <map>
 #include <regex>
@@ -249,6 +253,23 @@ void hexToCharSeq(const std::string &seq, std::string &result)
       }
     }
   }
+}
+
+unsigned int popcnt64(uint64_t x)
+{
+#ifndef NO_POPCNT
+  return _mm_popcnt_u64(x);
+#else
+  // see https://en.wikipedia.org/wiki/Hamming_weight
+  const uint64_t m1  = 0x5555555555555555;
+  const uint64_t m2  = 0x3333333333333333;
+  const uint64_t m4  = 0x0f0f0f0f0f0f0f0f;
+  const uint64_t h01 = 0x0101010101010101;
+  x -= (x >> 1) & m1;
+  x = (x & m2) + ((x >> 2) & m2); 
+  x = (x + (x >> 4)) & m4; 
+  return (unsigned int)((x * h01) >> 56);
+#endif
 }
 
 TermIO::TermIO()

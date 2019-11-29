@@ -18,12 +18,29 @@
 #define BOOST_TEST_MODULE test util
 #define BOOST_TEST_MODULE_UTIL
 
+#include <iostream>
+#include <iomanip>
 #include <algorithm>
 #include <vector>
 #include <boost/test/unit_test.hpp>
 #include "pwned-lib/util.hpp"
 
 BOOST_AUTO_TEST_SUITE(test_util)
+
+BOOST_AUTO_TEST_CASE(test_popcnt)
+{
+  BOOST_TEST(pwned::popcnt64(0) == 0);
+  for (unsigned int i = 0; i < 8 * sizeof(uint64_t); ++i)
+  {
+    BOOST_TEST(pwned::popcnt64(1ULL << i) == 1);
+  }
+  for (unsigned int i = 1; i < 8 * sizeof(uint64_t); ++i)
+  {
+    BOOST_TEST(pwned::popcnt64((1ULL << i) - 1) == i);
+  }
+  BOOST_TEST(pwned::popcnt64(0b0101010101010101010101010101010101010101010101010101010101010101) == 32);
+  BOOST_TEST(pwned::popcnt64(0b1010101010101010101010101010101010101010101010101010101010101010) == 32);
+}
 
 BOOST_AUTO_TEST_CASE(test_decodehex_lowercase)
 {
