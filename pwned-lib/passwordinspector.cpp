@@ -59,7 +59,7 @@ PasswordInspector::PasswordInspector(const std::string &inputFilename, const std
 bool PasswordInspector::open(const std::string &filename)
 {
   mFileSize = int64_t(fs::file_size(filename));
-  mInputFile.open(filename, std::ios::in | std::ios::binary);
+  mInputFile.open(filename, std::ios::binary);
   return mInputFile.is_open();
 }
 
