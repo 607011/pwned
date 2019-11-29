@@ -83,13 +83,12 @@ void UserPasswordReader::evaluateContents()
     return;
   const int nTries = 500;
   std::map<char, int> successfulSplits;
-  static const std::vector<char> possibleSeparators = {':', ';', '\t', ' '};
-  int i;
+  static const std::vector<char> possibleSeparators{':', ';', '\t', ' '};
   std::string line;
-  for (i = 0; i < nTries && !eof(); ++i)
+  for (int i = 0; i < nTries && !eof(); ++i)
   {
     std::getline(d->f, line);
-    for (auto sep : possibleSeparators)
+    for (char sep : possibleSeparators)
     {
       if (line.find(sep) != std::string::npos)
       {
@@ -107,12 +106,11 @@ void UserPasswordReader::evaluateContents()
                                    });
     d->guessedSeparator = maxSep->first;
   }
-
   d->f.clear();
   d->f.seekg(0, std::ios_base::beg);
   if (!d->forceEvaluateMD5Hashes && d->autoEvaluateMD5Hashes)
   {
-    for (i = 0; i < nTries && !eof(); ++i)
+    for (int i = 0; i < nTries && !eof(); ++i)
     {
       std::getline(d->f, line);
       if (line.find(d->guessedSeparator) != std::string::npos)
@@ -129,7 +127,7 @@ void UserPasswordReader::evaluateContents()
   d->f.seekg(0, std::ios_base::beg);
   if (!d->forceEvaluateHexEncodedPasswords && d->autoEvaluateHexEncodedPasswords)
   {
-    for (i = 0; i < nTries && !eof(); ++i)
+    for (int i = 0; i < nTries && !eof(); ++i)
     {
       std::getline(d->f, line);
       if (line.find(d->guessedSeparator) != std::string::npos)
