@@ -65,17 +65,23 @@ BOOST_AUTO_TEST_CASE(test_userpasswordreader_password_only)
     "f02368945726d5fc2a14eb576f7276c0",
     "712f79adead18f54eac40a84887d82f5"
   };
-  for (const std::string &correctHash : hashes)
+  for (const std::string &hash : hashes)
   {
     if (reader.eof())
       break;
-    BOOST_TEST(pwned::Hash::fromHex(correctHash) == reader.nextPasswordHash());
+    const pwned::Hash &correctHash = pwned::Hash::fromHex(hash);
+    const pwned::Hash &gotHash = reader.nextPasswordHash();
+    BOOST_TEST(correctHash == gotHash);
   }
 }
 
-BOOST_AUTO_TEST_CASE(test_userpasswordreader_mail_and_password)
-{
-  BOOST_TEST(true); // TODO
-}
+// BOOST_AUTO_TEST_CASE(test_userpasswordreader_mail_and_password)
+// {
+//   pwned::UserPasswordReader reader("../../../../pwned-converter-cli/test/170.txt", std::vector<pwned::UserPasswordReaderOptions>{});
+//   while (!reader.eof())
+//   {
+//     std::cout << reader.nextPasswordHash() << std::endl;
+//   }
+// }
 
 BOOST_AUTO_TEST_SUITE_END()
