@@ -236,6 +236,7 @@ int decodeHex(const char c)
 
 void hexToCharSeq(const std::string &seq, std::string &result)
 {
+  result.clear();
   if (seq.size() % 2 == 0)
   {
     for (size_t i = 0; i < seq.size(); i += 2)

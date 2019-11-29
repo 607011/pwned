@@ -87,6 +87,37 @@ BOOST_AUTO_TEST_CASE(test_decodehex_illegal)
   }
 }
 
+BOOST_AUTO_TEST_CASE(test_hextocharseq)
+{
+  std::string result;
+  pwned::hexToCharSeq("", result);
+  BOOST_TEST(result.empty());
+  pwned::hexToCharSeq("0", result);
+  BOOST_TEST(result.empty());
+  pwned::hexToCharSeq("\0\0", result);
+  BOOST_TEST(result.empty());
+  pwned::hexToCharSeq("test", result);
+  BOOST_TEST(result.empty());
+  pwned::hexToCharSeq("3132333435", result);
+  BOOST_TEST(result == "12345");
+  pwned::hexToCharSeq("c3a1c3a0c3a9c3a8c3adc3acc3b3c3b2c3bac3b9c59bc381c380c389c388c38dc38cc393c392c39ac399c59a", result);
+  BOOST_TEST(result == "áàéèíìóòúùśÁÀÉÈÍÌÓÒÚÙŚ");
+  pwned::hexToCharSeq("c3a4c3b6c3bcc39f", result);
+  BOOST_TEST(result == "äöüß");
+  pwned::hexToCharSeq("2122c2a72425262f28293d3f27602b2a23272d5f2e3a2c3b40c2b5e282ac3c3e5b5d7b7d7c", result);
+  BOOST_TEST(result == "!\"§$%&/()=?'`+*#'-_.:,;@µ€<>[]{}|");
+  pwned::hexToCharSeq("d0a0d0bed181d181d0b8cc81d18f", result);
+  BOOST_TEST(result == "Росси́я");
+  pwned::hexToCharSeq("e697a5e69cac", result);
+  BOOST_TEST(result == "日本");
+  pwned::hexToCharSeq("e4b8ade59bbd", result);
+  BOOST_TEST(result == "中国");
+  pwned::hexToCharSeq("ed959ceab5ad", result);
+  BOOST_TEST(result == "한국");
+  pwned::hexToCharSeq("d9b1d984d992d8b9d98ed8b1d98ed8a8d990d98ad98ed991d8a9", result);
+  BOOST_TEST(result == "ٱلْعَرَبِيَّة");
+}
+
 BOOST_AUTO_TEST_CASE(test_readabletime)
 {
   BOOST_TEST(pwned::readableTime(0.00001) == "0.0000s");
