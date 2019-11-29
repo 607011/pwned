@@ -96,7 +96,7 @@ void UserPasswordReader::evaluateContents()
       }
     }
   }
-  if (successfulSplits.size() > nTries / 2)
+  if (!successfulSplits.empty())
   {
     using pair_type = decltype(successfulSplits)::value_type;
     auto maxSep = std::max_element(std::begin(successfulSplits),
@@ -104,7 +104,10 @@ void UserPasswordReader::evaluateContents()
                                    [](const pair_type &a, const pair_type &b) {
                                      return a.second < b.second;
                                    });
-    d->guessedSeparator = maxSep->first;
+    if (maxSep->second > nTries / 2)
+    {
+      d->guessedSeparator = maxSep->first;
+    }
   }
   d->f.clear();
   d->f.seekg(0, std::ios_base::beg);
