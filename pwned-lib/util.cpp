@@ -230,6 +230,27 @@ int decodeHex(const char c)
   return -1;
 }
 
+void hexToCharSeq(const std::string &seq, std::string &result)
+{
+  if (seq.size() % 2 == 0)
+  {
+    for (size_t i = 0; i < seq.size(); i += 2)
+    {
+      const int hi = decodeHex(seq.at(i));
+      const int lo = decodeHex(seq.at(i + 1));
+      if (lo >= 0 && hi >= 0)
+      {
+        const int b = hi * 16 + lo;
+        result.push_back(char(b));
+      }
+      else
+      {
+        std::cerr << "invalid hex code: " << seq << std::endl;
+      }
+    }
+  }
+}
+
 TermIO::TermIO()
 {
   tcgetattr(STDIN_FILENO, &old_t);
