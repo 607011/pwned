@@ -18,9 +18,9 @@
 #ifndef __userpasswordreader_hpp__
 #define __userpasswordreader_hpp__
 
-#include <string>
+#include <iostream>
 #include <vector>
-#include <memory>
+#include <regex>
 
 #include <pwned-lib/hash.hpp>
 
@@ -35,20 +35,29 @@ enum UserPasswordReaderOptions
   autoEvaluateHexEncodedPasswords
 };
 
-class UserPasswordReaderPrivate;
 
 class UserPasswordReader
 {
-  std::unique_ptr<UserPasswordReaderPrivate> d;
-
 public:
+  UserPasswordReader(std::istream &inputStream, const std::vector<UserPasswordReaderOptions> &options);
+  void evaluateContents();
+  Hash nextPasswordHash();
   bool eof() const;
   bool bad() const;
 
-  UserPasswordReader(const std::string &inputFilePath, const std::vector<UserPasswordReaderOptions> &options);
-  ~UserPasswordReader();
-  void evaluateContents();
-  Hash nextPasswordHash();
+private:
+  uint64_t validEntries{0};
+  uint64_t lineNo{0};
+  char guessedSeparator{0};
+  float approxBytesPerEntry{30};
+  const std::regex HexRegex{"\\$HEX\\[(.+?)\\]"};
+  const std::regex MD5Regex{"[a-zA-Z0-9]{32}"};
+  bool forceEvaluateHexEncodedPasswords{false};
+  bool forceEvaluateMD5Hashes{false};
+  bool autoEvaluateHexEncodedPasswords{false};
+  bool autoEvaluateMD5Hashes{false};
+  std::istream &input;
+  std::string currentLine;
 };
 
 } // namespace pwned

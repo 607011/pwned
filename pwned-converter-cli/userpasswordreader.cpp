@@ -28,66 +28,36 @@
 namespace pwned
 {
 
-class UserPasswordReaderPrivate
+UserPasswordReader::UserPasswordReader(std::istream &inputStream, const std::vector<UserPasswordReaderOptions> &options)
+    : input(inputStream)
 {
-public:
-  UserPasswordReaderPrivate(const std::string &inputFilePath)
-      : f(inputFilePath, std::ios::binary)
-  {
-  }
-  uint64_t validEntries{0};
-  uint64_t lineNo{0};
-  char guessedSeparator{0};
-  float approxBytesPerEntry{30};
-  const std::regex HexRegex{"\\$HEX\\[(.+?)\\]"};
-  const std::regex MD5Regex{"[a-zA-Z0-9]{32}"};
-  bool forceEvaluateHexEncodedPasswords{false};
-  bool forceEvaluateMD5Hashes{false};
-  bool autoEvaluateHexEncodedPasswords{false};
-  bool autoEvaluateMD5Hashes{false};
-  std::ifstream f;
-  std::string currentLine;
-};
-
-UserPasswordReader::UserPasswordReader(const std::string &inputFilePath, const std::vector<UserPasswordReaderOptions> &options)
-    : d(std::unique_ptr<UserPasswordReaderPrivate>(new UserPasswordReaderPrivate(inputFilePath)))
-{
-  d->forceEvaluateMD5Hashes = std::find(options.begin(), options.end(), UserPasswordReaderOptions::forceEvaluateMD5Hashes) != options.end();
-  d->forceEvaluateHexEncodedPasswords = std::find(options.begin(), options.end(), UserPasswordReaderOptions::forceEvaluateHexEncodedPasswords) != options.end();
-  d->autoEvaluateMD5Hashes = std::find(options.begin(), options.end(), UserPasswordReaderOptions::autoEvaluateMD5Hashes) != options.end();
-  d->autoEvaluateHexEncodedPasswords = std::find(options.begin(), options.end(), UserPasswordReaderOptions::autoEvaluateHexEncodedPasswords) != options.end();
+  forceEvaluateMD5Hashes = std::find(options.begin(), options.end(), UserPasswordReaderOptions::forceEvaluateMD5Hashes) != options.end();
+  forceEvaluateHexEncodedPasswords = std::find(options.begin(), options.end(), UserPasswordReaderOptions::forceEvaluateHexEncodedPasswords) != options.end();
+  autoEvaluateMD5Hashes = std::find(options.begin(), options.end(), UserPasswordReaderOptions::autoEvaluateMD5Hashes) != options.end();
+  autoEvaluateHexEncodedPasswords = std::find(options.begin(), options.end(), UserPasswordReaderOptions::autoEvaluateHexEncodedPasswords) != options.end();
   evaluateContents();
-}
-
-UserPasswordReader::~UserPasswordReader()
-{
-  if (d->f.is_open())
-  {
-    d->f.close();
-  }
 }
 
 bool UserPasswordReader::eof() const
 {
-  return d->f.eof();
+  return input.eof();
 }
 
 bool UserPasswordReader::bad() const
 {
-  return d->f.bad();
+  return input.bad();
 }
 
 void UserPasswordReader::evaluateContents()
 {
-  if (!d->f.is_open())
-    return;
   const int nTries = 500;
   std::map<char, int> successfulSplits;
   static const std::vector<char> possibleSeparators{':', ';', '\t', ' '};
   std::string line;
   for (int i = 0; i < nTries && !eof(); ++i)
   {
-    std::getline(d->f, line);
+    std::getline(input, line);
+    line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
     for (char sep : possibleSeparators)
     {
       if (line.find(sep) != std::string::npos)
@@ -106,84 +76,85 @@ void UserPasswordReader::evaluateContents()
                                    });
     if (maxSep->second > nTries / 2)
     {
-      d->guessedSeparator = maxSep->first;
+      guessedSeparator = maxSep->first;
     }
   }
-  d->f.clear();
-  d->f.seekg(0, std::ios_base::beg);
-  if (!d->forceEvaluateMD5Hashes && d->autoEvaluateMD5Hashes)
+  input.clear();
+  input.seekg(0, std::ios_base::beg);
+  if (!forceEvaluateMD5Hashes && autoEvaluateMD5Hashes)
   {
     for (int i = 0; i < nTries && !eof(); ++i)
     {
-      std::getline(d->f, line);
-      if (line.find(d->guessedSeparator) != std::string::npos)
+      std::getline(input, line);
+      if (line.find(guessedSeparator) != std::string::npos)
       {
-        if (std::regex_match(line, d->MD5Regex))
+        if (std::regex_match(line, MD5Regex))
         {
-          d->forceEvaluateMD5Hashes = true;
+          forceEvaluateMD5Hashes = true;
           break;
         }
       }
     }
   }
-  d->f.clear();
-  d->f.seekg(0, std::ios_base::beg);
-  if (!d->forceEvaluateHexEncodedPasswords && d->autoEvaluateHexEncodedPasswords)
+  input.clear();
+  input.seekg(0, std::ios_base::beg);
+  if (!forceEvaluateHexEncodedPasswords && autoEvaluateHexEncodedPasswords)
   {
     for (int i = 0; i < nTries && !eof(); ++i)
     {
-      std::getline(d->f, line);
-      if (line.find(d->guessedSeparator) != std::string::npos)
+      std::getline(input, line);
+      if (line.find(guessedSeparator) != std::string::npos)
       {
-        if (std::regex_match(line, d->HexRegex))
+        if (std::regex_match(line, HexRegex))
         {
-          d->forceEvaluateHexEncodedPasswords = true;
+          forceEvaluateHexEncodedPasswords = true;
           break;
         }
       }
     }
   }
-  d->f.clear();
-  d->f.seekg(0, std::ios_base::beg);
+  input.clear();
+  input.seekg(0, std::ios_base::beg);
 }
 
 Hash UserPasswordReader::nextPasswordHash()
 {
-  if (d->f.eof() || d->f.bad())
+  if (input.eof() || input.bad())
     return Hash();
-  std::getline(d->f, d->currentLine);
-  ++d->lineNo;
-  if (d->currentLine.size() > 200 || d->currentLine.size() < 1) // assume no user:pass line is longer than 200 characters
+  std::getline(input, currentLine);
+  currentLine.erase(std::remove(currentLine.begin(), currentLine.end(), '\r'), currentLine.end());
+  ++lineNo;
+  if (currentLine.size() > 200 || currentLine.size() < 1) // assume no user:pass line is longer than 200 characters
     return Hash();
   std::string pwd;
-  if (d->guessedSeparator != 0)
+  if (guessedSeparator != 0)
   {
-    const size_t pos = d->currentLine.find(d->guessedSeparator);
+    const size_t pos = currentLine.find(guessedSeparator);
     pwd = (pos == std::string::npos)
-              ? d->currentLine
-              : d->currentLine.substr(pos + 1);
+              ? currentLine
+              : currentLine.substr(pos + 1);
   }
   else
   {
-    pwd = d->currentLine;
+    pwd = currentLine;
   }
   if (pwd.size() == 0)
     return Hash();
   Hash hash;
-  if (d->forceEvaluateMD5Hashes)
+  if (forceEvaluateMD5Hashes)
   {
     std::smatch match;
-    if (std::regex_match(pwd, match, d->MD5Regex))
+    if (std::regex_match(pwd, match, MD5Regex))
     {
       hash = pwned::Hash::fromHex(match[0]);
     }
   }
   if (!hash.isValid)
   {
-    if (d->forceEvaluateHexEncodedPasswords)
+    if (forceEvaluateHexEncodedPasswords)
     {
       std::smatch match;
-      if (std::regex_match(pwd, match, d->HexRegex))
+      if (std::regex_match(pwd, match, HexRegex))
       {
         std::string dehexed;
         hexToCharSeq(match[1], dehexed);
@@ -197,7 +168,7 @@ Hash UserPasswordReader::nextPasswordHash()
   }
   if (hash.isValid)
   {
-    ++d->validEntries;
+    ++validEntries;
   }
   return hash;
 }

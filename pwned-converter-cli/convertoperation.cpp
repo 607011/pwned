@@ -36,14 +36,20 @@ public:
                           const std::string &outputExt,
                           uint64_t maxMem,
                           const std::vector<pwned::UserPasswordReaderOptions> &options)
-      : srcFilePath(srcFilename), dstPath(dstDirectory), outputExt(outputExt), maxMem(maxMem), options(options)
+      : srcFilePath(srcFilename)
+      , dstPath(dstDirectory)
+      , outputExt(outputExt)
+      , maxMem(maxMem)
+      , options(options)
   {
+    inputFile.open(srcFilename, std::ios::binary);
   }
   const fs::path srcFilePath;
   const fs::path dstPath;
   const fs::path outputExt;
   const uint64_t maxMem;
   const std::vector<pwned::UserPasswordReaderOptions> options;
+  std::ifstream inputFile;
 };
 
 ConvertOperation::ConvertOperation(const std::string &srcFilename,
@@ -73,7 +79,7 @@ void ConvertOperation::execute() noexcept(false)
            << std::endl;
     std::cout << output.str();
   }
-  pwned::UserPasswordReader reader(d->srcFilePath.string(), d->options);
+  pwned::UserPasswordReader reader(d->inputFile, d->options);
   static const uint64_t estimatedMemoryOverheadPerEntry = sizeof(uintptr_t);
   static const uint64_t memUsagePerEntry = sizeof(pwned::Hash) + sizeof(uint32_t) + sizeof(pwned::PasswordHashAndCount) + estimatedMemoryOverheadPerEntry;
   int splitFileNum = 0;
