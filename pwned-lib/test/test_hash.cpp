@@ -24,13 +24,28 @@
 #include <sstream>
 #include <cstring>
 #include <boost/test/unit_test.hpp>
+#include <openssl/md5.h>
 #include "pwned-lib/hash.hpp"
+#include "pwned-lib/util.hpp"
+
 
 BOOST_AUTO_TEST_SUITE(test_hash)
 
 BOOST_AUTO_TEST_CASE(test_hash_const)
 {
+  BOOST_TEST(MD5_DIGEST_LENGTH == 16);
   BOOST_TEST(pwned::Hash::size == 16);
+}
+
+BOOST_AUTO_TEST_CASE(test_md5)
+{
+  uint8_t data[MD5_DIGEST_LENGTH];
+  {
+    const std::string pwd = "sasha2006";
+    MD5((const unsigned char *)pwd.c_str(), pwd.size(), data);
+    const uint8_t correct[MD5_DIGEST_LENGTH]{0x3f, 0xfc, 0xa0, 0x82, 0x60, 0x7, 0xf, 0x89, 0x4d, 0xd4, 0x72, 0x44, 0xc0, 0x34, 0xc2, 0x16};
+    BOOST_TEST(std::memcmp(data, correct, MD5_DIGEST_LENGTH) == 0);
+  }
 }
 
 BOOST_AUTO_TEST_CASE(test_hash_ctor)
