@@ -1,5 +1,27 @@
 #!/usr/bin/bash
 
+function usage() {
+  echo "Usage: fetch.sh [<first index>] [<last index>]"
+}
+
+function save {
+  echo $(expr $LAST_ID + 1) > $LATEST
+}
+
+function ctrl_c()
+{
+  stty sane
+  save
+  exit
+}
+
+function get_key() {
+  local old_tty_settings=$(stty -g)
+  stty -icanon time 0 min 0
+  echo $(head -c1)
+  stty "$old_tty_settings"
+}
+
 if [ "$(uname)" = "Darwin" ]; then
   function file_size() {
     stat "$1" | cut -d" " -f 8
@@ -44,28 +66,6 @@ fi
 
 mkdir -p $DOWNLOAD_DIR
 
-function usage() {
-  echo "Usage: fetch.sh [<first index>] <last index>"
-}
-
-function save {
-  echo $LAST_ID > $LATEST
-}
-
-function ctrl_c()
-{
-  stty sane
-  save
-  exit
-}
-
-function get_key() {
-  local old_tty_settings=$(stty -g)
-  stty -icanon time 0 min 0
-  echo $(head -c1)
-  stty "$old_tty_settings"
-}
-
 trap ctrl_c SIGINT
 
 if [[ -n $1 && -n $2 ]]; then
@@ -74,6 +74,9 @@ if [[ -n $1 && -n $2 ]]; then
 elif [[ -n $1 ]]; then
   FROM=`head -1 ${LATEST}`
   TO=$1
+else
+  FROM=`head -1 ${LATEST}`
+  TO=$(expr $FROM + 100)
 fi
 
 if [[ -z $FROM || -z $TO ]]; then
