@@ -32,11 +32,9 @@ class UserPasswordReaderPrivate
 {
 public:
   UserPasswordReaderPrivate(const std::string &inputFilePath)
-      : inputFilePath(inputFilePath)
-      , f(inputFilePath, std::ios::binary)
+      : f(inputFilePath, std::ios::binary)
   {
   }
-  const std::string &inputFilePath;
   uint64_t validEntries{0};
   uint64_t lineNo{0};
   char guessedSeparator{0};
