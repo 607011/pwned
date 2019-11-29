@@ -171,7 +171,6 @@ Hash UserPasswordReader::nextPasswordHash()
   Hash hash;
   if (d->forceEvaluateMD5Hashes)
   {
-    std::cout << "forceEvaluateMD5Hashes" << std::endl;
     std::smatch match;
     if (std::regex_match(pwd, match, d->MD5Regex))
     {
@@ -182,7 +181,6 @@ Hash UserPasswordReader::nextPasswordHash()
   {
     if (d->forceEvaluateHexEncodedPasswords)
     {
-      std::cout << "forceEvaluateHexEncodedPasswords" << std::endl;
       std::smatch match;
       if (std::regex_match(pwd, match, d->HexRegex))
       {
@@ -193,7 +191,6 @@ Hash UserPasswordReader::nextPasswordHash()
     }
     if (!hash.isValid)
     {
-      std::cout << "Making Hash from password '" << pwd << "'" << std::endl;
       hash = Hash(pwd);
     }
   }
