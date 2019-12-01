@@ -41,16 +41,21 @@ class UserPasswordReader
 public:
   UserPasswordReader(std::istream &inputStream, const std::vector<UserPasswordReaderOptions> &options);
   void evaluateContents();
+  char guessSeparator();
+  bool checkForMD5Hashes();
+  bool checkForHexEncodedPasswords();
+  std::string extractPassword(std::string line);
   Hash nextPasswordHash();
   bool eof() const;
   bool bad() const;
 
 private:
+  static const int nTries{500};
   uint64_t validEntries{0};
   uint64_t lineNo{0};
-  char guessedSeparator{0};
+  char guessedSeparator{'\0'};
   float approxBytesPerEntry{30};
-  const std::regex HexRegex{"\\$HEX\\[(.+?)\\]"};
+  const std::regex HexRegex{"\\$HEX\\[((?:[a-zA-Z0-9][a-zA-Z0-9])+?)\\]"};
   const std::regex MD5Regex{"[a-zA-Z0-9]{32}"};
   bool forceEvaluateHexEncodedPasswords{false};
   bool forceEvaluateMD5Hashes{false};
