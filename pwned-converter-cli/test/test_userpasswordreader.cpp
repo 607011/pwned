@@ -231,19 +231,91 @@ BOOST_AUTO_TEST_CASE(test_userpasswordreader_mail_and_hex)
   }
 }
 
-BOOST_AUTO_TEST_CASE(test_userpasswordreader_mail_and_hex_force)
+BOOST_AUTO_TEST_CASE(test_userpasswordreader_mail_semicolon)
 {
   std::stringstream input;
-  input << "xxxxx@yahoo.com:$HEX[d8b3d8aed8b3d8ae31393634]\n"
-           "xxxxx@yahoo.com:$HEX[e2978fe2978fe2978fe2978fe2978fe2978fe2978fe2978fe2978fe2978f]\n"
-           "xxxxxx@yahoo.com:$HEX[d09cd095d0a0d0a3d091d090d09dd098]\n"
-           "xxxxx@yahoo.com.au:$HEX[6c696e6b6564696e2122c2a3]\n"
-           "xxxxx@yahoo.com:$HEX[5a415054c4b059414e]\n"
-           "xxxxx@yahoo.com:$HEX[737965647a616cc4b1]\n"
-           "xxxx@yahoo.com.br:$HEX[676f6ec3a7616c766573]\n"
-           "xxxxxx@yahoo.com:$HEX[d0b0d0bad0b0d0b4d0b5d0bcd0b8d0ba]\n"
-           "xxxxxxxxxx@yahoo.com:$HEX[737665746c6fc48dc599c5be]\n"
-           "xxxxxxxxx@yahoo.com:$HEX[d985d8aed985d8aed985d8ae]";
+  input << "xxxxx@yahoo.com;$HEX[d8b3d8aed8b3d8ae31393634]\n"
+           "xxxxx@yahoo.com;$HEX[e2978fe2978fe2978fe2978fe2978fe2978fe2978fe2978fe2978fe2978f]\n"
+           "xxxxxx@yahoo.com;$HEX[d09cd095d0a0d0a3d091d090d09dd098]\n"
+           "xxxxx@yahoo.com.au;$HEX[6c696e6b6564696e2122c2a3]\n"
+           "xxxxx@yahoo.com;$HEX[5a415054c4b059414e]\n"
+           "xxxxx@yahoo.com;$HEX[737965647a616cc4b1]\n"
+           "xxxx@yahoo.com.br;$HEX[676f6ec3a7616c766573]\n"
+           "xxxxxx@yahoo.com;$HEX[d0b0d0bad0b0d0b4d0b5d0bcd0b8d0ba]\n"
+           "xxxxxxxxxx@yahoo.com;$HEX[737665746c6fc48dc599c5be]\n"
+           "xxxxxxxxx@yahoo.com;$HEX[d985d8aed985d8aed985d8ae]";
+  pwned::UserPasswordReader reader(input, std::vector<pwned::UserPasswordReaderOptions>{pwned::UserPasswordReaderOptions::forceEvaluateHexEncodedPasswords});
+  std::vector<std::string> hashes{
+    "c8498d5ccdbea55e7fc9ceb31137ee87",
+    "a3359d7b81428a02c443e69a7c8a931d",
+    "e9a024a9e452d6712198a606212728e3",
+    "49eb91943b82b6943838ecd7039fe7fd",
+    "c188052534e90b1181921d420fe44052",
+    "e42eb9ff8e8a6740eb7b3b7b2bda509b",
+    "eb594ad2b95c6444990aa737302284ce",
+    "225cf62385e7513b7053db2813a772b0",
+    "271873e01ea8c2d253493653e52e5a93",
+    "56f9a8d20e3bb57777202d3c6616eea2"
+  };
+  for (const std::string &hash : hashes)
+  {
+    if (reader.eof())
+      break;
+    const pwned::Hash &correctHash = pwned::Hash::fromHex(hash);
+    const pwned::Hash &gotHash = reader.nextPasswordHash();
+    BOOST_TEST(correctHash == gotHash);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(test_userpasswordreader_mail_tab)
+{
+  std::stringstream input;
+  input << "xxxxx@yahoo.com\t$HEX[d8b3d8aed8b3d8ae31393634]\n"
+           "xxxxx@yahoo.com\t$HEX[e2978fe2978fe2978fe2978fe2978fe2978fe2978fe2978fe2978fe2978f]\n"
+           "xxxxxx@yahoo.com\t$HEX[d09cd095d0a0d0a3d091d090d09dd098]\n"
+           "xxxxx@yahoo.com.au\t$HEX[6c696e6b6564696e2122c2a3]\n"
+           "xxxxx@yahoo.com\t$HEX[5a415054c4b059414e]\n"
+           "xxxxx@yahoo.com\t$HEX[737965647a616cc4b1]\n"
+           "xxxx@yahoo.com.br\t$HEX[676f6ec3a7616c766573]\n"
+           "xxxxxx@yahoo.com\t$HEX[d0b0d0bad0b0d0b4d0b5d0bcd0b8d0ba]\n"
+           "xxxxxxxxxx@yahoo.com\t$HEX[737665746c6fc48dc599c5be]\n"
+           "xxxxxxxxx@yahoo.com\t$HEX[d985d8aed985d8aed985d8ae]";
+  pwned::UserPasswordReader reader(input, std::vector<pwned::UserPasswordReaderOptions>{pwned::UserPasswordReaderOptions::forceEvaluateHexEncodedPasswords});
+  std::vector<std::string> hashes{
+    "c8498d5ccdbea55e7fc9ceb31137ee87",
+    "a3359d7b81428a02c443e69a7c8a931d",
+    "e9a024a9e452d6712198a606212728e3",
+    "49eb91943b82b6943838ecd7039fe7fd",
+    "c188052534e90b1181921d420fe44052",
+    "e42eb9ff8e8a6740eb7b3b7b2bda509b",
+    "eb594ad2b95c6444990aa737302284ce",
+    "225cf62385e7513b7053db2813a772b0",
+    "271873e01ea8c2d253493653e52e5a93",
+    "56f9a8d20e3bb57777202d3c6616eea2"
+  };
+  for (const std::string &hash : hashes)
+  {
+    if (reader.eof())
+      break;
+    const pwned::Hash &correctHash = pwned::Hash::fromHex(hash);
+    const pwned::Hash &gotHash = reader.nextPasswordHash();
+    BOOST_TEST(correctHash == gotHash);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(test_userpasswordreader_mail_space)
+{
+  std::stringstream input;
+  input << "xxxxx@yahoo.com $HEX[d8b3d8aed8b3d8ae31393634]\n"
+           "xxxxx@yahoo.com $HEX[e2978fe2978fe2978fe2978fe2978fe2978fe2978fe2978fe2978fe2978f]\n"
+           "xxxxxx@yahoo.com $HEX[d09cd095d0a0d0a3d091d090d09dd098]\n"
+           "xxxxx@yahoo.com.au $HEX[6c696e6b6564696e2122c2a3]\n"
+           "xxxxx@yahoo.com $HEX[5a415054c4b059414e]\n"
+           "xxxxx@yahoo.com $HEX[737965647a616cc4b1]\n"
+           "xxxx@yahoo.com.br $HEX[676f6ec3a7616c766573]\n"
+           "xxxxxx@yahoo.com $HEX[d0b0d0bad0b0d0b4d0b5d0bcd0b8d0ba]\n"
+           "xxxxxxxxxx@yahoo.com $HEX[737665746c6fc48dc599c5be]\n"
+           "xxxxxxxxx@yahoo.com $HEX[d985d8aed985d8aed985d8ae]";
   pwned::UserPasswordReader reader(input, std::vector<pwned::UserPasswordReaderOptions>{pwned::UserPasswordReaderOptions::forceEvaluateHexEncodedPasswords});
   std::vector<std::string> hashes{
     "c8498d5ccdbea55e7fc9ceb31137ee87",
