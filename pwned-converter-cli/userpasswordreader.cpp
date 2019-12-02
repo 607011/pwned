@@ -161,7 +161,7 @@ Hash UserPasswordReader::nextPasswordHash()
   ++lineNo;
   if (currentLine.size() > 200 || currentLine.size() < 1) // assume no user:pass line is longer than 200 characters
     return Hash();
-  std::string pwd = extractPassword(currentLine);
+  const std::string &pwd = extractPassword(currentLine);
   if (pwd.size() == 0)
     return Hash();
   Hash hash;
