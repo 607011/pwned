@@ -40,14 +40,16 @@ class UserPasswordReader
 {
 public:
   UserPasswordReader(std::istream &inputStream, const std::vector<UserPasswordReaderOptions> &options);
-  void evaluateContents();
-  char guessSeparator();
-  bool checkForMD5Hashes();
-  bool checkForHexEncodedPasswords();
   std::string extractPassword(std::string line);
   Hash nextPasswordHash();
   bool eof() const;
   bool bad() const;
+
+protected:
+  void evaluateContents();
+  char guessSeparator();
+  bool checkForMD5Hashes();
+  bool checkForHexEncodedPasswords();
 
 private:
   static const int nTries{500};
