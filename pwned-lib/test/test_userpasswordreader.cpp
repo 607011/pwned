@@ -22,8 +22,10 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include <boost/test/unit_test.hpp>
-#include "../userpasswordreader.hpp"
+
+#include <pwned-lib/userpasswordreader.hpp>
 
 BOOST_AUTO_TEST_SUITE(test_userpasswordreader)
 
@@ -53,7 +55,6 @@ BOOST_AUTO_TEST_CASE(test_userpasswordreader_password_only)
     BOOST_TEST(password == reader.nextPassword());
   }
 }
-
 
 BOOST_AUTO_TEST_CASE(test_userpasswordreader_password_only_crlf)
 {

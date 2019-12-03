@@ -22,7 +22,7 @@
 #include <fstream>
 #include <boost/locale/encoding_utf.hpp>
 
-#include "../../pwned-converter-cli/userpasswordreader.hpp"
+#include <pwned-lib/userpasswordreader.hpp>
 
 #include "markovnode.hpp"
 #include "markovchain.hpp"

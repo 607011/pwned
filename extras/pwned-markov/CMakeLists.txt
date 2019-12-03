@@ -6,7 +6,7 @@ add_executable(pwned-markov
   pwned-markov.cpp
   markovnode.cpp
   markovchain.cpp
-  ../../pwned-converter-cli/userpasswordreader.cpp)
+)
 set_target_properties(pwned-markov PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
 
 target_include_directories(pwned-markov

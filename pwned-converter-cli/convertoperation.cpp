@@ -22,8 +22,8 @@
 
 #include <pwned-lib/util.hpp>
 #include <pwned-lib/operationqueue.hpp>
+#include <pwned-lib/userpasswordreader.hpp>
 
-#include "userpasswordreader.hpp"
 #include "convertoperation.hpp"
 
 namespace fs = boost::filesystem;
