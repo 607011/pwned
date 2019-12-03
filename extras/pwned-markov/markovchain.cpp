@@ -81,20 +81,32 @@ bool Chain::readJson(std::istream &is, bool doClear)
   return true;
 }
 
+template <typename T>
+inline T read(std::istream &is)
+{
+  T data;
+  is.read(reinterpret_cast<char*>(&data), sizeof(data));
+  return data;
+}
+
+template <typename T>
+inline void write(std::ostream &os, T data)
+{
+  os.write(reinterpret_cast<const char*>(&data), sizeof(data));
+}
+
 void Chain::writeBinary(std::ostream &os)
 {
-  os.write(reinterpret_cast<const char*>(&FileHeader), sizeof(FileHeader));
-  const uint32_t cnt = (uint32_t)mNodes.size();
-  os.write(reinterpret_cast<const char*>(&cnt), sizeof(cnt));
+  os.write(FileHeader, 4);
+  write(os, (uint32_t)mNodes.size());
   for (const auto &node : mNodes)
   {
-    os.write(reinterpret_cast<const char*>(&node.first), sizeof(node.first));
-    const uint32_t cnt = (uint32_t)node.second.successors().size();
-    os.write(reinterpret_cast<const char*>(&cnt), sizeof(cnt));
+    write(os, node.first);
+    write(os, (uint32_t)node.second.successors().size());
     for (const auto &successor : node.second.successors())
     {
-      os.write(reinterpret_cast<const char*>(&successor.first), sizeof(successor.first));
-      os.write(reinterpret_cast<const char*>(&successor.second), sizeof(successor.second));
+      write(os, successor.first);
+      write(os, successor.second);
     }
   }
 }
@@ -107,20 +119,18 @@ bool Chain::readBinary(std::istream &is, bool doClear)
   }
   while (!is.eof())
   {
-    char hdr[4];
+    char hdr[4] = {0, 0, 0, 0};
     is.read(reinterpret_cast<char*>(&hdr), sizeof(hdr));
     if (is.eof())
       return false;
     if (memcmp(hdr, FileHeader, 4) != 0)
       return false;
-    uint32_t symbolCount;
-    is.read(reinterpret_cast<char*>(&symbolCount), sizeof(symbolCount));
+    uint32_t symbolCount = read<uint32_t>(is);
     if (is.eof())
       return false;
     for (auto i = 0; i < symbolCount; ++i)
     {
-      wchar_t c;
-      is.read(reinterpret_cast<char*>(&c), sizeof(c));
+      wchar_t c = read<wchar_t>(is);
       if (is.eof())
         return false;
       if (mNodes.find(c) == mNodes.end())
@@ -129,19 +139,16 @@ bool Chain::readBinary(std::istream &is, bool doClear)
       }
       if (is.eof())
         return false;
-      uint32_t nodeCount;
-      is.read(reinterpret_cast<char*>(&nodeCount), sizeof(nodeCount));
+      uint32_t nodeCount = read<uint32_t>(is);
       if (is.eof())
         return false;
       Node &currentNode = mNodes[c];
       for (auto j = 0; j < nodeCount; ++j)
       {
-        wchar_t symbol;
-        double probability;
-        is.read(reinterpret_cast<char*>(&symbol), sizeof(symbol));
+        wchar_t symbol = read<wchar_t>(is);
         if (is.eof())
           return false;
-        is.read(reinterpret_cast<char*>(&probability), sizeof(probability));
+        double probability = read<double>(is);
         if (is.eof())
           return false;
         currentNode.addSuccessor(symbol, probability);
