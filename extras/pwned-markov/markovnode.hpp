@@ -32,7 +32,7 @@ public:
   void update()
   {
     using value_type = decltype(mCounts)::value_type;
-    const std::size_t sum = std::accumulate(std::begin(mCounts), std::end(mCounts), 0,
+    const std::size_t sum = std::accumulate(std::begin(mCounts), std::end(mCounts), 0ULL,
       [](std::size_t a, const value_type &b) {
         return b.second + a;
       });
