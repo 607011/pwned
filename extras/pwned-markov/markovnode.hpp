@@ -31,18 +31,18 @@ public:
   Node() = default;
   void update()
   {
-    using value_type = decltype(mCounts)::value_type;
+    using count_type = decltype(mCounts)::value_type;
     const std::size_t sum = std::accumulate(std::begin(mCounts), std::end(mCounts), 0ULL,
-      [](std::size_t a, const value_type &b) {
+      [](std::size_t a, const count_type &b) {
         return b.second + a;
       });
     for (const auto &p : mCounts)
     {
       mProbs[p.first] = (double)p.second / (double)sum;
     }
-    using pair_type = decltype(mProbs)::value_type;
+    using prob_type = decltype(mProbs)::value_type;
     auto maxElement = std::max_element(std::begin(mProbs), std::end(mProbs),
-      [](const pair_type &a, const pair_type &b) {
+      [](const prob_type &a, const prob_type &b) {
         return a.second < b.second;
       });
     mMaxProbElement = *maxElement;
