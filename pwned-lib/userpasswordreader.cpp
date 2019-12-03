@@ -23,7 +23,7 @@
 #include <cstdint>
 
 #include "userpasswordreader.hpp"
-#include <pwned-lib/util.hpp>
+#include "util.hpp"
 
 namespace pwned
 {
@@ -47,7 +47,6 @@ bool UserPasswordReader::bad() const
 {
   return input.bad();
 }
-
 
 char UserPasswordReader::guessSeparator()
 {
@@ -140,8 +139,9 @@ void UserPasswordReader::evaluateContents()
   this->checkForMD5Hashes();
 }
 
-std::string UserPasswordReader::extractPassword(std::string line)
+std::string UserPasswordReader::extractPassword(const std::string &_line)
 {
+  std::string line = _line;
   line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
   if (guessedSeparator != '\0')
   {

@@ -22,7 +22,7 @@
 #include <vector>
 #include <regex>
 
-#include <pwned-lib/hash.hpp>
+#include "hash.hpp"
 
 namespace pwned
 {
@@ -40,7 +40,7 @@ class UserPasswordReader
 {
 public:
   UserPasswordReader(std::istream &inputStream, const std::vector<UserPasswordReaderOptions> &options);
-  std::string extractPassword(std::string line);
+  std::string extractPassword(const std::string &line);
   std::string nextPassword();
   Hash nextPasswordHash();
   bool eof() const;
