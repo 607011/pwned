@@ -19,7 +19,6 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/locale/encoding_utf.hpp>
 
 #include "markovchain.hpp"
 

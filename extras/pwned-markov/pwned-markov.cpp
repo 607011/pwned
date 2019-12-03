@@ -22,6 +22,8 @@
 #include <fstream>
 #include <boost/locale/encoding_utf.hpp>
 
+#include "../../pwned-converter-cli/userpasswordreader.hpp"
+
 #include "markovnode.hpp"
 #include "markovchain.hpp"
 
@@ -41,16 +43,17 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   markov::Chain chain;
   std::ifstream input(argv[1]);
-  while (!input.eof())
+  std::vector<pwned::UserPasswordReaderOptions> readerOptions{pwned::UserPasswordReaderOptions::autoEvaluateHexEncodedPasswords};
+  pwned::UserPasswordReader reader(input, readerOptions);
+  while (!reader.eof())
   {
-    std::string line;
-    std::getline(input, line);
-    if (line.size() == 0)
+    const std::string &pwd = reader.nextPassword();
+    if (pwd.empty())
       continue;
-    const std::wstring &s32 = to_utf32(line);
+    const std::wstring &s32 = to_utf32(pwd);
     for (std::size_t i = 0; i < s32.size() - 1; ++i)
     {
-      chain.addPair(s32[i], s32[i+1]);
+      chain.addPair(s32.at(i), s32.at(i+1));
     }
   }
   chain.update();
