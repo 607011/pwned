@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(pwned-markov)
 
-add_executable(pwned-markov pwned-markov.cpp)
+add_executable(pwned-markov pwned-markov.cpp markovnode.cpp)
 set_target_properties(pwned-markov PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
 
 target_include_directories(pwned-markov

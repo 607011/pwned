@@ -19,8 +19,6 @@
 #define __markovnode_hpp__
 
 #include <unordered_map>
-#include <algorithm>
-#include <numeric>
 #include <cstdint>
 
 namespace markov {
@@ -29,48 +27,13 @@ class Node
 {
 public:
   Node() = default;
-  void update()
-  {
-    using count_type = decltype(mCounts)::value_type;
-    const std::size_t sum = std::accumulate(std::begin(mCounts), std::end(mCounts), 0ULL,
-      [](std::size_t a, const count_type &b) {
-        return b.second + a;
-      });
-    for (const auto &p : mCounts)
-    {
-      mProbs[p.first] = (double)p.second / (double)sum;
-    }
-    using prob_type = decltype(mProbs)::value_type;
-    auto maxElement = std::max_element(std::begin(mProbs), std::end(mProbs),
-      [](const prob_type &a, const prob_type &b) {
-        return a.second < b.second;
-      });
-    mMaxProbElement = *maxElement;
-  }
-  double probability(wchar_t c) const
-  {
-    return mProbs.at(c);
-  }
-  std::size_t count(wchar_t c) const
-  {
-    return mCounts.at(c);
-  }
-  void increment(wchar_t c)
-  {
-    ++mCounts[c];
-  }
-  const std::unordered_map<wchar_t, double> &successors() const
-  {
-    return mProbs;
-  }
-  std::size_t size() const
-  {
-    return mCounts.size();
-  }
-  const std::pair<wchar_t, double> &maxProbElement() const
-  {
-    return mMaxProbElement;
-  }
+  void update();
+  double probability(wchar_t c) const;
+  std::size_t count(wchar_t c) const;
+  void increment(wchar_t c);
+  const std::unordered_map<wchar_t, double> &successors() const;
+  std::size_t size() const;
+  const std::pair<wchar_t, double> &maxProbElement() const;
 
 private:
   std::unordered_map<wchar_t, double> mProbs;
