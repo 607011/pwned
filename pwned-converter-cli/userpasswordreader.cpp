@@ -153,15 +153,20 @@ std::string UserPasswordReader::extractPassword(std::string line)
   return line;
 }
 
-Hash UserPasswordReader::nextPasswordHash()
+std::string UserPasswordReader::nextPassword()
 {
   if (input.eof() || input.bad())
-    return Hash();
+    return std::string();
   std::getline(input, currentLine);
   ++lineNo;
   if (currentLine.size() > 200 || currentLine.size() < 1) // assume no user:pass line is longer than 200 characters
-    return Hash();
-  const std::string &pwd = extractPassword(currentLine);
+    return std::string();
+  return extractPassword(currentLine);
+}
+
+Hash UserPasswordReader::nextPasswordHash()
+{
+  const std::string &pwd = nextPassword();
   if (pwd.size() == 0)
     return Hash();
   Hash hash;

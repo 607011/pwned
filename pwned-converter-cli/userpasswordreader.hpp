@@ -41,6 +41,7 @@ class UserPasswordReader
 public:
   UserPasswordReader(std::istream &inputStream, const std::vector<UserPasswordReaderOptions> &options);
   std::string extractPassword(std::string line);
+  std::string nextPassword();
   Hash nextPasswordHash();
   bool eof() const;
   bool bad() const;
