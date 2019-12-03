@@ -167,7 +167,7 @@ std::string UserPasswordReader::nextPassword()
 Hash UserPasswordReader::nextPasswordHash()
 {
   const std::string &pwd = nextPassword();
-  if (pwd.size() == 0)
+  if (pwd.empty())
     return Hash();
   Hash hash;
   if (forceEvaluateMD5Hashes)
