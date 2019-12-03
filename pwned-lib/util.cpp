@@ -234,7 +234,7 @@ int decodeHex(const char c)
   return -1;
 }
 
-void hexToCharSeq(const std::string &seq, std::string &result)
+bool hexToCharSeq(const std::string &seq, std::string &result)
 {
   result.clear();
   if (seq.size() % 2 == 0)
@@ -250,10 +250,11 @@ void hexToCharSeq(const std::string &seq, std::string &result)
       }
       else
       {
-        std::cerr << "invalid hex code: " << seq << std::endl;
+        return false;
       }
     }
   }
+  return true;
 }
 
 unsigned int popcnt64(uint64_t x)
