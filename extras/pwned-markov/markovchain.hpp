@@ -21,71 +21,28 @@
 #include <unordered_map>
 #include <string>
 #include <cstdint>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/locale/encoding_utf.hpp>
+#include <iostream>
 
 #include "markovnode.hpp"
 
 namespace markov {
-
-namespace pt = boost::property_tree;
 
 class Chain
 {
 public:
   using map_type = std::unordered_map<wchar_t, Node>;
   Chain() = default;
-  void update()
-  {
-    for (auto &node : mNodes)
-    {
-      node.second.update();
-    }
-  }
-  void addPair(wchar_t current, wchar_t successor)
-  {
-    if (mNodes.find(current) == mNodes.end())
-    {
-      mNodes[current] = Node();
-    }
-    mNodes[current].increment(successor);
-  }
-  const map_type &nodes() const
-  {
-    return mNodes;
-  }
-  void writeJson(std::ostream &os)
-  {
-    pt::ptree root;
-    for (const auto &node : mNodes)
-    {
-      pt::ptree child;
-      for (const auto &successor : node.second.successors())
-      {
-        child.put<double>(std::to_string(successor.first), successor.second);
-      }
-      root.put_child(std::to_string(node.first), child);
-    }
-    pt::write_json(os, root, true);
-  }
-  void writeBinary(std::ostream &os)
-  {
-    for (const auto &node : mNodes)
-    {
-      os.write(reinterpret_cast<const char*>(&node.first), sizeof(node.first));
-      const uint32_t cnt = (uint32_t)node.second.successors().size();
-      os.write(reinterpret_cast<const char*>(&cnt), sizeof(cnt));
-      for (const auto &successor : node.second.successors())
-      {
-        os.write(reinterpret_cast<const char*>(&successor.first), sizeof(successor.first));
-        os.write(reinterpret_cast<const char*>(&successor.second), sizeof(successor.second));
-      }
-    }
-  }
+  void update();
+  void addPair(wchar_t current, wchar_t successor);
+  const map_type &nodes() const;
+  void writeJson(std::ostream &os);
+  bool readJson(std::istream &is, bool doClear = true);
+  void writeBinary(std::ostream &os);
+  bool readBinary(std::istream &is, bool doClear = true);
 
 private:
   map_type mNodes;
+  static const char FileHeader[4];
 };
 
 }

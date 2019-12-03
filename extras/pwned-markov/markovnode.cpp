@@ -15,6 +15,7 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <utility>
 #include <algorithm>
 #include <numeric>
 
@@ -26,28 +27,32 @@ namespace markov
 void Node::update()
 {
   using count_type = decltype(mCounts)::value_type;
-  const std::size_t sum = std::accumulate(std::begin(mCounts), std::end(mCounts), 0ULL,
-                                          [](std::size_t a, const count_type &b) {
-                                            return b.second + a;
-                                          });
+  const size_t sum = std::accumulate(std::begin(mCounts), std::end(mCounts), 0ULL,
+                                     [](size_t a, const count_type &b) {
+                                       return b.second + a;
+                                     });
   for (const auto &p : mCounts)
   {
     mProbs[p.first] = (double)p.second / (double)sum;
   }
-  using prob_type = decltype(mProbs)::value_type;
   auto maxElement = std::max_element(std::begin(mProbs), std::end(mProbs),
-                                     [](const prob_type &a, const prob_type &b) {
+                                     [](const Node::prob_type &a, const Node::prob_type &b) {
                                        return a.second < b.second;
                                      });
   mMaxProbElement = *maxElement;
+  auto minElement = std::min_element(std::begin(mProbs), std::end(mProbs),
+                                     [](const Node::prob_type &a, const Node::prob_type &b) {
+                                       return a.second < b.second;
+                                     });
+  mMinProbElement = *minElement;
 }
 
-double Node::probability(wchar_t c) const
+Node::prob_value_type Node::probability(wchar_t c) const
 {
   return mProbs.at(c);
 }
 
-std::size_t Node::count(wchar_t c) const
+size_t Node::count(wchar_t c) const
 {
   return mCounts.at(c);
 }
@@ -57,17 +62,27 @@ void Node::increment(wchar_t c)
   ++mCounts[c];
 }
 
-const std::unordered_map<wchar_t, double> &Node::successors() const
+const Node::prob_map_type &Node::successors() const
 {
   return mProbs;
 }
 
-std::size_t Node::size() const
+void Node::addSuccessor(wchar_t c, double probability)
+{
+  mProbs[c] = probability;
+}
+
+size_t Node::size() const
 {
   return mCounts.size();
 }
 
-const std::pair<wchar_t, double> &Node::maxProbElement() const
+const Node::prob_type &Node::minProbElement() const
+{
+  return mMinProbElement;
+}
+
+const Node::prob_type &Node::maxProbElement() const
 {
   return mMaxProbElement;
 }

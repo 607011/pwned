@@ -26,19 +26,27 @@ namespace markov {
 class Node
 {
 public:
-  Node() = default;
-  void update();
-  double probability(wchar_t c) const;
-  std::size_t count(wchar_t c) const;
-  void increment(wchar_t c);
-  const std::unordered_map<wchar_t, double> &successors() const;
-  std::size_t size() const;
-  const std::pair<wchar_t, double> &maxProbElement() const;
+  using prob_map_type = std::unordered_map<wchar_t, double>;
 
 private:
-  std::unordered_map<wchar_t, double> mProbs;
-  std::unordered_map<wchar_t, std::size_t> mCounts;
-  std::pair<wchar_t, double> mMaxProbElement;
+  prob_map_type mProbs;
+  std::unordered_map<wchar_t, size_t> mCounts;
+  using prob_type = std::pair<wchar_t, double>;
+  prob_type mMinProbElement;
+  prob_type mMaxProbElement;
+  using prob_value_type = prob_type::second_type;
+
+public:
+  Node() = default;
+  void update();
+  prob_value_type probability(wchar_t c) const;
+  size_t count(wchar_t c) const;
+  void increment(wchar_t c);
+  const prob_map_type &successors() const;
+  void addSuccessor(wchar_t, prob_value_type);
+  size_t size() const;
+  const prob_type &minProbElement() const;
+  const prob_type &maxProbElement() const;
 };
 
 }

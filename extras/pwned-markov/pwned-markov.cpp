@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include <cstdint>
+#include <cstdlib>
 #include <string>
 #include <fstream>
 #include <boost/locale/encoding_utf.hpp>
@@ -34,10 +35,12 @@ std::string to_utf8(wchar_t c)
   return boost::locale::conv::utf_to_utf<char>(std::wstring(&c, 1));
 }
 
-int main(int, char*[])
+int main(int argc, char* argv[])
 {
+  if (argc < 3)
+    return EXIT_FAILURE;
   markov::Chain chain;
-  std::ifstream input("/home/ola/tmp/4427_cristalix-pe_found.txt");
+  std::ifstream input(argv[1]);
   while (!input.eof())
   {
     std::string line;
@@ -51,18 +54,13 @@ int main(int, char*[])
     }
   }
   chain.update();
-  // for (const auto &node : chain.nodes())
-  // {
-  //   std::cout << to_utf8(node.first) << " -> ";
-  //   std::cout << to_utf8(node.second.maxProbElement().first) << " " << (1e2*node.second.maxProbElement().second) << "%";
-  //   // for (const auto &prob : node.second.successors())
-  //   // {
-  //   //   std::cout << "(" << to_utf8(prob.first) << ":" << (1e2*prob.second) << "%)";
-  //   // }
-  //   std::cout << std::endl;
-  // }
-  // std::cout << std::endl;
-  std::ofstream output("bin", std::ios::trunc | std::ios::binary);
+  input.close();
+  std::ofstream output(argv[2], std::ios::trunc | std::ios::binary);
   chain.writeBinary(output);
-  return 0;
+  output.close();
+
+  std::ifstream input2(argv[2], std::ios::binary);
+  chain.readBinary(input2, true);
+  chain.writeJson(std::cout);
+  return EXIT_SUCCESS;
 }
