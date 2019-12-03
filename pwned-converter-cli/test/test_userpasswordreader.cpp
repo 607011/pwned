@@ -27,6 +27,34 @@
 
 BOOST_AUTO_TEST_SUITE(test_userpasswordreader)
 
+BOOST_AUTO_TEST_CASE(test_userpasswordreader_password_only)
+{
+  std::stringstream input;
+  input << "1999kpi\r\n"
+           "adminadminadmin\r\n"
+           "rootadmin\r\n"
+           "admin\r\n"
+           "LOLOLOWKA\r\n"
+           "bananek1\r\n"
+;
+  pwned::UserPasswordReader reader(input, std::vector<pwned::UserPasswordReaderOptions>{pwned::UserPasswordReaderOptions::autoEvaluateHexEncodedPasswords});
+  const std::vector<std::string> passwords{
+    "1999kpi",
+    "adminadminadmin",
+    "rootadmin",
+    "admin",
+    "LOLOLOWKA",
+    "bananek1",
+  };
+  for (const std::string &password : passwords)
+  {
+    if (reader.eof())
+      break;
+    BOOST_TEST(password == reader.nextPassword());
+  }
+}
+
+
 BOOST_AUTO_TEST_CASE(test_userpasswordreader_password_only_crlf)
 {
   std::stringstream input;
