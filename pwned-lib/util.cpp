@@ -260,7 +260,7 @@ bool hexToCharSeq(const std::string &seq, std::string &result)
 unsigned int popcnt64(uint64_t x)
 {
 #ifndef NO_POPCNT
-  return _mm_popcnt_u64(x);
+  return (unsigned int)_mm_popcnt_u64(x);
 #else
   // see https://en.wikipedia.org/wiki/Hamming_weight
   const uint64_t m1  = 0x5555555555555555;
