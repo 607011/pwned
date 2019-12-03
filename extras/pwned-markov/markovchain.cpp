@@ -97,6 +97,8 @@ inline void write(std::ostream &os, T data)
 
 void Chain::writeBinary(std::ostream &os)
 {
+  if (mNodes.empty())
+    return;
   os.write(FileHeader, 4);
   write(os, (uint32_t)mNodes.size());
   for (const auto &node : mNodes)
