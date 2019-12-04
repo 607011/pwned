@@ -41,10 +41,18 @@ int main(int argc, char* argv[])
 {
   if (argc < 3)
     return EXIT_FAILURE;
+  const std::string &inputFilename = argv[1];
+  const std::string &outputFilename = argv[2];
+  std::istream *input = &std::cin;
+  std::ifstream inputFile;
+  if (inputFilename != "-")
+  {
+    inputFile.open(inputFilename);
+    input = &inputFile;
+  }
+  const std::vector<pwned::UserPasswordReaderOptions> readerOptions{pwned::UserPasswordReaderOptions::autoEvaluateHexEncodedPasswords};
+  pwned::UserPasswordReader reader(*input, readerOptions);
   markov::Chain chain;
-  std::ifstream input(argv[1]);
-  std::vector<pwned::UserPasswordReaderOptions> readerOptions{pwned::UserPasswordReaderOptions::autoEvaluateHexEncodedPasswords};
-  pwned::UserPasswordReader reader(input, readerOptions);
   while (!reader.eof())
   {
     const std::string &pwd = reader.nextPassword();
@@ -57,13 +65,8 @@ int main(int argc, char* argv[])
     }
   }
   chain.update();
-  input.close();
-  std::ofstream output(argv[2], std::ios::trunc | std::ios::binary);
+  std::ofstream output(outputFilename, std::ios::trunc | std::ios::binary);
   chain.writeBinary(output);
   output.close();
-
-  std::ifstream input2(argv[2], std::ios::binary);
-  chain.readBinary(input2, true);
-  chain.writeJson(std::cout);
   return EXIT_SUCCESS;
 }
