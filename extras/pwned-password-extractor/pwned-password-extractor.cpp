@@ -18,10 +18,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <random>
 #include <cstdint>
 #include <cstdlib>
-#include <sstream>
 
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -29,7 +27,6 @@
 
 #include <bzlib.h>
 
-#include <pwned-lib/passwordhashandcount.hpp>
 #include <pwned-lib/userpasswordreader.hpp>
 
 
@@ -41,7 +38,7 @@ po::options_description desc("Allowed options");
 
 void hello()
 {
-  std::cout << "#pwned password extractor 0.1 - Copyright (c) 2019 Oliver Lau" << std::endl
+  std::cout << "#pwned password extractor 1.0-BETA - Copyright (c) 2019 Oliver Lau" << std::endl
             << std::endl;
 }
 
@@ -84,7 +81,7 @@ int main(int argc, const char *argv[])
   ("help", "produce help message")
   ("source,S", po::value<std::string>(&srcDirectory), "set user:pass input directory")
   ("output,O", po::value<std::string>(&outputFilename), "set output file")
-  ("compress,C", po::bool_switch(&compress), "compress output with LZMA")
+  ("compress,C", po::bool_switch(&compress), "compress output with BZ2")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -92,7 +89,7 @@ int main(int argc, const char *argv[])
   {
     po::store(po::parse_command_line(argc, argv, desc), vm);
   }
-  catch (po::error &e)
+  catch (const po::error &e)
   {
     std::cerr << "ERROR: " << e.what() << std::endl
               << std::endl;
@@ -119,45 +116,54 @@ int main(int argc, const char *argv[])
     usage();
     return EXIT_SUCCESS;
   }
-  if (compress)
-  {
-    outputFilename.append(".bz2");
-  }
 
-  if (srcDirectory.size() > 0)
+  std::cout << "Scanning '" << srcDirectory << "' for files ... " << std::flush;
+  fs::recursive_directory_iterator fileTreeIterator(srcDirectory);
+  for (const auto &f : fileTreeIterator)
   {
-    std::cout << "Scanning " << srcDirectory << " for files ... " << std::flush;
-    fs::recursive_directory_iterator fileTreeIterator(srcDirectory);
-    for (const auto &f : fileTreeIterator)
+    const std::string &filePath = f.path().string();
+    if (fs::is_regular_file(f) && ba::ends_with(filePath, ".txt"))
     {
-      const std::string &filePath = f.path().string();
-      if (fs::is_regular_file(f) && ba::ends_with(filePath, ".txt"))
-      {
-        inputFilenames.push_back(filePath);
-      }
+      inputFilenames.push_back(filePath);
     }
-    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+  if (inputFilenames.empty())
+  {
+    std::cerr << "No files found in '" << srcDirectory << "'." << std::endl;
+    return EXIT_FAILURE;
   }
 
   std::ofstream out;
-  int bzError;
-  constexpr int BLOCK_MULTIPLIER = 7;
+  int bzError = BZ_OK;
   FILE *bz2File = nullptr;
   BZFILE *pBz = nullptr;
   if (compress)
   {
+    outputFilename.append(".bz2");
+    bz2File = fopen(outputFilename.c_str(), "wb+");
+    if (bz2File == NULL)
+    {
+      std::cerr << "Cannot open '" << outputFilename << "' for writing." << std::endl;
+      return EXIT_FAILURE;
+    }
+    pBz = BZ2_bzWriteOpen(&bzError, bz2File, 8, 0, 0);
+    if (bzError != BZ_OK)
+    {
+      std::cerr << "Cannot create BZ2 writer for '" << outputFilename << "'." << std::endl;
+      return EXIT_FAILURE;
+    }
     std::cout << "Compressing output file with BZ2." << std::endl;
-    bz2File = fopen(outputFilename.c_str(), "wb");
-    pBz = BZ2_bzWriteOpen(&bzError, bz2File, BLOCK_MULTIPLIER, 0, 0);
   }
   else
   {
     out.open(outputFilename, std::ios::trunc | std::ios::binary);
     if (!out.is_open())
     {
-      std::cerr << "Cannot open " << outputFilename << std::endl;
+      std::cerr << "Cannot open '" << outputFilename << "' for writing." << std::endl;
       return EXIT_FAILURE;
     }
+    std::cout << "Writing to UNCOMPRESSED output file." << std::endl;
   }
 
   std::cout << "Extracting passwords from ... " << std::endl;
@@ -170,28 +176,27 @@ int main(int argc, const char *argv[])
       std::cerr << "Cannot open " << inputFilename << std::endl;
       return EXIT_FAILURE;
     }
-    std::cout << " - " << inputFilename << std::flush;
+    std::cout << inputFilename << std::flush;
     pwned::UserPasswordReader reader(in, readerOptions);
-    if (compress)
+    while (!reader.eof())
     {
-      while (!reader.eof())
+      const std::string &pwd = reader.nextPassword() + "\n";
+      if (!pwd.empty())
       {
-        std::string pwd = reader.nextPassword();
-        if (!pwd.empty())
+        if (compress)
         {
-          pwd += "\n";
           BZ2_bzWrite(&bzError, pBz, const_cast<char*>(pwd.c_str()), (int)pwd.size());
+          if (bzError != BZ_OK)
+          {
+            std::cerr << "ERROR while writing to BZ2 file." << std::endl;
+            BZ2_bzWriteClose(&bzError, pBz, 0, nullptr, nullptr);
+            fclose(bz2File);
+            return EXIT_FAILURE;
+          }
         }
-      }
-    }
-    else
-    {
-      while (!reader.eof())
-      {
-        const std::string &pwd = reader.nextPassword();
-        if (!pwd.empty())
+        else
         {
-          out << pwd << std::endl;
+          out << pwd;
         }
       }
     }
@@ -201,6 +206,13 @@ int main(int argc, const char *argv[])
   if (compress)
   {
     BZ2_bzWriteClose(&bzError, pBz, 0, nullptr, nullptr);
+    if (bzError != BZ_OK)
+    {
+      std::cerr << "ERROR while closing BZ2 file." << std::endl;
+      BZ2_bzWriteClose(&bzError, pBz, 0, nullptr, nullptr);
+      fclose(bz2File);
+      return EXIT_FAILURE;
+    }
     fclose(bz2File);
   }
 
