@@ -184,7 +184,7 @@ int main(int argc, const char *argv[])
     std::ifstream inFile(inputFilename);
     if (!inFile.is_open())
     {
-      std::cerr << "Cannot open '" << inputFilename << "' for reading." << std::endl;
+      std::cerr << "WARNING! Cannot open '" << inputFilename << "' for reading. Skipping ..." << std::endl;
       continue;
     }
     std::cout << inputFilename << std::flush;
