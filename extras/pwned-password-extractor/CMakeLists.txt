@@ -29,4 +29,8 @@ target_link_libraries(pwned-password-extractor
   ${Boost_LIBRARIES}
 )
 
+add_custom_command(TARGET pwned-password-extractor
+  POST_BUILD
+  COMMAND strip pwned-password-extractor)
+
 install(TARGETS pwned-password-extractor RUNTIME DESTINATION bin)
