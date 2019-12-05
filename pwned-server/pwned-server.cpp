@@ -82,12 +82,11 @@ void validate(boost::any &v, std::vector<std::string> const &xs, Counter*, long)
     }
 }
 
-
 int main(int argc, const char *argv[])
 {
-  static const std::string DefaultAddress = "http://127.0.0.1:31337/v1/pwned/api";
-  static const int DefaultNumThreads = int(std::thread::hardware_concurrency());
-  static const int DefaultNumWorkers = 64;
+  const std::string DefaultAddress = "http://127.0.0.1:31337/v1/pwned/api";
+  const int DefaultNumThreads = int(std::thread::hardware_concurrency());
+  constexpr int DefaultNumWorkers = 64;
   std::string inputFilename;
   std::string indexFilename;
   std::string address;

@@ -44,7 +44,7 @@ void hello()
 void license()
 {
   std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type" << std::endl
-            << "`index --warranty'." << std::endl
+            << "`index --warranty`." << std::endl
             << "This is free software, and you are welcome to redistribute it" << std::endl
             << "under certain conditions; see https://www.gnu.org/licenses/gpl-3.0.en.html" << std::endl
             << "for details." << std::endl
@@ -71,7 +71,7 @@ int main(int argc, const char *argv[])
   constexpr unsigned int DefaultBits = 24;
   std::string inputFilename;
   std::string outputFilename;
-  unsigned int bits = DefaultBits;
+  unsigned int bits;
   desc.add_options()
   ("help", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set user:pass input file")
@@ -84,7 +84,7 @@ int main(int argc, const char *argv[])
   {
     po::store(po::parse_command_line(argc, argv, desc), vm);
   }
-  catch (po::error &e)
+  catch (const po::error &e)
   {
     std::cerr << "ERROR: " << e.what() << std::endl
               << std::endl;

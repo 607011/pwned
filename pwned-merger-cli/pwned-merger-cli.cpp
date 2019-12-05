@@ -43,8 +43,6 @@ namespace fs = boost::filesystem;
 namespace ba = boost::algorithm;
 namespace po = boost::program_options;
 
-static const std::string DefaultOutputExt = ".md5";
-
 po::options_description desc("Allowed options");
 
 void hello()
@@ -56,7 +54,7 @@ void hello()
 void info()
 {
   std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type" << std::endl
-            << "`pwned-merger --warranty'." << std::endl
+            << "`pwned-merger --warranty`." << std::endl
             << "This is free software, and you are welcome to redistribute it" << std::endl
             << "under certain conditions; see https://www.gnu.org/licenses/gpl-3.0.en.html" << std::endl
             << "for details." << std::endl
@@ -80,19 +78,21 @@ void usage()
 
 int main(int argc, const char *argv[])
 {
+  const std::string DefaultOutputExt = ".md5";
+  constexpr int DefaultMaxFilesAtOnce = 50;
   std::vector<std::string> filenames;
   std::string srcDirectory;
   std::string dstFile;
   std::string tmpDirectory = (fs::temp_directory_path() / "net.ersatzworld.pwned.merger").string();
-  std::string outputExt = DefaultOutputExt;
+  std::string outputExt;
   std::string inputExt = DefaultOutputExt;
-  int maxFilesAtOnce = 50;
+  int maxFilesAtOnce;
   desc.add_options()("help,?", "produce help message")
   ("src,S", po::value<std::string>(&srcDirectory), "set user:pass input directory")
   ("input,I", po::value<std::vector<std::string>>(&filenames), "set MD5:count input file(s)")
   ("output,O", po::value<std::string>(&dstFile), "set MD5:count output file")
   ("tmp,T", po::value<std::string>(&tmpDirectory)->default_value(tmpDirectory), "set working directory")
-  ("max-files-at-once,n", po::value<int>(&maxFilesAtOnce)->default_value(maxFilesAtOnce), "process max files at once")
+  ("max-files-at-once,n", po::value<int>(&maxFilesAtOnce)->default_value(DefaultMaxFilesAtOnce), "process max files at once")
   ("ext,X", po::value<std::string>(&outputExt)->default_value(DefaultOutputExt), "set extension for output files")
   ("warranty,W", "show warranty info");
   po::variables_map vm;
@@ -162,7 +162,7 @@ int main(int argc, const char *argv[])
     fs::create_directories(tmpDirectory, ec);
     if (ec.value() != 0)
     {
-      std::cerr << "Cannot create working directory " << tmpDirectory << "." << std::endl;
+      std::cerr << "Cannot create working directory '" << tmpDirectory << "'." << std::endl;
       return EXIT_FAILURE;
     }
   }
