@@ -44,7 +44,7 @@ void hello()
 void license()
 {
   std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type" << std::endl
-            << "`pwned-server --warranty'." << std::endl
+            << "`pwned-server --warranty`." << std::endl
             << "This is free software, and you are welcome to redistribute it" << std::endl
             << "under certain conditions; see https://www.gnu.org/licenses/gpl-3.0.en.html" << std::endl
             << "for details." << std::endl
@@ -72,14 +72,14 @@ struct Counter { int level = 0; };
 
 void validate(boost::any &v, std::vector<std::string> const &xs, Counter*, long)
 {
-    if (v.empty())
-    {
-      v = Counter{1};
-    }
-    else
-    {
-      ++boost::any_cast<Counter&>(v).level;
-    }
+  if (v.empty())
+  {
+    v = Counter{1};
+  }
+  else
+  {
+    ++boost::any_cast<Counter&>(v).level;
+  }
 }
 
 int main(int argc, const char *argv[])

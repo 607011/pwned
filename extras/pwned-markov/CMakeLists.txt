@@ -20,13 +20,23 @@ else()
   set(PLATFORM_DEPENDENT_LIBRARIES, "")
 endif()
 
+find_library(bz2 bz2 PATHS /usr/lib /usr/local/lib)
+if(bz2 STREQUAL "bz2-NOTFOUND")
+  message(STATUS "BZ2 lib not found. Compiling without BZ2 support.")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DWITHOUT_BZ2")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DWITHOUT_BZ2")
+else()
+  message(STATUS "Found bz2 lib: ${bz2}")
+  set(BZ2LIB bz2)
+endif()
+
 target_link_libraries(pwned-markov
   pwned
+  ${BZ2LIB}
   ${OPENSSL_CRYPTO_LIBRARY}
   ${PLATFORM_DEPENDENT_LIBRARIES}
   ${Boost_LIBRARIES}
 )
-
 
 add_custom_command(TARGET pwned-markov
   POST_BUILD
