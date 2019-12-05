@@ -119,6 +119,19 @@ int main(int argc, const char *argv[])
     return EXIT_SUCCESS;
   }
 
+  if (fs::exists(outputFilename))
+  {
+    std::cout << outputFilename << " already exists. Do you want to overwrite it?" << std::endl
+              << "(y/n) " << std::flush;
+    char c;
+    std::cin >> c;
+    if (c != 'y')
+    {
+      std::cout << std::endl << "Exiting ..." << std::endl;
+      return EXIT_FAILURE;
+    }
+  }
+
   std::cout << "Scanning '" << srcDirectory << "' for files ... " << std::flush;
   fs::recursive_directory_iterator fileTreeIterator(srcDirectory);
   for (const auto &f : fileTreeIterator)
