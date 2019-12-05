@@ -1,4 +1,5 @@
 log*
+.ready
 *.mrkv
 install_manifest.txt
 CMakeCache.txt
