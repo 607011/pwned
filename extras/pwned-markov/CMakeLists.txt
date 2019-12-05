@@ -27,4 +27,9 @@ target_link_libraries(pwned-markov
   ${Boost_LIBRARIES}
 )
 
+
+add_custom_command(TARGET pwned-markov
+  POST_BUILD
+  COMMAND strip pwned-markov)
+
 install(TARGETS pwned-markov RUNTIME DESTINATION bin)

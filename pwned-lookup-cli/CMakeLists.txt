@@ -14,3 +14,11 @@ target_link_libraries(pwned-lookup-cli
 	${OPENSSL_CRYPTO_LIBRARY}
 	${Boost_LIBRARIES}
 )
+
+set_target_properties(pwned-lookup-cli PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
+
+add_custom_command(TARGET pwned-lookup-cli
+  POST_BUILD
+  COMMAND strip pwned-lookup-cli)
+
+install(TARGETS pwned-lookup-cli RUNTIME DESTINATION bin)

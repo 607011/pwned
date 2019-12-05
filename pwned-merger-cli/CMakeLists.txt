@@ -18,3 +18,9 @@ else()
 endif()
 
 target_link_libraries(pwned-merger-cli pwned ${PLATFORM_DEPENDENT_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARY} ${Boost_LIBRARIES})
+
+add_custom_command(TARGET pwned-merger-cli
+  POST_BUILD
+  COMMAND strip pwned-merger-cli)
+
+install(TARGETS pwned-merger-cli RUNTIME DESTINATION bin)

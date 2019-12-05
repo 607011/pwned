@@ -23,4 +23,8 @@ target_link_libraries(pwned-benchmark
   ${Boost_LIBRARIES}
 )
 
+add_custom_command(TARGET pwned-benchmark
+  POST_BUILD
+  COMMAND strip pwned-benchmark)
+
 install(TARGETS pwned-benchmark RUNTIME DESTINATION bin)

@@ -26,7 +26,9 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
 
+#ifndef WITHOUT_BZ2
 #include <bzlib.h>
+#endif
 
 #include <pwned-lib/userpasswordreader.hpp>
 
@@ -81,7 +83,9 @@ int main(int argc, const char *argv[])
   desc.add_options()
   ("source,S", po::value<std::string>(&srcDirectory), "set user:pass input directory (mandatory)")
   ("output,O", po::value<std::string>(&outputFilename), "set output file (mandatory)")
+#ifndef WITHOUT_BZ2
   ("compress,C", po::bool_switch(&compress), "compress output with BZ2")
+#endif
   ("ignore-ready", po::bool_switch(&ignoreReady), "ignore already processed files in ./.ready")
   ("help", "produce help message")
   ("warranty", "display warranty information")
@@ -156,6 +160,7 @@ int main(int argc, const char *argv[])
     return EXIT_FAILURE;
   }
 
+#ifndef WITHOUT_BZ2
   int bzError = BZ_OK;
   BZFILE *bzFile = nullptr;
   if (compress)
@@ -168,6 +173,7 @@ int main(int argc, const char *argv[])
     }
     std::cout << "Compressing output file with BZ2." << std::endl;
   }
+#endif
 
   std::map<std::string, bool> alreadyProcessed;
   if (!ignoreReady)
@@ -207,6 +213,7 @@ int main(int argc, const char *argv[])
       const std::string &pwd = reader.nextPassword().append("\n");
       if (!pwd.empty())
       {
+#ifndef WITHOUT_BZ2
         if (compress)
         {
           BZ2_bzWrite(&bzError, bzFile, const_cast<char*>(pwd.c_str()), (int)pwd.size());
@@ -222,6 +229,9 @@ int main(int argc, const char *argv[])
         {
           fwrite(pwd.c_str(), pwd.size(), 1, outFile);
         }
+#else
+        fwrite(pwd.c_str(), pwd.size(), 1, outFile);
+#endif
       }
     }
     readyFile << inputFilename << std::endl << std::flush;
@@ -229,6 +239,7 @@ int main(int argc, const char *argv[])
     std::cout << std::endl;
   }
 
+#ifndef WITHOUT_BZ2
   if (compress)
   {
     BZ2_bzWriteClose(&bzError, bzFile, 0, nullptr, nullptr);
@@ -240,6 +251,7 @@ int main(int argc, const char *argv[])
       return EXIT_FAILURE;
     }
   }
+#endif
 
   fclose(outFile);
 

@@ -32,5 +32,11 @@ target_link_libraries(pwned-server
 	${Boost_LIBRARIES}
 )
 
+add_custom_command(TARGET pwned-server
+  POST_BUILD
+  COMMAND strip pwned-server)
+
+install(TARGETS pwned-server RUNTIME DESTINATION bin)
+
 add_subdirectory(loadtest)
 add_subdirectory(test)

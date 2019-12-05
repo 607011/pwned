@@ -10,4 +10,8 @@ target_include_directories(pwned-test-set-extractor
 	PUBLIC ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 target_link_libraries(pwned-test-set-extractor pwned ${OPENSSL_CRYPTO_LIBRARY} ${Boost_LIBRARIES})
 
+add_custom_command(TARGET pwned-test-set-extractor
+  POST_BUILD
+  COMMAND strip pwned-test-set-extractor)
+
 install(TARGETS pwned-test-set-extractor RUNTIME DESTINATION bin)

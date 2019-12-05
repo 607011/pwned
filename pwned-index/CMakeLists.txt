@@ -16,3 +16,9 @@ target_link_libraries(pwned-index
   ${PLATFORM_DEPENDENT_LIBRARIES}
   ${Boost_LIBRARIES}
 )
+
+add_custom_command(TARGET pwned-index
+  POST_BUILD
+  COMMAND strip pwned-index)
+
+install(TARGETS pwned-index RUNTIME DESTINATION bin)
