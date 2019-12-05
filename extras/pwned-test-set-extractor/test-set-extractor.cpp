@@ -40,7 +40,7 @@ void hello()
 void license()
 {
   std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type" << std::endl
-            << "`test-set-extractor --warranty'." << std::endl
+            << "`test-set-extractor --warranty`." << std::endl
             << "This is free software, and you are welcome to redistribute it" << std::endl
             << "under certain conditions; see https://www.gnu.org/licenses/gpl-3.0.en.html" << std::endl
             << "for details." << std::endl
@@ -72,9 +72,10 @@ int main(int argc, const char *argv[])
   std::string outputFilename;
   std::string testUrlPrefix;
   bool writeLoadTestUrls;
-  static constexpr int DefaultN = 20000;
-  int N = DefaultN;
-  bool onlyNonExistent = false;
+  int N;
+  bool onlyNonExistent;
+  constexpr int DefaultN = 20'000;
+  const std::string DefaultURI = "http://127.0.0.1:31337/v1/pwned/api/lookup?hash=";
   desc.add_options()
   ("help", "produce help message")
   ("input,I", po::value<std::string>(&inputFilename), "set user:pass input file")
@@ -82,7 +83,7 @@ int main(int argc, const char *argv[])
   ("num,N", po::value<int>(&N)->default_value(DefaultN), "number of data sets to extract")
   ("non-existent", po::bool_switch(&onlyNonExistent)->default_value(false), "select only non-existing hashes (or else only hashes contained in the input file will be selected)")
   ("test-urls", po::bool_switch(&writeLoadTestUrls)->default_value(false), "write file with urls for load testing")
-  ("test-url-prefix", po::value<std::string>(&testUrlPrefix)->default_value("http://127.0.0.1:31337/v1/pwned/api/lookup?hash="), "write file with urls for load testing")
+  ("test-url-prefix", po::value<std::string>(&testUrlPrefix)->default_value(DefaultURI), "write file with urls for load testing")
   ("warranty", "display warranty information")
   ("license", "display license information");
   po::variables_map vm;
@@ -90,7 +91,7 @@ int main(int argc, const char *argv[])
   {
     po::store(po::parse_command_line(argc, argv, desc), vm);
   }
-  catch (po::error &e)
+  catch (const po::error &e)
   {
     std::cerr << "ERROR: " << e.what() << std::endl
               << std::endl;
@@ -123,13 +124,13 @@ int main(int argc, const char *argv[])
   std::ifstream in(inputFilename, std::ios::binary);
   if (!in.is_open())
   {
-    std::cerr << "Cannot open " << inputFilename << std::endl;
+    std::cerr << "Cannot open '" << inputFilename << "' for reading." << std::endl;
     return EXIT_FAILURE;
   }
   std::ofstream out(outputFilename, std::ios::binary | std::ios::trunc);
   if (!out.is_open())
   {
-    std::cerr << "Cannot open " << outputFilename << std::endl;
+    std::cerr << "Cannot open '" << outputFilename << "' for writing." << std::endl;
     return EXIT_FAILURE;
   }
 

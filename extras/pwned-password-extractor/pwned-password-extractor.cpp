@@ -78,15 +78,17 @@ int main(int argc, const char *argv[])
   std::string srcDirectory;
   std::string outputFilename;
   std::vector<std::string> inputFilenames;
+#ifndef WITHOUT_BZ2
   bool compress;
+#endif
   bool ignoreReady;
   desc.add_options()
   ("source,S", po::value<std::string>(&srcDirectory), "set user:pass input directory (mandatory)")
   ("output,O", po::value<std::string>(&outputFilename), "set output file (mandatory)")
 #ifndef WITHOUT_BZ2
-  ("compress,C", po::bool_switch(&compress), "compress output with BZ2")
+  ("compress,C", po::bool_switch(&compress)->default_value(false), "compress output with BZ2")
 #endif
-  ("ignore-ready", po::bool_switch(&ignoreReady), "ignore already processed files in ./.ready")
+  ("ignore-ready", po::bool_switch(&ignoreReady)->default_value(false), "ignore already processed files in ./.ready")
   ("help", "produce help message")
   ("warranty", "display warranty information")
   ("license", "display license information");

@@ -51,9 +51,9 @@ void hello()
 void info()
 {
   std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details" << std::endl
-            << "type `pwned-merger --warranty'. This is free software, and" << std::endl
+            << "type `pwned-merger --warranty`. This is free software, and" << std::endl
             << "you are welcome to redistribute it under certain conditions;" << std::endl
-            << "type `pwned-merger --license' for details." << std::endl
+            << "type `pwned-merger --license` for details." << std::endl
             << std::endl;
 }
 
@@ -70,7 +70,7 @@ int main(int argc, const char *argv[])
   hello();
   pwned::MemoryStat memStat;
   pwned::getMemoryStat(memStat);
-  uint64_t memFreeAssumedMBytes = 0;
+  uint64_t memFreeAssumedMBytes;
   std::cout << "Physical memory (total/app/available): "
             << pwned::readableSize(memStat.phys.total) << "/"
             << pwned::readableSize(memStat.phys.app) << "/"
@@ -82,10 +82,10 @@ int main(int argc, const char *argv[])
   std::string dstDirectory;
   std::string outputExt = DefaultOutputExt;
   std::vector<pwned::UserPasswordReaderOptions> options;
-  bool forceMD5 = false;
-  bool autoMD5 = false;
-  bool forceHex = false;
-  bool autoHex = false;
+  bool forceMD5;
+  bool autoMD5;
+  bool forceHex;
+  bool autoHex;
   unsigned int numThreads;
   desc.add_options()("help", "produce help message")
   ("input,I", po::value<std::vector<std::string>>(), "set user:pass input file(s)")
@@ -94,16 +94,16 @@ int main(int argc, const char *argv[])
   ("ext", po::value<std::string>(&outputExt)->default_value(DefaultOutputExt), "set extension for output files")
   ("ram", po::value<uint64_t>(&memFreeAssumedMBytes)->default_value(memStat.phys.avail / 1024 / 1024), "program can use as many as the given MB of RAM (overrides automatic free memory detection)")
   ("threads,T", po::value<unsigned int>(&numThreads)->default_value(DefaultNumThreads), "run in this many threads")
-  ("force-md5", po::bool_switch(&forceMD5), "convert MD5 encoded passwords")
-  ("auto-md5", po::bool_switch(&autoMD5), "convert MD5 encoded passwords if some are found")
-  ("force-hex", po::bool_switch(&forceHex), "convert hex encoded passwords")
-  ("auto-hex", po::bool_switch(&autoHex), "convert hex encoded passwords if some are found");
+  ("force-md5", po::bool_switch(&forceMD5)->default_value(false), "convert MD5 encoded passwords")
+  ("auto-md5", po::bool_switch(&autoMD5)->default_value(false), "convert MD5 encoded passwords if some are found")
+  ("force-hex", po::bool_switch(&forceHex)->default_value(false), "convert hex encoded passwords")
+  ("auto-hex", po::bool_switch(&autoHex)->default_value(false), "convert hex encoded passwords if some are found");
   po::variables_map vm;
   try
   {
     po::store(po::parse_command_line(argc, argv, desc), vm);
   }
-  catch (po::error &e)
+  catch (const po::error &e)
   {
     std::cerr << "ERROR: " << e.what() << std::endl
               << std::endl;
@@ -121,7 +121,7 @@ int main(int argc, const char *argv[])
   }
   if (srcDirectory.size() > 0)
   {
-    std::cout << "Scanning " << srcDirectory << " for files ..." << std::flush;
+    std::cout << "Scanning '" << srcDirectory << "' for files ..." << std::flush;
     fs::recursive_directory_iterator fileTreeIterator(srcDirectory);
     for (const auto &f : fileTreeIterator)
     {
@@ -171,7 +171,7 @@ int main(int argc, const char *argv[])
     ConvertOperation *op = new ConvertOperation(filename,
                                                 dstDirectory,
                                                 outputExt,
-                                                memFreeAssumedMBytes * 1024 * 1024 / uint64_t(numThreads),
+                                                memFreeAssumedMBytes * 1024ULL * 1024ULL / uint64_t(numThreads),
                                                 options);
     opQueue.add(op);
   }
