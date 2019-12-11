@@ -19,7 +19,10 @@
 #define __markovnode_hpp__
 
 #include <unordered_map>
+#include <vector>
 #include <cstdint>
+
+namespace pwned {
 
 namespace markov {
 
@@ -30,17 +33,17 @@ public:
 
 private:
   prob_map_type mProbs;
-  std::unordered_map<wchar_t, size_t> mCounts;
+  std::unordered_map<wchar_t, uint64_t> mCounts;
   using prob_type = std::pair<wchar_t, double>;
-  prob_type mMinProbElement;
-  prob_type mMaxProbElement;
   using prob_value_type = prob_type::second_type;
+  std::vector<prob_type> mSortedProbs;
 
 public:
   Node() = default;
   void update();
+  void clear();
   prob_value_type probability(wchar_t c) const;
-  size_t count(wchar_t c) const;
+  uint64_t count(wchar_t c) const;
   void increment(wchar_t c);
   const prob_map_type &successors() const;
   void addSuccessor(wchar_t, prob_value_type);
@@ -49,6 +52,8 @@ public:
   const prob_type &maxProbElement() const;
 };
 
-}
+} // namespace markov
+
+} // namespace pwned
 
 #endif // __markovnode_hpp__

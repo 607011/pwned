@@ -20,12 +20,14 @@
 #include <cstdlib>
 #include <string>
 #include <fstream>
+#include <exception>
 #include <boost/locale/encoding_utf.hpp>
 
 #include <pwned-lib/userpasswordreader.hpp>
+#include <pwned-lib/markovnode.hpp>
+#include <pwned-lib/markovchain.hpp>
 
-#include "markovnode.hpp"
-#include "markovchain.hpp"
+namespace markov = pwned::markov;
 
 std::wstring to_utf32(const std::string &s)
 {
@@ -52,18 +54,29 @@ int main(int argc, char* argv[])
   }
   const std::vector<pwned::UserPasswordReaderOptions> readerOptions{pwned::UserPasswordReaderOptions::autoEvaluateHexEncodedPasswords};
   pwned::UserPasswordReader reader(*input, readerOptions);
+  uint64_t n = 0;
   markov::Chain chain;
   while (!reader.eof())
   {
     const std::string &pwd = reader.nextPassword();
-    if (pwd.empty())
-      continue;
     const std::wstring &s32 = to_utf32(pwd);
-    for (std::size_t i = 0; i < s32.size() - 1; ++i)
+    try
     {
-      chain.addPair(s32.at(i), s32.at(i+1));
+      if (pwd.size() > 1)
+      {
+        for (std::size_t i = 0; i < s32.size() - 1; ++i)
+        {
+          chain.addPair(s32.at(i), s32.at(i+1));
+        }
+        ++n;
+      }
+    }
+    catch (const std::exception &e)
+    {
+      std::cerr << "ERROR: " << e.what() << " (password=" << pwd << ")" << std::endl;
     }
   }
+  std::cout << "passwords written: " << n << std::endl;
   chain.update();
   std::ofstream output(outputFilename, std::ios::trunc | std::ios::binary);
   chain.writeBinary(output);

@@ -25,6 +25,8 @@
 
 #include "markovnode.hpp"
 
+namespace pwned {
+
 namespace markov {
 
 class Chain
@@ -45,5 +47,8 @@ private:
   static const char FileHeader[4];
 };
 
-}
+} // namespace markov
+
+} // namespace pwned
+
 #endif // __markovnode_hpp__

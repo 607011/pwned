@@ -7,6 +7,8 @@ add_library(pwned STATIC
 	userpasswordreader.cpp
 	operation.cpp
 	operationexception.cpp
+  markovnode.cpp
+  markovchain.cpp
 	passwordinspector.cpp
 	util.cpp
 	uuid.cpp)

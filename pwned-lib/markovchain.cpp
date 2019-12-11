@@ -22,6 +22,8 @@
 
 #include "markovchain.hpp"
 
+namespace pwned {
+
 namespace markov {
 
 namespace pt = boost::property_tree;
@@ -161,3 +163,5 @@ bool Chain::readBinary(std::istream &is, bool doClear)
 
 
 } // namespace markov
+
+} // namespace pwned

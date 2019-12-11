@@ -21,30 +21,39 @@
 
 #include "markovnode.hpp"
 
+namespace pwned
+{
+
 namespace markov
 {
 
 void Node::update()
 {
   using count_type = decltype(mCounts)::value_type;
-  const size_t sum = std::accumulate(std::begin(mCounts), std::end(mCounts), 0ULL,
-                                     [](size_t a, const count_type &b) {
-                                       return b.second + a;
-                                     });
+  const uint64_t sum = std::accumulate(std::begin(mCounts), std::end(mCounts), 0ULL,
+                                       [](uint64_t a, const count_type &b) {
+                                         return b.second + a;
+                                       });
   for (const auto &p : mCounts)
   {
     mProbs[p.first] = (double)p.second / (double)sum;
   }
-  auto maxElement = std::max_element(std::begin(mProbs), std::end(mProbs),
-                                     [](const Node::prob_type &a, const Node::prob_type &b) {
-                                       return a.second < b.second;
-                                     });
-  mMaxProbElement = *maxElement;
-  auto minElement = std::min_element(std::begin(mProbs), std::end(mProbs),
-                                     [](const Node::prob_type &a, const Node::prob_type &b) {
-                                       return a.second < b.second;
-                                     });
-  mMinProbElement = *minElement;
+  mSortedProbs.clear();
+  mSortedProbs.reserve(mProbs.size());
+  std::copy(std::begin(mProbs), std::end(mProbs), std::begin(mSortedProbs));
+  struct {
+    bool operator()(const Node::prob_type &a, const Node::prob_type &b) const
+    {
+      return a.second < b.second;
+    }
+  } probLess;
+  std::sort(std::begin(mSortedProbs), std::end(mSortedProbs), probLess);
+}
+
+void Node::clear()
+{
+  mProbs.clear();
+  mSortedProbs.clear();
 }
 
 Node::prob_value_type Node::probability(wchar_t c) const
@@ -52,7 +61,7 @@ Node::prob_value_type Node::probability(wchar_t c) const
   return mProbs.at(c);
 }
 
-size_t Node::count(wchar_t c) const
+uint64_t Node::count(wchar_t c) const
 {
   return mCounts.at(c);
 }
@@ -79,12 +88,14 @@ size_t Node::size() const
 
 const Node::prob_type &Node::minProbElement() const
 {
-  return mMinProbElement;
+  return mSortedProbs.front();
 }
 
 const Node::prob_type &Node::maxProbElement() const
 {
-  return mMaxProbElement;
+  return mSortedProbs.back();
 }
+
+} // namespace markov
 
 } // namespace pwned
