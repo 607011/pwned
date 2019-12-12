@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(pwned-markov)
+project(pwned-markov-generator)
 
-add_executable(pwned-markov pwned-markov.cpp)
-set_target_properties(pwned-markov PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
+add_executable(pwned-markov-generator pwned-markov.cpp)
+set_target_properties(pwned-markov-generator PROPERTIES LINK_FLAGS_RELEASE "-dead_strip")
 
-target_include_directories(pwned-markov
+target_include_directories(pwned-markov-generator
 	PRIVATE ${PROJECT_INCLUDE_DIRS}
 	PUBLIC ${Boost_INCLUDE_DIRS}
 )
@@ -26,7 +26,7 @@ else()
   set(BZ2LIB bz2)
 endif()
 
-target_link_libraries(pwned-markov
+target_link_libraries(pwned-markov-generator
   pwned
   ${BZ2LIB}
   ${OPENSSL_CRYPTO_LIBRARY}
@@ -34,8 +34,8 @@ target_link_libraries(pwned-markov
   ${Boost_LIBRARIES}
 )
 
-add_custom_command(TARGET pwned-markov
+add_custom_command(TARGET pwned-markov-generator
   POST_BUILD
-  COMMAND strip pwned-markov)
+  COMMAND strip pwned-markov-generator)
 
-install(TARGETS pwned-markov RUNTIME DESTINATION bin)
+install(TARGETS pwned-markov-generator RUNTIME DESTINATION bin)
