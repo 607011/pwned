@@ -30,12 +30,12 @@ class Node
 {
 public:
   using prob_map_type = std::unordered_map<wchar_t, double>;
+  using prob_type = std::pair<wchar_t, double>;
+  using prob_value_type = prob_type::second_type;
 
 private:
   prob_map_type mProbs;
   std::unordered_map<wchar_t, uint64_t> mCounts;
-  using prob_type = std::pair<wchar_t, double>;
-  using prob_value_type = prob_type::second_type;
   std::vector<prob_type> mSortedProbs;
 
 public:
@@ -50,6 +50,7 @@ public:
   size_t size() const;
   const prob_type &minProbElement() const;
   const prob_type &maxProbElement() const;
+  wchar_t randomSuccessor() const;
 };
 
 } // namespace markov

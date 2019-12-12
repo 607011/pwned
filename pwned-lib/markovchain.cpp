@@ -16,6 +16,8 @@
  */
 
 #include <iostream>
+#include <numeric>
+#include <algorithm>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -34,10 +36,45 @@ using map_type = Chain::map_type;
 
 void Chain::update()
 {
+  using count_type = decltype(mFirstLetterCounts)::value_type;
+  const uint64_t sum = std::accumulate(std::cbegin(mFirstLetterCounts), std::cend(mFirstLetterCounts), 0ULL,
+                                       [](uint64_t a, const count_type &b) {
+                                         return b.second + a;
+                                       });
+  for (const auto &p : mFirstLetterCounts)
+  {
+    mFirstLetterProbs[p.first] = (double)p.second / (double)sum;
+  }
+  mFirstLetterSortedProbs.clear();
+  mFirstLetterSortedProbs.reserve(mFirstLetterProbs.size());
+  std::copy(std::begin(mFirstLetterProbs), std::end(mFirstLetterProbs), std::begin(mFirstLetterSortedProbs));
+  using prob_type = std::pair<wchar_t, double>;
+  struct {
+    bool operator()(const prob_type &a, const prob_type &b) const
+    {
+      return a.second < b.second;
+    }
+  } probLess;
+  std::sort(std::begin(mFirstLetterSortedProbs), std::end(mFirstLetterSortedProbs), probLess);
   for (auto &node : mNodes)
   {
     node.second.update();
   }
+}
+
+void Chain::clear()
+{
+  mFirstLetterProbs.clear();
+  mFirstLetterSortedProbs.clear();
+}
+
+void Chain::addFirst(wchar_t letter)
+{
+  if (mFirstLetterCounts.find(letter) == mFirstLetterCounts.end())
+  {
+    mFirstLetterCounts.emplace(std::make_pair(letter, 0));
+  }
+  ++mFirstLetterCounts[letter];
 }
 
 void Chain::addPair(wchar_t current, wchar_t successor)
@@ -101,6 +138,12 @@ void Chain::writeBinary(std::ostream &os)
   if (mNodes.empty())
     return;
   os.write(FileHeader, 4);
+  write(os, (uint32_t)mFirstLetterSortedProbs.size());
+  for (const auto &prob : mFirstLetterSortedProbs)
+  {
+    write(os, prob.first);
+    write(os, prob.second);
+  }
   write(os, (uint32_t)mNodes.size());
   for (const auto &node : mNodes)
   {
@@ -119,6 +162,9 @@ bool Chain::readBinary(std::istream &is, bool doClear)
   if (doClear)
   {
     mNodes.clear();
+    mFirstLetterCounts.clear();
+    mFirstLetterProbs.clear();
+    mFirstLetterSortedProbs.clear();
   }
   while (!is.eof())
   {
@@ -126,9 +172,23 @@ bool Chain::readBinary(std::istream &is, bool doClear)
     is.read(reinterpret_cast<char*>(&hdr), sizeof(hdr));
     if (is.eof())
       return false;
-    if (memcmp(hdr, FileHeader, 4) != 0)
+    if (memcmp(hdr, FileHeader, sizeof(FileHeader)) != 0)
       return false;
-    uint32_t symbolCount = read<uint32_t>(is);
+    const uint32_t firstSymbolCount = read<uint32_t>(is);
+    if (is.eof())
+      return false;
+    mFirstLetterSortedProbs.reserve(firstSymbolCount);
+    for (auto i = 0; i < firstSymbolCount; ++i)
+    {
+      const wchar_t c = read<wchar_t>(is);
+      if (is.eof())
+        return false;
+      const double p = read<double>(is);
+      if (is.eof())
+        return false;
+      mFirstLetterSortedProbs.emplace_back(c, p);
+    }
+    const uint32_t symbolCount = read<uint32_t>(is);
     if (is.eof())
       return false;
     for (auto i = 0; i < symbolCount; ++i)
@@ -138,20 +198,20 @@ bool Chain::readBinary(std::istream &is, bool doClear)
         return false;
       if (mNodes.find(c) == mNodes.end())
       {
-        mNodes.emplace(std::make_pair(c, Node()));
+        mNodes.emplace(c, Node());
       }
       if (is.eof())
         return false;
-      uint32_t nodeCount = read<uint32_t>(is);
+      const uint32_t nodeCount = read<uint32_t>(is);
       if (is.eof())
         return false;
       Node &currentNode = mNodes[c];
       for (auto j = 0; j < nodeCount; ++j)
       {
-        wchar_t symbol = read<wchar_t>(is);
+        const wchar_t symbol = read<wchar_t>(is);
         if (is.eof())
           return false;
-        double probability = read<double>(is);
+        const double probability = read<double>(is);
         if (is.eof())
           return false;
         currentNode.addSuccessor(symbol, probability);
@@ -161,6 +221,10 @@ bool Chain::readBinary(std::istream &is, bool doClear)
   return true;
 }
 
+const std::vector<Chain::prob_type>& Chain::firstLetterProbs() const
+{
+  return mFirstLetterSortedProbs;
+}
 
 } // namespace markov
 

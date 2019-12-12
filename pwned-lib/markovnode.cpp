@@ -18,6 +18,8 @@
 #include <utility>
 #include <algorithm>
 #include <numeric>
+#include <random>
+#include <iterator>
 
 #include "markovnode.hpp"
 
@@ -27,10 +29,18 @@ namespace pwned
 namespace markov
 {
 
+template<typename Numeric = double, typename Generator = std::mt19937>
+static Numeric random()
+{
+    static Generator gen(std::random_device{}());
+    static std::uniform_real_distribution<Numeric> dist(0, 1);
+    return dist(gen);
+}
+
 void Node::update()
 {
   using count_type = decltype(mCounts)::value_type;
-  const uint64_t sum = std::accumulate(std::begin(mCounts), std::end(mCounts), 0ULL,
+  const uint64_t sum = std::accumulate(std::cbegin(mCounts), std::cend(mCounts), 0ULL,
                                        [](uint64_t a, const count_type &b) {
                                          return b.second + a;
                                        });
@@ -94,6 +104,19 @@ const Node::prob_type &Node::minProbElement() const
 const Node::prob_type &Node::maxProbElement() const
 {
   return mSortedProbs.back();
+}
+
+wchar_t Node::randomSuccessor() const
+{
+  const double p = random();
+  double pAccumulated = 0.0;
+  for (const auto &successor : mSortedProbs)
+  {
+    pAccumulated += successor.second;
+    if (p > pAccumulated)
+      return successor.first;
+  }
+  return 0;
 }
 
 } // namespace markov
