@@ -43,8 +43,6 @@ public:
   void addPair(wchar_t current, wchar_t successor);
   void addFirst(wchar_t letter);
   const map_type &nodes() const;
-  void writeJson(std::ostream &os);
-  bool readJson(std::istream &is, bool doClear = true);
   void writeBinary(std::ostream &os);
   bool readBinary(std::istream &is, bool doClear = true);
   const std::vector<prob_type>& firstLetterProbs() const;

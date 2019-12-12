@@ -91,34 +91,6 @@ const map_type &Chain::nodes() const
   return mNodes;
 }
 
-void Chain::writeJson(std::ostream &os)
-{
-  pt::ptree root;
-  for (const auto &node : mNodes)
-  {
-    pt::ptree child;
-    for (const auto &successor : node.second.successors())
-    {
-      child.put<double>(std::to_string(successor.first), successor.second);
-    }
-    root.put_child(std::to_string(node.first), child);
-  }
-  pt::write_json(os, root, true);
-}
-
-bool Chain::readJson(std::istream &is, bool doClear)
-{
-  if (doClear)
-  {
-    mNodes.clear();
-  }
-  pt::ptree root;
-  pt::read_json(is, root);
-  // TODO
-
-  return true;
-}
-
 template <typename T>
 inline T read(std::istream &is)
 {
