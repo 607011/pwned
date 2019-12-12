@@ -3,6 +3,7 @@
 _A collection of tools to convert pwned password files to searchable MD5 files, and look up passwords in these files_
 
 ![](https://img.shields.io/github/license/ola-ct/pwned.svg)
+![](https://github.com/ola-ct/pwned/workflows/CI/badge.svg)
 
 ## Brief description
 
