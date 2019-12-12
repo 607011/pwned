@@ -50,7 +50,7 @@ void Node::update()
   }
   mSortedProbs.clear();
   mSortedProbs.reserve(mProbs.size());
-  std::copy(std::begin(mProbs), std::end(mProbs), std::begin(mSortedProbs));
+  std::copy(std::cbegin(mProbs), std::cend(mProbs), std::begin(mSortedProbs));
   struct {
     bool operator()(const Node::prob_type &a, const Node::prob_type &b) const
     {

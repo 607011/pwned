@@ -47,7 +47,7 @@ void Chain::update()
   }
   mFirstLetterSortedProbs.clear();
   mFirstLetterSortedProbs.reserve(mFirstLetterProbs.size());
-  std::copy(std::begin(mFirstLetterProbs), std::end(mFirstLetterProbs), std::begin(mFirstLetterSortedProbs));
+  std::copy(std::cbegin(mFirstLetterProbs), std::cend(mFirstLetterProbs), std::begin(mFirstLetterSortedProbs));
   using prob_type = std::pair<wchar_t, double>;
   struct {
     bool operator()(const prob_type &a, const prob_type &b) const
