@@ -9,5 +9,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: cmake-configure
-      uses: snickerbockers/cmake-configure@prerel1
+    - name: cmake
+      run: cd build/Release && BOOST_ROOT=/home/ola/dev/boost-1.71 cmake -DCMAKE_BUILD_TYPE=Release ../..
+    - name: build
+      run: make -j
+    - name: test
+      run: make test
