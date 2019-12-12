@@ -20,6 +20,7 @@
 
 #include <string>
 #include <cstdint>
+#include <random>
 #include <termios.h>
 
 namespace pwned
@@ -64,6 +65,15 @@ public:
   void disableBreak();
   void enableBreak();
 };
+
+template<typename Numeric = double, typename Generator = std::mt19937>
+static Numeric random()
+{
+  static Generator gen(std::random_device{}());
+  static std::uniform_real_distribution<Numeric> dist(0, 1);
+  return dist(gen);
+}
+
 } // namespace pwned
 
 #endif // __util_hpp__
