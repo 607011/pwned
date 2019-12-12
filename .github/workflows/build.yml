@@ -12,6 +12,6 @@ jobs:
     - name: cmake
       run: cd build/Release && BOOST_ROOT=/home/ola/dev/boost-1.71 cmake -DCMAKE_BUILD_TYPE=Release ../..
     - name: build
-      run: make -j
+      run: cd build/Release && make -j
     - name: test
-      run: make test
+      run: cd build/Release && make test
