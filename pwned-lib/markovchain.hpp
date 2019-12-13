@@ -129,8 +129,8 @@ public:
     for (const auto &node : mNodes)
     {
       write(os, node.first);
-      write(os, (uint32_t)node.second.successors().size());
-      for (const auto &successor : node.second.successors())
+      write(os, (uint32_t)node.second.sortedSuccessors().size());
+      for (const auto &successor : node.second.sortedSuccessors())
       {
         write(os, successor.first);
         write(os, successor.second);

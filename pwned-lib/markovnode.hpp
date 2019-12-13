@@ -96,6 +96,10 @@ public:
   {
     return mProbs;
   }
+  inline const std::vector<pair_type> &sortedSuccessors() const
+  {
+    return mSortedProbs;
+  }
   inline void addSuccessor(symbol_type c, prob_value_type probability)
   {
     mProbs[c] = probability;
@@ -103,14 +107,6 @@ public:
   inline size_t size() const
   {
     return mCounts.size();
-  }
-  inline const pair_type &minProbElement() const
-  {
-    return mSortedProbs.front();
-  }
-  inline const pair_type &maxProbElement() const
-  {
-    return mSortedProbs.back();
   }
   symbol_type randomSuccessor() const
   {
