@@ -32,29 +32,34 @@ namespace pwned {
 
 namespace markov {
 
-template <typename SymbolType = wchar_t, typename ProbabilityType = double>
+template <
+  typename SymbolType = wchar_t,
+  typename ProbabilityType = double,
+  typename CountType = uint64_t
+  >
 class Node
 {
 public:
   using symbol_type = SymbolType;
   using prob_value_type = ProbabilityType;
+  using count_type = CountType;
   using prob_map_type = std::unordered_map<symbol_type, prob_value_type>;
-  using prob_type = std::pair<symbol_type, prob_value_type>;
+  using pair_type = std::pair<symbol_type, prob_value_type>;
 
 private:
   prob_map_type mProbs;
-  std::unordered_map<symbol_type, uint64_t> mCounts;
-  std::vector<prob_type> mSortedProbs;
+  std::unordered_map<symbol_type, count_type> mCounts;
+  std::vector<pair_type> mSortedProbs;
 
 public:
   Node() = default;
   void update()
   {
-    using count_type = typename decltype(mCounts)::value_type;
-    const uint64_t sum = std::accumulate(std::cbegin(mCounts), std::cend(mCounts), 0ULL,
-                                        [](uint64_t a, const count_type &b) {
-                                          return b.second + a;
-                                        });
+    using elem_type = typename decltype(mCounts)::value_type;
+    const count_type sum = std::accumulate(std::cbegin(mCounts), std::cend(mCounts), 0ULL,
+                                           [](count_type a, const elem_type &b) {
+                                             return b.second + a;
+                                           });
     for (const auto &p : mCounts)
     {
       mProbs[p.first] = (Node::prob_value_type)p.second / (Node::prob_value_type)sum;
@@ -63,7 +68,7 @@ public:
     mSortedProbs.reserve(mProbs.size());
     std::copy(std::cbegin(mProbs), std::cend(mProbs), std::begin(mSortedProbs));
     struct {
-      bool operator()(const Node::prob_type &a, const Node::prob_type &b) const
+      bool operator()(const Node::pair_type &a, const Node::pair_type &b) const
       {
         return a.second < b.second;
       }
@@ -75,41 +80,41 @@ public:
     mProbs.clear();
     mSortedProbs.clear();
   }
-  prob_value_type probability(symbol_type c) const
+  inline prob_value_type probability(symbol_type c) const
   {
     return mProbs.at(c);
   }
-  uint64_t count(symbol_type c) const
+  inline uint64_t count(symbol_type c) const
   {
     return mCounts.at(c);
   }
-  void increment(symbol_type c)
+  inline void increment(symbol_type c)
   {
     ++mCounts[c];
   }
-  const prob_map_type &successors() const
+  inline const prob_map_type &successors() const
   {
     return mProbs;
   }
-  void addSuccessor(symbol_type c, prob_value_type probability)
+  inline void addSuccessor(symbol_type c, prob_value_type probability)
   {
     mProbs[c] = probability;
   }
-  size_t size() const
+  inline size_t size() const
   {
     return mCounts.size();
   }
-  const prob_type &minProbElement() const
+  inline const pair_type &minProbElement() const
   {
     return mSortedProbs.front();
   }
-  const prob_type &maxProbElement() const
+  inline const pair_type &maxProbElement() const
   {
     return mSortedProbs.back();
   }
   symbol_type randomSuccessor() const
   {
-    const Node<SymbolType, ProbabilityType>::prob_value_type p = pwned::random();
+    const typename Node<SymbolType, ProbabilityType>::prob_value_type p = pwned::random();
     Node::prob_value_type pAccumulated = 0.0;
     for (const auto &successor : mSortedProbs)
     {

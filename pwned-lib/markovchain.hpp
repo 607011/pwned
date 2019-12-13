@@ -22,6 +22,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 
 #include "markovnode.hpp"
@@ -44,7 +45,11 @@ static inline void write(std::ostream &os, T data)
   os.write(reinterpret_cast<const char*>(&data), sizeof(data));
 }  
 
-template <typename SymbolType = wchar_t, typename ProbabilityType = double, typename CountType = uint64_t>
+template <
+  typename SymbolType = wchar_t,
+  typename ProbabilityType = double,
+  typename CountType = uint64_t
+  >
 class Chain
 {
 public:
@@ -65,12 +70,12 @@ public:
                                            });
     for (const auto &p : mFirstSymbolCounts)
     {
-      mFirstSymbolProbs[p.first] = (double)p.second / (double)sum;
+      mFirstSymbolProbs[p.first] = (prob_value_type)p.second / (prob_value_type)sum;
     }
     mFirstSymbolSortedProbs.clear();
     mFirstSymbolSortedProbs.reserve(mFirstSymbolProbs.size());
     std::copy(std::cbegin(mFirstSymbolProbs), std::cend(mFirstSymbolProbs), std::begin(mFirstSymbolSortedProbs));
-    using prob_type = std::pair<Chain::symbol_type, double>;
+    using prob_type = std::pair<Chain::symbol_type, prob_value_type>;
     struct {
       bool operator()(const prob_type &a, const prob_type &b) const
       {
@@ -88,7 +93,7 @@ public:
     mFirstSymbolProbs.clear();
     mFirstSymbolSortedProbs.clear();
   }
-  void addFirst(symbol_type symbol)
+  inline void addFirst(symbol_type symbol)
   {
     if (mFirstSymbolCounts.find(symbol) == mFirstSymbolCounts.end())
     {
@@ -96,7 +101,7 @@ public:
     }
     ++mFirstSymbolCounts[symbol];
   }
-  void addPair(symbol_type current, symbol_type successor)
+  inline void addPair(symbol_type current, symbol_type successor)
   {
     if (mNodes.find(current) == mNodes.end())
     {
@@ -104,7 +109,7 @@ public:
     }
     mNodes[current].increment(successor);
   }
-  const map_type &nodes() const
+  inline const map_type &nodes() const
   {
     return mNodes;
   }
@@ -112,7 +117,8 @@ public:
   {
     if (mNodes.empty())
       return;
-    os.write(FileHeader, 4);
+    write(os, FileHeader);
+    write(os, FileVersion);
     write(os, (uint32_t)mFirstSymbolSortedProbs.size());
     for (const auto &prob : mFirstSymbolSortedProbs)
     {
@@ -142,11 +148,16 @@ public:
     }
     while (!is.eof())
     {
-      char hdr[4] = {0, 0, 0, 0};
-      is.read(reinterpret_cast<char*>(&hdr), sizeof(hdr));
+      char hdr[FileHeaderSize] = {0, 0, 0, 0};
+      is.read(reinterpret_cast<char*>(&hdr), FileHeaderSize);
       if (is.eof())
         return false;
       if (memcmp(hdr, FileHeader, sizeof(FileHeader)) != 0)
+        return false;
+      uint8_t version = read<uint8_t>(is);
+      if (is.eof())
+        return false;
+      if (version != FileVersion)
         return false;
       const uint32_t firstSymbolCount = read<uint32_t>(is);
       if (is.eof())
@@ -194,7 +205,7 @@ public:
     }
     return true;
   }
-  const std::vector<pair_type>& firstSymbolProbs() const
+  inline const std::vector<pair_type>& firstSymbolProbs() const
   {
     return mFirstSymbolSortedProbs;
   }
@@ -216,7 +227,9 @@ private:
   std::unordered_map<symbol_type, count_type> mFirstSymbolCounts;
   std::unordered_map<symbol_type, prob_value_type> mFirstSymbolProbs;
   std::vector<pair_type> mFirstSymbolSortedProbs;
-  const char FileHeader[4]{'M', 'R', 'K', 'V'};
+  static const size_t FileHeaderSize{4};
+  const char FileHeader[FileHeaderSize]{'M', 'R', 'K', 'V'};
+  static const uint8_t FileVersion = 2;
 };
 
 } // namespace markov
