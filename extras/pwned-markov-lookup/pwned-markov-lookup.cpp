@@ -43,7 +43,7 @@ prob_value_type totalProbability(const std::basic_string<symbol_type> &pwd, cons
   for (auto c = std::next(std::begin(pwd)); c != std::end(pwd); ++c)
   {
     p *= node.probability(*c);
-    // XXX
+    node = chain.nodes().at(*c);
   }
   return p;
 }
