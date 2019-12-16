@@ -110,7 +110,7 @@ public:
   symbol_type randomSuccessor() const
   {
     const typename Node<SymbolType, ProbabilityType>::prob_value_type p = pwned::random();
-    Node::prob_value_type pAccumulated = 0.0;
+    prob_value_type pAccumulated = 0;
     for (const auto &successor : mSortedProbs)
     {
       pAccumulated += successor.second;
