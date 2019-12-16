@@ -25,11 +25,16 @@
 #include <cstring>
 #include <iostream>
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
 #include "markovnode.hpp"
 
 namespace pwned {
 
 namespace markov {
+
+namespace pt = boost::property_tree;
 
 template <typename T>
 static inline T read(std::istream &is)
@@ -203,6 +208,28 @@ public:
       }
     }
     return true;
+  }
+  void writeJson(std::ostream &os)
+  {
+    pt::ptree first;
+    for (const auto &firstSymbol : mFirstSymbolSortedProbs)
+    {
+      first.put<double>(std::to_string(firstSymbol.first), firstSymbol.second);
+    }
+    pt::ptree successor;
+    for (const auto &node : mNodes)
+    {
+      pt::ptree child;
+      for (const auto &successor : node.second.sortedSuccessors())
+      {
+        child.put<double>(std::to_string(successor.first), successor.second);
+      }
+      successor.put_child(std::to_string(node.first), child);
+    }
+    pt::ptree root;
+    root.put_child("first", first);
+    root.put_child("successor", successor);
+    pt::write_json(os, root, true);
   }
   inline const std::vector<pair_type>& firstSymbolProbs() const
   {
