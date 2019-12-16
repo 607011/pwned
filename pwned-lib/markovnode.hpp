@@ -64,8 +64,7 @@ public:
     {
       mProbs[p.first] = (Node::prob_value_type)p.second / (Node::prob_value_type)sum;
     }
-    mSortedProbs.clear();
-    mSortedProbs.reserve(mProbs.size());
+    mSortedProbs.resize(mProbs.size());
     std::copy(std::cbegin(mProbs), std::cend(mProbs), std::begin(mSortedProbs));
     struct {
       bool operator()(const Node::pair_type &a, const Node::pair_type &b) const

@@ -72,8 +72,7 @@ public:
     {
       mFirstSymbolProbs[p.first] = (prob_value_type)p.second / (prob_value_type)sum;
     }
-    mFirstSymbolSortedProbs.clear();
-    mFirstSymbolSortedProbs.reserve(mFirstSymbolProbs.size());
+    mFirstSymbolSortedProbs.resize(mFirstSymbolProbs.size());
     std::copy(std::cbegin(mFirstSymbolProbs), std::cend(mFirstSymbolProbs), std::begin(mFirstSymbolSortedProbs));
     using prob_type = std::pair<Chain::symbol_type, prob_value_type>;
     struct {
