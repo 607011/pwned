@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <string>
 #include <iterator>
+#include <algorithm>
 #include <fstream>
 #include <exception>
 #include <boost/locale/encoding_utf.hpp>
@@ -37,9 +38,14 @@ prob_value_type totalProbability(const std::basic_string<symbol_type> &pwd, cons
 {
   if (pwd.empty())
     return -1;
-  const auto &firstSymbol = chain.firstSymbolProbs().at(pwd.at(0));
-  auto node = chain.nodes().at(firstSymbol.first);
-  prob_value_type p = firstSymbol.second;
+  const symbol_type s = pwd.at(0);
+  const auto &firstSymbol = std::find_if(
+      chain.firstSymbolProbs().cbegin(), chain.firstSymbolProbs().cend(),
+      [s](const std::pair<symbol_type, prob_value_type> &p) {
+        return p.first == s;
+      });
+  auto node = chain.nodes().at(firstSymbol->first);
+  prob_value_type p = firstSymbol->second;
   for (auto c = std::next(std::begin(pwd)); c != std::end(pwd); ++c)
   {
     p *= node.probability(*c);
@@ -48,7 +54,7 @@ prob_value_type totalProbability(const std::basic_string<symbol_type> &pwd, cons
   return p;
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
   if (argc < 2)
     return EXIT_FAILURE;
