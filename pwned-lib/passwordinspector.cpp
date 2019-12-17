@@ -141,9 +141,8 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *r
   offset -= offset % (std::streamoff)PasswordHashAndCount::size;
   std::streamoff lo = std::max<std::streamoff>(0, potentialHitIdx - offset);
   std::streamoff hi = std::min<std::streamoff>(mFileSize - (std::streamoff)PasswordHashAndCount::size, potentialHitIdx + offset);
-  bool ok = false;
   Hash h0;
-  ok = h0.read(mInputFile, lo);
+  h0.read(mInputFile, lo);
   ++nReads;
   int64_t loOffset = offset;
   while (hash < h0 && lo >= loOffset)
@@ -154,7 +153,7 @@ PasswordHashAndCount PasswordInspector::smart_binsearch(const Hash &hash, int *r
     loOffset *= OffsetMultiplicator;
   }
   Hash h1;
-  ok = h1.read(mInputFile, hi);
+  h1.read(mInputFile, hi);
   ++nReads;
   int64_t hiOffset = offset;
   while (hash > h1 && hi <= mFileSize - hiOffset - int64_t(PasswordHashAndCount::size))

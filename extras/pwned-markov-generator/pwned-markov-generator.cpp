@@ -155,24 +155,17 @@ int main(int argc, char* argv[])
   while (!reader.eof())
   {
     const std::string &pwd = reader.nextPassword();
-    const std::basic_string<symbol_type> &s32 = boost::locale::conv::utf_to_utf<symbol_type>(pwd.c_str(), pwd.c_str() + pwd.size());
-    if (!s32.empty()) {
-      chain.addFirst(s32.at(0));
-      if (s32.size() > 1)
+    bool ok = chain.train(pwd);
+    if (ok)
+    {
+      if (verbosity.level > 0 && ((n % outputEvery) == 0))
       {
-        for (std::size_t i = 0; i < s32.size() - 1; ++i)
-        {
-          chain.addPair(s32.at(i), s32.at(i+1));
-        }
-        if (verbosity.level > 0 && ((n % outputEvery) == 0))
-        {
-          constexpr std::size_t BufSize = 8;
-          char buf[BufSize];
-          snprintf(buf, BufSize, "%6.2f", (1e2 * (double)inputFile.tellg() / (double)fileSize));
-          std::cout << '\r' << buf << "% \x1b[1;36m" << pwd << "\x1b[0m\x1b[K" << std::flush;
-        }
-        ++n;
+        constexpr std::size_t BufSize = 8;
+        char buf[BufSize];
+        snprintf(buf, BufSize, "%6.2f", (1e2 * (double)inputFile.tellg() / (double)fileSize));
+        std::cout << '\r' << buf << "% \x1b[1;36m" << pwd << "\x1b[0m\x1b[K" << std::flush;
       }
+      ++n;
     }
   }
   chain.update();
@@ -181,6 +174,7 @@ int main(int argc, char* argv[])
     std::cout << "\rWriting to '" << outputFilename << "' ..." << std::endl;
   }
   chain.writeBinary(outputFile);
+  chain.writeJson(std::cout);
   outputFile.close();
   return EXIT_SUCCESS;
 }

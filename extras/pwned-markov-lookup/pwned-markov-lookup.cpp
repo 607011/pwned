@@ -34,26 +34,6 @@ using symbol_type = wchar_t;
 using prob_value_type = double;
 using chain_type = markov::Chain<symbol_type, prob_value_type>;
 
-prob_value_type totalProbability(const std::basic_string<symbol_type> &pwd, const chain_type &chain)
-{
-  if (pwd.empty())
-    return -1;
-  const symbol_type s = pwd.at(0);
-  const auto &firstSymbol = std::find_if(
-      chain.firstSymbolProbs().cbegin(), chain.firstSymbolProbs().cend(),
-      [s](const std::pair<symbol_type, prob_value_type> &p) {
-        return p.first == s;
-      });
-  auto node = chain.nodes().at(firstSymbol->first);
-  prob_value_type p = firstSymbol->second;
-  for (auto c = std::next(std::begin(pwd)); c != std::end(pwd); ++c)
-  {
-    p *= node.probability(*c);
-    node = chain.nodes().at(*c);
-  }
-  return p;
-}
-
 int main(int argc, char *argv[])
 {
   if (argc < 2)
@@ -65,11 +45,12 @@ int main(int argc, char *argv[])
   while (true)
   {
     std::string pwd;
+    std::cout << "Type password: " << std::flush;
     std::cin >> pwd;
     if (pwd.empty())
       break;
     const std::basic_string<symbol_type> &wPwd = boost::locale::conv::utf_to_utf<symbol_type>(pwd.c_str(), pwd.c_str() + pwd.size());
-    std::cout << "p = " << totalProbability(wPwd, chain) << std::endl;
+    std::cout << "p = " << chain.totalProbability(wPwd) << std::endl;
   }
   return EXIT_SUCCESS;
 }

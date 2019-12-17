@@ -27,6 +27,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/locale/encoding_utf.hpp>
 
 #include "markovnode.hpp"
 
@@ -69,8 +70,8 @@ public:
   void update()
   {
     using elem_type = typename decltype(mFirstSymbolCounts)::value_type;
-    const count_type sum = std::accumulate(std::cbegin(mFirstSymbolCounts), std::cend(mFirstSymbolCounts), 0ULL,
-                                           [](count_type a, const elem_type &b) {
+    const count_type sum = std::accumulate(std::cbegin(mFirstSymbolCounts), std::cend(mFirstSymbolCounts), 0,
+                                           [](count_type a, const elem_type &b) -> count_type {
                                              return b.second + a;
                                            });
     for (const auto &p : mFirstSymbolCounts)
@@ -97,6 +98,24 @@ public:
     mFirstSymbolProbs.clear();
     mFirstSymbolSortedProbs.clear();
   }
+  bool train(const std::string &pwd)
+  {
+    if (pwd.empty())
+      return false;
+    const std::basic_string<symbol_type> &s32 = boost::locale::conv::utf_to_utf<symbol_type>(pwd.c_str(), pwd.c_str() + pwd.size());
+    if (!s32.empty()) {
+      addFirst(s32.at(0));
+      if (s32.size() > 1)
+      {
+        for (size_t i = 0; i < s32.size() - 1; ++i)
+        {
+          addPair(s32.at(i), s32.at(i+1));
+        }
+      }
+      return true;
+    }
+    return false;
+  }
   inline void addFirst(symbol_type symbol)
   {
     if (mFirstSymbolCounts.find(symbol) == mFirstSymbolCounts.end())
@@ -117,11 +136,39 @@ public:
   {
     return mNodes;
   }
+  prob_value_type totalProbability(const std::basic_string<symbol_type> &pwd)
+  {
+    if (pwd.empty())
+      return -1;
+    const symbol_type s = pwd.at(0);
+    const auto &firstSymbol = std::find_if(
+        mFirstSymbolSortedProbs.cbegin(), mFirstSymbolSortedProbs.cend(),
+        [s](const pair_type &p) {
+          return p.first == s;
+        });
+    if (firstSymbol == mFirstSymbolSortedProbs.cend())
+      return 0;
+    typename map_type::iterator node = mNodes.find(firstSymbol->first);
+    prob_value_type p = firstSymbol->second;
+    for (auto c = std::next(std::begin(pwd)); c != std::end(pwd); ++c)
+    {
+      if (node != mNodes.end())
+      {
+        p *= node->second.probability(*c);
+        node = mNodes.find(*c);
+      }
+      else
+      {
+        return 0;
+      }
+    }
+    return p;
+  }
   void writeBinary(std::ostream &os)
   {
     if (mNodes.empty())
       return;
-    write(os, FileHeader);
+    os.write(FileHeader, FileHeaderSize);
     write(os, FileVersion);
     write(os, (uint32_t)mFirstSymbolSortedProbs.size());
     for (const auto &prob : mFirstSymbolSortedProbs)
@@ -141,7 +188,26 @@ public:
       }
     }
   }
-  bool readBinary(std::istream &is, bool doClear = true)
+  enum ErrCode {
+    OK = 0,
+    BAD_HEADER,
+    BAD_HEADER_PREMATURE_EOF,
+    BAD_VERSION,
+    BAD_VERSION_PREMATURE_EOF,
+    BAD_SYMBOL_COUNT,
+    BAD_SYMBOL_COUNT_PREMATURE_EOF,
+    BAD_SYMBOL,
+    BAD_SYMBOL_PREMATURE_EOF,
+    BAD_PROBABILITY,
+    BAD_PROBABILITY_PREMATURE_EOF,
+    BAD_NODE_COUNT,
+    BAD_NODE_COUNT_PREMATURE_EOF
+  };
+  const std::string &errString(const ErrCode ec) const
+  {
+    return mErrStrings.at(ec);
+  }
+  ErrCode readBinary(std::istream &is, bool doClear = true)
   {
     if (doClear)
     {
@@ -150,64 +216,70 @@ public:
       mFirstSymbolProbs.clear();
       mFirstSymbolSortedProbs.clear();
     }
-    while (!is.eof())
+    if (is.good() && !is.eof())
     {
       char hdr[FileHeaderSize] = {0, 0, 0, 0};
-      is.read(reinterpret_cast<char*>(&hdr), FileHeaderSize);
+      is.read(reinterpret_cast<char*>(hdr), FileHeaderSize);
       if (is.eof())
-        return false;
-      if (memcmp(hdr, FileHeader, sizeof(FileHeader)) != 0)
-        return false;
+        return BAD_HEADER_PREMATURE_EOF;
+      if (memcmp(hdr, FileHeader, FileHeaderSize) != 0)
+        return BAD_HEADER;
       uint8_t version = read<uint8_t>(is);
       if (is.eof())
-        return false;
+        return BAD_VERSION_PREMATURE_EOF;
       if (version != FileVersion)
-        return false;
+        return BAD_VERSION;
       const uint32_t firstSymbolCount = read<uint32_t>(is);
       if (is.eof())
-        return false;
+        return BAD_SYMBOL_COUNT_PREMATURE_EOF;
       mFirstSymbolSortedProbs.reserve(firstSymbolCount);
-      for (auto i = 0; i < firstSymbolCount; ++i)
+      for (uint32_t i = 0; i < firstSymbolCount; ++i)
       {
         const symbol_type c = read<symbol_type>(is);
         if (is.eof())
-          return false;
+          return BAD_SYMBOL_PREMATURE_EOF;
         const prob_value_type p = read<prob_value_type>(is);
         if (is.eof())
-          return false;
+          return BAD_PROBABILITY_PREMATURE_EOF;
         mFirstSymbolSortedProbs.emplace_back(c, p);
       }
       const uint32_t symbolCount = read<uint32_t>(is);
       if (is.eof())
-        return false;
-      for (auto i = 0; i < symbolCount; ++i)
+        return BAD_SYMBOL_COUNT_PREMATURE_EOF;
+      for (uint32_t i = 0; i < symbolCount; ++i)
       {
         symbol_type c = read<symbol_type>(is);
         if (is.eof())
-          return false;
+          return BAD_SYMBOL_PREMATURE_EOF;
         if (mNodes.find(c) == mNodes.end())
         {
           mNodes.emplace(c, node_type());
         }
-        if (is.eof())
-          return false;
+        else
+        {
+          return BAD_SYMBOL;
+        }
         const uint32_t nodeCount = read<uint32_t>(is);
         if (is.eof())
-          return false;
+          return BAD_NODE_COUNT_PREMATURE_EOF;
         node_type &currentNode = mNodes[c];
-        for (auto j = 0; j < nodeCount; ++j)
+        for (uint32_t j = 0; j < nodeCount; ++j)
         {
           const symbol_type symbol = read<symbol_type>(is);
           if (is.eof())
-            return false;
+            return BAD_SYMBOL_PREMATURE_EOF;
           const prob_value_type probability = read<prob_value_type>(is);
           if (is.eof())
-            return false;
+            return BAD_PROBABILITY_PREMATURE_EOF;
           currentNode.addSuccessor(symbol, probability);
         }
       }
     }
-    return true;
+    for (auto &node : mNodes)
+    {
+      node.second.postprocess();
+    }
+    return OK;
   }
   void writeJson(std::ostream &os)
   {
@@ -256,6 +328,21 @@ private:
   static const size_t FileHeaderSize{4};
   const char FileHeader[FileHeaderSize]{'M', 'R', 'K', 'V'};
   static const uint8_t FileVersion = 2;
+  const std::vector<std::string> mErrStrings{
+    "OK",
+    "BAD_HEADER",
+    "BAD_HEADER_PREMATURE_EOF",
+    "BAD_VERSION",
+    "BAD_VERSION_PREMATURE_EOF",
+    "BAD_SYMBOL_COUNT",
+    "BAD_SYMBOL_COUNT_PREMATURE_EOF",
+    "BAD_SYMBOL",
+    "BAD_SYMBOL_PREMATURE_EOF",
+    "BAD_PROBABILITY",
+    "BAD_PROBABILITY_PREMATURE_EOF",
+    "BAD_NODE_COUNT"
+    "BAD_NODE_COUNT_PREMATURE_EOF"
+  };
 };
 
 } // namespace markov

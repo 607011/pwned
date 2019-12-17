@@ -56,14 +56,18 @@ public:
   void update()
   {
     using elem_type = typename decltype(mCounts)::value_type;
-    const count_type sum = std::accumulate(std::cbegin(mCounts), std::cend(mCounts), 0ULL,
-                                           [](count_type a, const elem_type &b) {
+    const count_type sum = std::accumulate(std::cbegin(mCounts), std::cend(mCounts), 0,
+                                           [](count_type a, const elem_type &b) -> count_type {
                                              return b.second + a;
                                            });
     for (const auto &p : mCounts)
     {
       mProbs[p.first] = (Node::prob_value_type)p.second / (Node::prob_value_type)sum;
     }
+    postprocess();
+  }
+  void postprocess()
+  {
     mSortedProbs.resize(mProbs.size());
     std::copy(std::cbegin(mProbs), std::cend(mProbs), std::begin(mSortedProbs));
     struct {
