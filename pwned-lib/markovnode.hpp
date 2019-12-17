@@ -66,18 +66,6 @@ public:
     }
     postprocess();
   }
-  void postprocess()
-  {
-    mSortedProbs.resize(mProbs.size());
-    std::copy(std::cbegin(mProbs), std::cend(mProbs), std::begin(mSortedProbs));
-    struct {
-      bool operator()(const Node::pair_type &a, const Node::pair_type &b) const
-      {
-        return a.second < b.second;
-      }
-    } probLess;
-    std::sort(std::begin(mSortedProbs), std::end(mSortedProbs), probLess);
-  }
   void clear()
   {
     mProbs.clear();
@@ -123,6 +111,19 @@ public:
     }
     return 0;
   }
+  void postprocess()
+  {
+    mSortedProbs.resize(mProbs.size());
+    std::copy(std::cbegin(mProbs), std::cend(mProbs), std::begin(mSortedProbs));
+    struct {
+      bool operator()(const Node::pair_type &a, const Node::pair_type &b) const
+      {
+        return a.second < b.second;
+      }
+    } probLess;
+    std::sort(std::begin(mSortedProbs), std::end(mSortedProbs), probLess);
+  }
+
 };
 
 } // namespace markov
