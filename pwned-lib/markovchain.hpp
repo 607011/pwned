@@ -70,7 +70,7 @@ public:
   void update()
   {
     using elem_type = typename decltype(mFirstSymbolCounts)::value_type;
-    const count_type sum = std::accumulate(std::cbegin(mFirstSymbolCounts), std::cend(mFirstSymbolCounts), 0,
+    const count_type sum = std::accumulate(std::cbegin(mFirstSymbolCounts), std::cend(mFirstSymbolCounts), 0U,
                                            [](count_type a, const elem_type &b) -> count_type {
                                              return b.second + a;
                                            });
