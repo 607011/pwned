@@ -82,11 +82,11 @@ BOOST_AUTO_TEST_CASE(test_markov_rw)
 
   const fs::path outFilepath = fs::temp_directory_path() / fs::unique_path();
   std::ofstream outFile(outFilepath.string(), std::ios::binary);
-  chain.writeBinary(outFile);
+  chain.saveBinary(outFile);
   outFile.close();
 
   std::ifstream inFile(outFilepath.string(), std::ios::binary);
-  markov::Chain<>::ErrCode rc = chain.readBinary(inFile);
+  markov::Chain<>::ErrCode rc = chain.loadBinary(inFile);
   inFile.close();
   BOOST_ASSERT(chain.firstSymbolProbs().size() == 3);
   BOOST_ASSERT(chain.nodes().size() == 10);

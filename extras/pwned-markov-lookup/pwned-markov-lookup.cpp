@@ -41,12 +41,14 @@ int main(int argc, char *argv[])
   const std::string &inputFilename = argv[1];
   std::ifstream inputFile(inputFilename, std::ios::binary);
   chain_type chain;
-  chain.readBinary(inputFile);
+  chain.loadBinary(inputFile);
   while (true)
   {
-    std::string pwd;
     std::cout << "Type password: " << std::flush;
+    std::string pwd;
+    pwned::setStdinEcho(false);
     std::cin >> pwd;
+    pwned::setStdinEcho(true);
     if (pwd.empty())
       break;
     const std::basic_string<symbol_type> &wPwd = boost::locale::conv::utf_to_utf<symbol_type>(pwd);

@@ -164,7 +164,7 @@ public:
     }
     return p;
   }
-  void writeBinary(std::ostream &os)
+  void saveBinary(std::ostream &os)
   {
     if (mNodes.empty())
       return;
@@ -207,7 +207,7 @@ public:
   {
     return mErrStrings.at(ec);
   }
-  ErrCode readBinary(std::istream &is, bool doClear = true)
+  ErrCode loadBinary(std::istream &is, bool doClear = true)
   {
     if (doClear)
     {

@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
   {
     std::cout << "\rWriting to '" << outputFilename << "' ..." << std::endl;
   }
-  chain.writeBinary(outputFile);
+  chain.saveBinary(outputFile);
   chain.writeJson(std::cout);
   outputFile.close();
   return EXIT_SUCCESS;
