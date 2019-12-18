@@ -102,7 +102,7 @@ public:
   {
     if (pwd.empty())
       return false;
-    const std::basic_string<symbol_type> &s32 = boost::locale::conv::utf_to_utf<symbol_type>(pwd.c_str(), pwd.c_str() + pwd.size());
+    const std::basic_string<symbol_type> &s32 = boost::locale::conv::utf_to_utf<symbol_type>(pwd);
     if (!s32.empty()) {
       addFirst(s32.at(0));
       if (s32.size() > 1)

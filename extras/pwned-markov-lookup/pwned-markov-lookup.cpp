@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     std::cin >> pwd;
     if (pwd.empty())
       break;
-    const std::basic_string<symbol_type> &wPwd = boost::locale::conv::utf_to_utf<symbol_type>(pwd.c_str(), pwd.c_str() + pwd.size());
+    const std::basic_string<symbol_type> &wPwd = boost::locale::conv::utf_to_utf<symbol_type>(pwd);
     std::cout << "p = " << chain.totalProbability(wPwd) << std::endl;
   }
   return EXIT_SUCCESS;
