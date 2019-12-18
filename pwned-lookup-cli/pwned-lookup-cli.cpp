@@ -23,45 +23,9 @@
 #include <boost/program_options.hpp>
 
 #include <pwned-lib/passwordinspector.hpp>
+#include <pwned-lib/util.hpp>
 
 namespace po = boost::program_options;
-
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <termios.h>
-#include <unistd.h>
-#endif
-
-void setStdinEcho(bool enable)
-{
-#ifdef WIN32
-  HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
-  DWORD mode;
-  GetConsoleMode(hStdin, &mode);
-  if (!enable)
-  {
-    mode &= ~ENABLE_ECHO_INPUT;
-  }
-  else
-  {
-    mode |= ENABLE_ECHO_INPUT;
-  }
-  SetConsoleMode(hStdin, mode);
-#else
-  struct termios tty;
-  tcgetattr(STDIN_FILENO, &tty);
-  if (!enable)
-  {
-    tty.c_lflag &= tcflag_t(~ECHO);
-  }
-  else
-  {
-    tty.c_lflag |= tcflag_t(ECHO);
-  }
-  (void)tcsetattr(STDIN_FILENO, TCSANOW, &tty);
-#endif
-}
 
 po::options_description desc("Allowed options");
 
@@ -129,9 +93,9 @@ int main(int argc, const char *argv[])
   {
     std::cout << "Password? ";
     std::string pwd;
-    setStdinEcho(false);
+    pwned::setStdinEcho(false);
     std::cin >> pwd;
-    setStdinEcho(true);
+    pwned::setStdinEcho(true);
     const pwned::Hash soughtHash(pwd);
     std::cout << "MD5 hash " << soughtHash << std::endl;
     const auto &t0 = std::chrono::high_resolution_clock::now();

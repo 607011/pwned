@@ -51,6 +51,7 @@ std::string readableTime(double t);
 int decodeHex(const char c);
 bool hexToCharSeq(const std::string &seq, std::string &result);
 unsigned int popcnt64(uint64_t);
+void setStdinEcho(bool enable);
 
 class TermIO
 {
