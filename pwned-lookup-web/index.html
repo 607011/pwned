@@ -16,8 +16,27 @@
         font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
       }
       html {
-        background-color: #222;
+        background-color: #888;
         color: #eee;
+        font-size: 12pt;
+      }
+      body {
+        text-align: center;
+      }
+      .App {
+        background-color: #222;
+        border-radius: 12pt;
+        padding-top: 1ex;
+        max-width: 12cm;
+        margin: 0 auto;
+        overflow: hidden;
+      }
+      .App > div {
+        margin: 0 0.5em;
+      }
+      h1 {
+        margin: 12pt auto;
+        font-size: 36pt;
       }
       .found {
         font-weight: bold;
@@ -30,8 +49,14 @@
       .invisible {
         display: none !important;
       }
+      table#result-container {
+        margin: 12pt auto;
+      }
       td {
         padding: .2ex .1em;
+        text-align: left;
+        font-size: 12pt;
+        vertical-align: top;
       }
       a {
         color: #f8f8f8;
@@ -42,16 +67,32 @@
       }
       .disclaimer {
         border-top: 1px solid #ccc;
-        font-size: smaller;
-        margin-top: 2ex;
-        padding-top: 1ex;
+        font-size: 8pt;
+        margin: 2ex auto 10ex;
+        padding: 1ex 0 3ex;
       }
       #hash {
         font-family: 'Courier New', Courier, monospace;
+        overflow: hidden;
+        cursor: help;
       }
       #dbinfo {
-        margin-top: 2ex;
-        font-size: smaller;
+        margin: 5ex auto 5ex auto;
+        font-size: 8pt;
+      }
+      input[type=password] {
+        background-color: #f8f8f8;
+        border: 2px solid #ddd;
+        border-radius: 6pt;
+        padding: 1ex 1em;
+        text-align: center;
+      }
+      button {
+        background-color: #f8f8f8;
+        border: 2px solid #ddd;
+        border-radius: 6pt;
+        padding: 1ex 2em;
+        font-weight: bold;
       }
     </style>
     <script type="text/javascript" src="JavaScript-MD5/js/md5.min.js"></script>
@@ -66,9 +107,11 @@
         el.errorContainer.classList.remove('invisible')
         el.errorContainer.innerText = err
       }
+      const formatNumber = x => x.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
       const lookup = () => {
         const hash = md5(el.password.value)
-        el.hash.innerText = hash
+        el.hash.innerHTML = `${hash.substring(0, 8)}&hellip;${hash.slice(-8)}`
+        el.hash.title = hash
         el.found.innerText = ''
         el.found.classList.remove('found', 'notfound')
         el.lookupTimeMs.innerText = ''
@@ -77,7 +120,7 @@
         .then(data => {
           if (data['found'] > 0) {
             el.found.classList.add('found')
-            el.found.innerText = `${data['found']} times`
+            el.found.innerText = `${formatNumber(data['found'])} times`
           }
           else {
             el.found.classList.add('notfound')
@@ -109,7 +152,7 @@
         fetch(InfoURL)
         .then(response => response.json())
         .then(data => {
-          document.getElementById('hash-count').innerText = data['count']
+          document.getElementById('hash-count').innerText = formatNumber(data['count'])
           const updated = new Date(1000 * data['last-update'])
           document.getElementById('last-update').innerText = `${updated.toLocaleDateString()} ${updated.toLocaleTimeString()}`
         })
@@ -119,32 +162,37 @@
     </script>
   </head>
   <body>
-    <h1>#pwned lookup</h1>
-    <div>Password to look up<sup>*</sup></div>
-    <div><input type="password" id="password"/></div>
-    <div><input type="submit" id="submit" value="look up"/>
-      <label for="on-every-keypress">
-        <input type="checkbox" id="on-every-keypress" name="on-every-keypress" checked/>
-        on every keypress
-      </label>
+    <div class="App">
+      <div>
+        <h1>#pwned lookup</h1>
+        <div>Password to look up<sup>*</sup></div>
+        <div><input type="password" id="password" placeholder="*****"/></div>
+        <div><button id="submit">look up</button>
+          <br/>
+          <label for="on-every-keypress">
+            <input type="checkbox" id="on-every-keypress" name="on-every-keypress" checked/>
+            on every keypress
+          </label>
+        </div>
+        <table id="result-container" class="invisible">
+          <tr>
+            <td>Hash</td>
+            <td id="hash" title=""></td>
+          </tr>
+          <tr>
+            <td>Found</td>
+            <td id="found"></td>
+          </tr>
+          <tr>
+            <td>Lookup time</td>
+            <td id="lookup-time-ms"></td>
+          </tr>
+        </table>
+        <div id="error-container"></div>
+        <div id="dbinfo">The database currently contains <span id="hash-count">?</span> hashes and was last updated on <span id="last-update">?</span>.</div>
+        <div>Visit me on <a href="https://github.com/ola-ct/pwned" target="_blank">GitHub</a>!</div>
+        <div class="disclaimer">*) Your password doesn't leave the browser, instead its MD5 hash is transmitted to the #pwned server.</div>
+      </div>
     </div>
-    <table id="result-container" class="invisible">
-      <tr>
-        <td>Hash</td>
-        <td id="hash"></td>
-      </tr>
-      <tr>
-        <td>Found</td>
-        <td id="found"></td>
-      </tr>
-      <tr>
-        <td>Lookup time</td>
-        <td id="lookup-time-ms"></td>
-      </tr>
-    </table>
-    <div id="error-container"></div>
-    <div id="dbinfo">The database currently contains <span id="hash-count">?</span> hashes and was last updated on <span id="last-update">?</span>.</div>
-    <div>Visit me on <a href="https://github.com/ola-ct/pwned" target="_blank">GitHub</a>!</div>
-    <div class="disclaimer">*) Your password doesn't leave the browser, instead its MD5 hash is transmitted to the #pwned server.</div>
   </body>
 </html>
