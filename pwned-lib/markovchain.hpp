@@ -291,19 +291,22 @@ public:
     pt::ptree successor;
     for (const auto &node : mNodes)
     {
-      pt::ptree child;
-      for (const auto &successor : node.second.sortedSuccessors())
+      if (!node.second.sortedSuccessors().empty())
       {
-        child.put<double>(std::to_string(successor.first), successor.second);
+        pt::ptree child;
+        for (const auto &successor : node.second.sortedSuccessors())
+        {
+          child.put<double>(std::to_string(successor.first), successor.second);
+        }
+        successor.put_child(std::to_string(node.first), child);
       }
-      successor.put_child(std::to_string(node.first), child);
     }
     pt::ptree root;
     root.put_child("first", first);
     root.put_child("successor", successor);
     pt::write_json(os, root, true);
   }
-  inline const std::vector<pair_type>& firstSymbolProbs() const
+  inline const std::vector<pair_type> &firstSymbolProbs() const
   {
     return mFirstSymbolSortedProbs;
   }

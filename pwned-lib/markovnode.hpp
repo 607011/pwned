@@ -75,7 +75,7 @@ public:
   {
     return mProbs.at(c);
   }
-  inline uint64_t count(symbol_type c) const
+  inline count_type count(symbol_type c) const
   {
     return mCounts.at(c);
   }
